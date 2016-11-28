@@ -1,0 +1,14 @@
+{
+    "name": "gm/landing-page-engine",
+    "autoload": {
+        "psr-4": {
+            "Gm\\": "src/Gm/"
+        }
+    },
+    "config": {
+        "disable-tls": true
+    },
+    "require": {
+        "php": ">=5.5.0"
+    }
+}
