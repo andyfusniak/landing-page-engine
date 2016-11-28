@@ -9,6 +9,7 @@
         "disable-tls": true
     },
     "require": {
-        "php": ">=5.5.0"
+        "php": ">=5.5.0",
+        "twig/twig": "~1.0"
     }
 }
