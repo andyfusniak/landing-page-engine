@@ -2,6 +2,7 @@
 namespace Gm\LandingPageEngine;
 
 use Monolog\Logger;
+use Gm\LandingPageEngine\Service\CaptureService;
 
 require_once 'vendor/twig/twig/lib/Twig/Autoloader.php';
 
@@ -15,7 +16,7 @@ class LpEngine
     /**
      * @var Logger
      */
-    protected $log;
+    protected $logger;
      
     /**
      * @var \Twig_Environment
@@ -27,18 +28,23 @@ class LpEngine
      */
     protected $themeConfig;
 
+    /**
+     * @var CaptureService
+     */
+    protected $captureService;
+
     public static function setup()
     {
     }
 
-    public function __construct(Logger $log, array $config)
+    public function __construct(Logger $logger, array $config)
     {
-        $this->log = $log;
+        $this->logger = $logger;
         $this->config = $config;
         \Twig_Autoloader::register();
         $twigTemplateDir = $config['themes_root'] . '/' . $config['theme_name'] . '/html';
         $loader = new \Twig_Loader_Filesystem($twigTemplateDir);
-        $log->debug(sprintf(
+        $logger->debug(sprintf(
             'Setting the Twig Loader filesystem path to %s',
             $twigTemplateDir
         ));
@@ -65,7 +71,7 @@ class LpEngine
         $jsonThemeFilepath = $this->config['themes_root']
                              . '/' . $this->config['theme_name']
                              . '/theme.json';
-        $this->log->debug(sprintf(
+        $this->logger->debug(sprintf(
             'Loaded JSON theme from %s',
             $jsonThemeFilepath
         ));
@@ -75,7 +81,7 @@ class LpEngine
         $json = json_decode($string, true);
 
         if (null === $json) {
-            $this->log->error(sprintf(
+            $this->logger->error(sprintf(
                 'The theme JSON file "%s" could not be parsed',
                 $jsonThemeFilepath
             ));
@@ -87,24 +93,24 @@ class LpEngine
 
         // check the template contains appropriate contents
         if (isset($json['name']) && (mb_strlen($json['name']) > 0)) {
-            $this->log->info(sprintf(
+            $this->logger->info(sprintf(
                 'Template "%s" in use."',
                 $json['name']
             ));
         } else {
-            $this->log->warning(sprintf(
+            $this->logger->warning(sprintf(
                 'Template "%s" has a missing theme name.  Use {"name": "Template name"} to set your theme name.',
                 $jsonThemeFilepath
             ));
         }
 
         if (isset($json['version']) && (mb_strlen($json['version']) > 0)) {
-            $this->log->info(sprintf(
+            $this->logger->info(sprintf(
                 'Template version %s in use.',
                 $json['version']
             ));
         } else {
-            $this->log->warning(sprintf(
+            $this->logger->warning(sprintf(
                 'Template has no version string set in the theme config ("%s"), so we are running an unknown version of the theme.',
                 $jsonThemeFilepath
             ));
@@ -129,6 +135,23 @@ class LpEngine
     public function getTwigEnv()
     {
         return $this->twigEnv;
+    }
+
+    public function setCaptureService(CaptureService $captureService)
+    {
+        $this->captureService = $captureService;
+        return $this;
+    }
+
+    public function getCaptureService()
+    {
+        if (null === $this->captureService) {
+            $this->captureService = new CaptureService(
+                $this->logger,
+                $this->config
+            );
+        }
+        return $this->captureService;
     }
 
     public function run()

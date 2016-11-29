@@ -2,13 +2,14 @@
 namespace Gm\LandingPageEngine\Controller;
 
 use Gm\LandingPageEngine\LpEngine;
+use Gm\LandingPageEngine\Service\CaptureService;
 
 class FormController extends AbstractController
 {
     /**
      * @var LpEngine
      */
-    private $lpEngine;
+    protected $lpEngine;
 
     public function __construct(LpEngine $lpEngine)
     {
@@ -17,6 +18,14 @@ class FormController extends AbstractController
 
     public function postAction()
     {
+        $postParams = $this->request->request->all();
+
+        $captureService = $this->lpEngine->getCaptureService();
+
+        $captureService->save(
+            $postParams,
+            $this->lpEngine->getThemeConfig()
+        );
 
         $nextUrl = $this->request->get('nexturl');
         $this->redirectToUrl($nextUrl);
