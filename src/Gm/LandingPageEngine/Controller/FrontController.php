@@ -3,11 +3,7 @@ namespace Gm\LandingPageEngine\Controller;
 
 use Gm\LandingPageEngine\LpEngine;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-
-class FrontController extends Controller
+class FrontController extends AbstractController
 {
     /**
      * @var LpEngine
@@ -27,19 +23,5 @@ class FrontController extends Controller
             'title' => 'Example title for our page',
             'menuitems' => ['pizza', 'lasagna', 'fruit cake', 'donut']
         ]);
-    }
-
-    public function setMatch(array $match)
-    {
-        $this->match = $match;
-        return $this;
-    }
-
-    public function dispatch(Request $request, Response $response)
-    {
-        $this->request = $request;
-        $this->response = $response;
-        list($service, $action) = preg_split('/:/', $this->match['_controller']);
-        return $this->$action();
     }
 }
