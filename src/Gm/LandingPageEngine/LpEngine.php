@@ -2,13 +2,38 @@
 namespace Gm\LandingPageEngine;
 
 use Monolog\Logger;
+use Monolog\Handler\StreamHandler;
+
 use Gm\LandingPageEngine\Service\CaptureService;
 use Symfony\Component\HttpFoundation\Session\Session;
 
-require_once 'vendor/twig/twig/lib/Twig/Autoloader.php';
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+use Symfony\Component\Routing\Matcher\UrlMatcher;
+use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\Routing\RouteCollection;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class LpEngine
 {
+    /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
+     * @var Response
+     */
+    protected $response;
+
+    /**
+     * @var RouteCollection
+     */
+    protected $routes;
+
     /**
      * @var array
      */
@@ -39,14 +64,69 @@ class LpEngine
      */
     protected $session;
 
-    public static function setup()
+    /**
+     * Initialise a Landing Page Engine instance and wire it up
+     *
+     * @param array $config the application configuration
+     * @return LpEngine
+     */
+    public static function init($config)
     {
-    }
+        // setup the logging
+        $logger = new Logger('lpengine');
+        $logger->pushHandler(
+            new StreamHandler($config['log_fullpath'], $config['log_level'])
+        );
+        $logger->info('LP Engine Initialising');
 
-    public function __construct(Logger $logger, array $config)
+        // setup the request and response
+        $request = Request::createFromGlobals();
+        $response = new Response();
+        $response->setProtocolVersion('1.1');
+
+        // create a new landing page engine instance
+        $engine = new LpEngine($request, $response, $logger, $config);
+
+        // Build the custom URL routes using the developer's theme.json file
+        $themeConfig = $engine->getThemeConfig();
+        $routes = new RouteCollection();
+        foreach ($themeConfig['routes'] as $mapping) {
+            $routes->add($mapping['route'], new Route('/' . $mapping['route'], [
+                '_controller' =>
+                    'Gm\LandingPageEngine\Controller\FrontController:showAction',
+                    'template' => $mapping['template']
+            ]));
+        }
+
+        $logger->info(sprintf(
+            'Configured route "%s" to map to twig template "%s"',
+            $mapping['route'],
+            $mapping['template']
+        ));
+
+        // Build a dedicated URL route for handling form posts
+        $routes->add('http-post', new Route('/process-post', [
+            '_controller' => 'Gm\LandingPageEngine\Controller\FormController:postAction',
+        ], [], [], '', [], ['POST']));
+        $logger->info(sprintf(
+            'Added dedicated route for /process-post for HTTP form POSTS'
+        ));
+
+        $engine->setRoutes($routes);
+
+        return $engine;
+    }
+    
+    public function __construct(Request $request,
+                                Response $response,
+                                Logger $logger,
+                                array $config)
     {
-        $this->logger = $logger;
-        $this->config = $config;
+        $this->request  = $request;
+        $this->response = $response;
+        $this->logger   = $logger;
+        $this->config   = $config;
+
         \Twig_Autoloader::register();
         $twigTemplateDir = $config['themes_root'] . '/activetheme/templates';
         $loader = new \Twig_Loader_Filesystem($twigTemplateDir);
@@ -70,6 +150,38 @@ class LpEngine
 
         $this->twigEnv = new \Twig_Environment($loader, $twigEnvOptions);
         $this->loadThemeConfig();
+    }
+
+    public function run()
+    {
+        try {
+            $context = new RequestContext();
+            $context->fromRequest($this->request);
+            $matcher = new UrlMatcher($this->routes, $context);
+            $parameters = $matcher->match($this->request->getPathInfo());
+
+            list($controller, $action) = preg_split('/:/', $parameters['_controller']);
+
+            // lazy load the controler instance
+            $controller = new $controller($this);
+            $controller->setMatch($parameters);
+
+            // dispatch the request and get the return string
+            $this->response->setContent(
+                $controller->dispatch($this->request, $this->response)
+            );
+        } catch (Routing\Exception\ResourceNotFoundException $e) {
+            $this->response->setContent('Not Found');
+            $this->response->setStatusCode(404);
+        } catch (Exception $e) {
+            $this->response->setContent('An error occurred');
+            $this->response->setStatusCode(500);
+            
+            // rethrow the exception a quick and dirty bailout
+            throw $e;
+        }
+
+        $this->response->send();
     }
 
     public function loadThemeConfig()
@@ -185,12 +297,25 @@ class LpEngine
         return $this->session;
     }
 
-    public function run()
+    /**
+     * Set the routes
+     *
+     * @param RouteCollection $routes the custom routes
+     * @return LpEngine
+     */
+    public function setRoutes(RouteCollection $routes)
     {
-        $template = $this->twigEnv->load('html/template.html.twig');
-        echo $template->render([
-            'title' => 'Example title for our page',
-            'menuitems' => ['pizza', 'lasagna', 'fruit cake', 'donut']
-        ]);
+        $this->routes = $routes;
+        return $this;
+    }
+
+    /**
+     * Get the Request object
+     *
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->request;
     }
 }
