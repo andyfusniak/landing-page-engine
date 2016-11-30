@@ -83,7 +83,7 @@ class LpEngine
         $request = Request::createFromGlobals();
         $response = new Response();
         $response->setProtocolVersion('1.1');
-
+         
         // create a new landing page engine instance
         $engine = new LpEngine($request, $response, $logger, $config);
 
@@ -154,6 +154,12 @@ class LpEngine
 
     public function run()
     {
+        $session = $this->getSession();
+        if (null === $session->get('initial_query_params')) {
+            $session->set('initial_query_params', $this->getRequest()->query->all());
+        }   
+        $session->set('query_params', $this->getRequest()->query->all());
+
         try {
             $context = new RequestContext();
             $context->fromRequest($this->request);
@@ -252,6 +258,14 @@ class LpEngine
     public function getTwigEnv()
     {
         return $this->twigEnv;
+    }
+
+    public function getTwigTags()
+    {
+        return [
+            'ip_address' => $this->request->getClientIp(),
+            'q' => $this->getSession()->get('initial_query_params')
+        ];
     }
 
     public function setCaptureService(CaptureService $captureService)

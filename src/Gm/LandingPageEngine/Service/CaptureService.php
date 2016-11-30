@@ -7,6 +7,20 @@ use Symfony\Component\HttpFoundation\Session\Session;
 
 class CaptureService
 {
+    const UTM_SOURCE   = 'utm_source';
+    const UTM_MEDIUM   = 'utm_medium';
+    const UTM_TERM     = 'utm_term';
+    const UTM_CONTENT  = 'utm_content';
+    const UTM_CAMPAIGN = 'utm_campaign';
+
+    protected static $utmTrackingTags = [
+        self::UTM_SOURCE,
+        self::UTM_MEDIUM,
+        self::UTM_TERM,
+        self::UTM_CONTENT,
+        self::UTM_CAMPAIGN
+    ];
+
     /**
      * @var Logger
      */
@@ -155,6 +169,20 @@ class CaptureService
                     'Form field %s is used in the template form but has no mapping     entry in the theme.json file.  Edit your theme.json file to include the missing field name.',
                     $formFieldName
                 ));
+            }
+        }
+
+        // automatically save the UTM tracking in the datbase
+        if ((null !== $this->session) 
+            && ($this->session instanceof Session)
+            && (null !== $this->session->get('initial_query_params'))) {
+            $queryParams = $this->session->get('initial_query_params');
+            foreach (self::$utmTrackingTags as $utmTag) {
+                if (isset($queryParams[$utmTag]) && (strlen($queryParams[$utmTag]) > 0)) {
+                    $lookup[$utmTag] = $queryParams[$utmTag];
+                } else {
+                    $lookup[$utmTag] = null;
+                }
             }
         }
 
