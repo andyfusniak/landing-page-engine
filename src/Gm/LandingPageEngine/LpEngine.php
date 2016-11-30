@@ -3,6 +3,7 @@ namespace Gm\LandingPageEngine;
 
 use Monolog\Logger;
 use Gm\LandingPageEngine\Service\CaptureService;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 require_once 'vendor/twig/twig/lib/Twig/Autoloader.php';
 
@@ -33,6 +34,11 @@ class LpEngine
      */
     protected $captureService;
 
+    /**
+     * @var Session
+     */
+    protected $session;
+
     public static function setup()
     {
     }
@@ -42,7 +48,7 @@ class LpEngine
         $this->logger = $logger;
         $this->config = $config;
         \Twig_Autoloader::register();
-        $twigTemplateDir = $config['themes_root'] . '/' . $config['theme_name'] . '/html';
+        $twigTemplateDir = $config['themes_root'] . '/activetheme/templates';
         $loader = new \Twig_Loader_Filesystem($twigTemplateDir);
         $logger->debug(sprintf(
             'Setting the Twig Loader filesystem path to %s',
@@ -68,9 +74,8 @@ class LpEngine
 
     public function loadThemeConfig()
     {
-        $jsonThemeFilepath = $this->config['themes_root']
-                             . '/' . $this->config['theme_name']
-                             . '/theme.json';
+        $jsonThemeFilepath = $this->config['themes_root'] 
+                             . '/activetheme/theme.json';
         $this->logger->debug(sprintf(
             'Loaded JSON theme from %s',
             $jsonThemeFilepath
@@ -148,10 +153,36 @@ class LpEngine
         if (null === $this->captureService) {
             $this->captureService = new CaptureService(
                 $this->logger,
-                $this->config
+                $this->config,
+                $this->getSession()
             );
         }
         return $this->captureService;
+    }
+
+    /**
+     * Set a session to use within the Landing Page Engine
+     *
+     * @param Session $session
+     */
+    public function setSession(Session $session)
+    {
+        $this->session = $session;
+        return $this;
+    }
+
+    /**
+     * Get the session or create one if not set and start it
+     *
+     * @return Session
+     */
+    public function getSession()
+    {
+        if (null === $this->session) {
+            $this->session = new Session();
+            $this->session->start();
+        }
+        return $this->session;
     }
 
     public function run()

@@ -3,6 +3,7 @@ namespace Gm\LandingPageEngine\Service;
 
 use Monolog\Logger;
 use Gm\LandingPageEngine\Mapper\TableMapper;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 class CaptureService
 {
@@ -21,10 +22,21 @@ class CaptureService
      */
     protected $tableMapper;
 
-    public function __construct(Logger $logger, array $config)
+    /**
+     * @var Session
+     */
+    protected $session;
+
+    /**
+     * @param Logger  $logger application logger
+     * @param array   $config global configuration for LP Engine
+     * @param Session $session session instance used for multi-page flow
+     */
+    public function __construct(Logger $logger, array $config, Session $session)
     {
-        $this->logger = $logger;
-        $this->config = $config;
+        $this->logger  = $logger;
+        $this->config  = $config;
+        $this->session = $session;
     }
 
     public function save(array $params, array $themeConfig)
@@ -84,7 +96,7 @@ class CaptureService
                     $params['form_name']
                 ));
                 $formNameMatch = true;
-                $table = $entry['table'];
+                $tableName = $entry['table'];
                 $mappings = $entry['mappings'];
                 break;
             }
@@ -135,18 +147,48 @@ class CaptureService
             ));
 
             if (!in_array($formFieldName, $formFieldColumns)) {
-            $this->logger->error(sprintf(
-                'Form field %s is used in the template form but has no mapping entry in the theme.json file',
-                $formFieldName
-            ));
-            throw new \Exception(sprintf(
-                'Form field %s is used in the template form but has no mapping     entry in the theme.json file.  Edit your theme.json file to include the missing field name.',
-                $formFieldName
-            ));
+                $this->logger->error(sprintf(
+                    'Form field %s is used in the template form but has no mapping entry in the theme.json file',
+                    $formFieldName
+                ));
+                throw new \Exception(sprintf(
+                    'Form field %s is used in the template form but has no mapping     entry in the theme.json file.  Edit your theme.json file to include the missing field name.',
+                    $formFieldName
+                ));
+            }
         }
 
+        // add the session id to the sql parameters
+        // every insert will use the session id, or null is not set
+        if ((isset($this->session)) && ($this->session instanceof Session)) {
+            $lookup['session_id'] = $this->session->getId();
+        } else {
+            $lookup['session_id'] = null;
         }
-        $this->getTableMapper()->insert($table, $lookup);
+
+        $mapper = $this->getTableMapper();
+
+        if (null === $lookup['session_id']) {
+            $row = null;
+        } else {
+            $row = $mapper->findRowBySessionId(
+                $tableName,
+                $lookup['session_id']
+            );
+            if (false === $row) {
+                $row = null;
+            }
+        }
+
+        // if there is no PHPSESSID associated to any row in the DB
+        // then we should be inserting a new row for this data form capture
+        // otherwise we are in the same web session and the end-user is
+        // reposting the capture data, or on a multi-page landing site
+        if (null === $row) {
+            $mapper->insert($tableName, $lookup);
+        } else {
+            $mapper->update($tableName, $lookup);
+        }
     }
 
     public function getTableMapper()
