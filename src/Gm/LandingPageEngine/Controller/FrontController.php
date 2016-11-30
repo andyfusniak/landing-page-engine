@@ -19,9 +19,8 @@ class FrontController extends AbstractController
     {
         $twigEnv = $this->lpEngine->getTwigEnv();
         $template = $twigEnv->load($this->match['template']);
-        return $template->render([
-            'title' => 'Example title for our page',
-            'menuitems' => ['pizza', 'lasagna', 'fruit cake', 'donut']
-        ]);
+        return $template->render(
+            $this->lpEngine->getTwigTags()
+        );
     }
 }
