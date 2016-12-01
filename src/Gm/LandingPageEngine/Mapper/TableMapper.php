@@ -1,15 +1,23 @@
 <?php
 namespace Gm\LandingPageEngine\Mapper;
 
+use Monolog\Logger;
+
 class TableMapper
 {
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
     /**
      * @var \PDO
      */
     protected $pdo;
 
-    public function __construct(\PDO $pdo)
+    public function __construct(Logger $logger, \PDO $pdo)
     {
+        $this->logger = $logger;
         $this->pdo = $pdo;
     }
 
@@ -24,6 +32,7 @@ class TableMapper
         $sql = '
             INSERT INTO ' . $tableName . ' (id, ' . $columnList
             . ') VALUES (NULL, ' . $columnPlaceHolders . ')';
+        $this->logger->debug($sql);
         $statement = $this->pdo->prepare($sql);
       
         foreach ($sqlFieldMap as $columnName => $value) {

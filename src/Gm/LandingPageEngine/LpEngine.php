@@ -89,20 +89,33 @@ class LpEngine
 
         // Build the custom URL routes using the developer's theme.json file
         $themeConfig = $engine->getThemeConfig();
-        $routes = new RouteCollection();
-        foreach ($themeConfig['routes'] as $mapping) {
-            $routes->add($mapping['route'], new Route('/' . $mapping['route'], [
-                '_controller' =>
-                    'Gm\LandingPageEngine\Controller\FrontController:showAction',
-                    'template' => $mapping['template']
-            ]));
+
+        // Check for missing routes section in theme.json config file
+        if (isset($themeConfig) && (!isset($themeConfig['routes']))) {
+            $logger->error('Your theme.json is missing a "routes" section.  You must define at least one route.');
+            throw new \Exception(
+                'Your theme.json file is missing a "routes" section.  You must define at least one route.'
+            );
         }
 
-        $logger->info(sprintf(
-            'Configured route "%s" to map to twig template "%s"',
-            $mapping['route'],
-            $mapping['template']
-        ));
+        // Check the "routes" section of the theme.json config file contains at least one route
+        if (count($themeConfig['routes']) < 1) {
+            $logger->warning('Your theme.json contains a "routes" section but defines no mappings.');
+        }
+
+        $routes = new RouteCollection();
+        foreach ($themeConfig['routes'] as $url => $template) {
+            $routes->add($url, new Route('/' . $url, [
+                '_controller' =>
+                    'Gm\LandingPageEngine\Controller\FrontController:showAction',
+                    'template' => $template
+            ]));
+            $logger->info(sprintf(
+                'Configured route "%s" to map to twig template "%s"',
+                $url,
+                $template
+            ));
+        }
 
         // Build a dedicated URL route for handling form posts
         $routes->add('http-post', new Route('/process-post', [
