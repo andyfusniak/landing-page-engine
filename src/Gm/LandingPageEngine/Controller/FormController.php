@@ -27,7 +27,7 @@ class FormController extends AbstractController
             $this->lpEngine->getThemeConfig()
         );
 
-        $nextUrl = $this->request->get('nexturl');
+        $nextUrl = $this->request->get('_nexturl');
         $this->redirectToUrl($nextUrl);
     }
 }
