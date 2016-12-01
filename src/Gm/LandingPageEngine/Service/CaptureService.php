@@ -55,27 +55,27 @@ class CaptureService
 
     public function save(array $params, array $themeConfig)
     {
-        // check the HTTP POST contains a form_name
+        // check the HTTP POST contains a _form
         // otherwise there is no way to lookup the mappings
         // for the form field to the database fields
-        if ((isset($params['form_name']))
-            && (mb_strlen($params['form_name']) > 0)) {
+        if ((isset($params['_form']))
+            && (mb_strlen($params['_form']) > 0)) {
             $this->logger->debug(sprintf(
-                'Processing HTTP POST form_name=%s',
-                $params['form_name']
+                'Processing HTTP POST _form=%s',
+                $params['_form']
             ));
         } else {
             $this->logger->error(
-                'HTTP POST called without passing form_name parameter'
+                'HTTP POST called without passing _form parameter'
             );
             throw new \Exception(
-                'HTTP POST called without passing form_name parameter'
+                'HTTP POST called without passing _form parameter'
             );
         }
 
-        // make sure the form_name given exists in the theme JSON config
+        // make sure the _form given exists in the theme JSON config
         // The theme.json file must contain form field name to database field
-        // name mappings grouped by form_name
+        // name mappings grouped by _form
         if (!isset($themeConfig['forms'])) {
             $this->logger->error(
                 'HTTP POST called but theme.json contains no "forms" section'
@@ -94,19 +94,19 @@ class CaptureService
 
         $this->logger->debug(sprintf(
             'Scanning theme.json forms section to find a match for %s',
-            $params['form_name']
+            $params['_form']
         ));
 
         $formNameMatch = false;
         foreach ($themeConfig['forms'] as $formName => $details) {
             $this->logger->debug(sprintf(
-                'Checking theme.json config form_name=%s',
+                'Checking theme.json config _form=%s',
                 $formName
             ));
-            if ($params['form_name'] === $formName) {
+            if ($params['_form'] === $formName) {
                 $this->logger->debug(sprintf(
-                    'Found a match for form_name=%s',
-                    $params['form_name']
+                    'Found a match for _form=%s',
+                    $params['_form']
                 ));
                 $formNameMatch = true;
                 $tableName = $details['dbtable'];
@@ -117,12 +117,12 @@ class CaptureService
 
         if (false === $formNameMatch) {
             $this->logger->error(sprintf(
-                'Cannot find a definition for form_name=%s whilst scanning theme.json "forms" section',
-                $params['form_name']
+                'Cannot find a definition for _form=%s whilst scanning theme.json "forms" section',
+                $params['_form']
             ));
             throw new \Exception(sprintf(
-                'Cannot find a definition for form_name=%s whilst scanning theme.json "forms" section',
-                $params['form_name']
+                'Cannot find a definition for _form=%s whilst scanning theme.json "forms" section',
+                $params['_form']
             ));
         }
 
@@ -134,9 +134,9 @@ class CaptureService
                 $lookup[$databaseColumnName] = $params[$formFieldName];
             } else {
                 $this->logger->warning(sprintf(
-                    'Form field "%s" is defined in the theme.json mappings for form_name=%s but is has no value passed from the template form',
+                    'Form field "%s" is defined in the theme.json mappings for _form=%s but is has no value passed from the template form',
                     $formFieldName,
-                    $params['form_name']
+                    $params['_form']
                 ));
             }
             $formFieldColumns[] = $formFieldName;
@@ -146,14 +146,14 @@ class CaptureService
         // would silently be lost and never catpured to the database
         foreach (array_keys($params) as $formFieldName) {
             // skip system fields
-            if (in_array($formFieldName, ['nexturl', 'form_name'])) {
+            if (in_array($formFieldName, ['_nexturl', '_form'])) {
                 continue;
             }
 
             $this->logger->debug(sprintf(
-                'Checking that form field %s has a mapping entry in the theme.json file for section form_name=%s',
+                'Checking that form field %s has a mapping entry in the theme.json file for section _form=%s',
                 $formFieldName,
-                $params['form_name']
+                $params['_form']
             ));
 
             if (!in_array($formFieldName, $formFieldColumns)) {
