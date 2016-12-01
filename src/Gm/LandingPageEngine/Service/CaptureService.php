@@ -78,12 +78,19 @@ class CaptureService
         // name mappings grouped by form_name
         if (!isset($themeConfig['forms'])) {
             $this->logger->error(
-                'HTTP POST called but "theme.json" contains no form section'
+                'HTTP POST called but theme.json contains no "forms" section'
             );
             throw new \Exception(
-                'HTTP POST called but "theme.json" contains no form section'
+                'HTTP POST called but theme.json contains no "forms" section'
             ); 
         }
+
+        if (count($themeConfig['forms']) < 1) {
+            throw new \Exception(
+                'HTTP POST called but theme.json contains no form definitions'
+            );
+        }
+
 
         $this->logger->debug(sprintf(
             'Scanning theme.json forms section to find a match for %s',
@@ -91,59 +98,48 @@ class CaptureService
         ));
 
         $formNameMatch = false;
-        foreach ($themeConfig['forms'] as $entry) {
-            if (!isset($entry['form_name'])) {
-                $this->logger->error(
-                    'Missing form_name entry from theme.json file'
-                );
-                throw new \Exception(
-                    'Missing form_name entry from theme.json file'
-                );
-            }
+        foreach ($themeConfig['forms'] as $formName => $details) {
             $this->logger->debug(sprintf(
                 'Checking theme.json config form_name=%s',
-                $entry['form_name']
+                $formName
             ));
-            if ($params['form_name'] === $entry['form_name']) {
+            if ($params['form_name'] === $formName) {
                 $this->logger->debug(sprintf(
                     'Found a match for form_name=%s',
                     $params['form_name']
                 ));
                 $formNameMatch = true;
-                $tableName = $entry['table'];
-                $mappings = $entry['mappings'];
+                $tableName = $details['dbtable'];
+                $mappings = $details['map'];
                 break;
             }
         }
 
         if (false === $formNameMatch) {
             $this->logger->error(sprintf(
-                'Cannot find a definition for form_name=%s whilst scanning theme.json forms section',
+                'Cannot find a definition for form_name=%s whilst scanning theme.json "forms" section',
                 $params['form_name']
             ));
             throw new \Exception(sprintf(
-                'Cannot find a definition for form_name=%s whilst scanning theme.json forms section',
+                'Cannot find a definition for form_name=%s whilst scanning theme.json "forms" section',
                 $params['form_name']
             ));
         }
 
-
         // build a lookup table from database column name to form field value
         $lookup = [];
         $formFieldColumns = [];
-        foreach ($mappings as $entry) {
-            foreach ($entry as $formFieldName => $databaseColumnName) {
-                if (isset($params[$formFieldName])) {
-                    $lookup[$databaseColumnName] = $params[$formFieldName];
-                } else {
-                    $this->logger->warning(sprintf(
-                        'Form field "%s" is defined in the theme.json mappings for form_name=%s but is has no value passed from the template form',
-                        $formFieldName,
-                        $params['form_name']
-                    ));
-                }
-                $formFieldColumns[] = $formFieldName;
+        foreach ($mappings as $formFieldName => $databaseColumnName) {
+            if (isset($params[$formFieldName])) {
+                $lookup[$databaseColumnName] = $params[$formFieldName];
+            } else {
+                $this->logger->warning(sprintf(
+                    'Form field "%s" is defined in the theme.json mappings for form_name=%s but is has no value passed from the template form',
+                    $formFieldName,
+                    $params['form_name']
+                ));
             }
+            $formFieldColumns[] = $formFieldName;
         }
         
         // no mapping to database fields.  Without this check the values
@@ -235,7 +231,7 @@ class CaptureService
             } catch (\Exception $e) {
                 throw $e;
             }
-            $this->tableMapper = new TableMapper($pdo);
+            $this->tableMapper = new TableMapper($this->logger, $pdo);
         }
         return $this->tableMapper;
     }
