@@ -125,6 +125,10 @@ class LpEngine
             'Added dedicated route for /process-post for HTTP form POSTS'
         ));
 
+        $routes->add('status-page', new Route('/status-page', [
+            '_controller' => 'Gm\LandingPageEngine\Controller\StatusPageController:showAction'
+        ], [], [], '', [], ['GET']));
+
         $engine->setRoutes($routes);
 
         return $engine;
