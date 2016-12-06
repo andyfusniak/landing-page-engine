@@ -5,6 +5,8 @@ use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
 use Gm\LandingPageEngine\Service\CaptureService;
+use Gm\LandingPageEngine\Version\Version;
+
 use Symfony\Component\HttpFoundation\Session\Session;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -77,7 +79,6 @@ class LpEngine
         $logger->pushHandler(
             new StreamHandler($config['log_fullpath'], $config['log_level'])
         );
-        $logger->info('LP Engine Initialising');
 
         // setup the request and response
         $request = Request::createFromGlobals();
@@ -139,6 +140,10 @@ class LpEngine
                                 Logger $logger,
                                 array $config)
     {
+        $logger->info(sprintf(
+            'LPE Version %s Running',
+            Version::VERSION
+        ));
         $this->request  = $request;
         $this->response = $response;
         $this->logger   = $logger;
@@ -348,5 +353,15 @@ class LpEngine
     public function getRequest()
     {
         return $this->request;
+    }
+
+    /**
+     * Get the version id string
+     *
+     * @return string version id string for LPE
+     */
+    public function getVersionIdString()
+    {
+        return Version::VERSION;
     }
 }
