@@ -6,6 +6,7 @@ use Monolog\Handler\StreamHandler;
 
 use Gm\LandingPageEngine\Service\CaptureService;
 use Gm\LandingPageEngine\Version\Version;
+use Gm\LandingPageEngine\TwigGlobals\ThaiDate;
 
 use Symfony\Component\HttpFoundation\Session\Session;
 
@@ -171,6 +172,11 @@ class LpEngine
         }
 
         $this->twigEnv = new \Twig_Environment($loader, $twigEnvOptions);
+
+        // @todo needs to be more modular to lazy-load and plug them in
+        // provide global for thai_date
+        $this->twigEnv->addGlobal('thai_date', new ThaiDate());
+
         $this->loadThemeConfig();
     }
 
