@@ -5,6 +5,9 @@ use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
 use Gm\LandingPageEngine\Service\CaptureService;
+use Gm\LandingPageEngine\Version\Version;
+use Gm\LandingPageEngine\TwigGlobals\ThaiDate;
+
 use Symfony\Component\HttpFoundation\Session\Session;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -77,7 +80,6 @@ class LpEngine
         $logger->pushHandler(
             new StreamHandler($config['log_fullpath'], $config['log_level'])
         );
-        $logger->info('LP Engine Initialising');
 
         // setup the request and response
         $request = Request::createFromGlobals();
@@ -125,6 +127,10 @@ class LpEngine
             'Added dedicated route for /process-post for HTTP form POSTS'
         ));
 
+        $routes->add('status-page', new Route('/status-page', [
+            '_controller' => 'Gm\LandingPageEngine\Controller\StatusPageController:showAction'
+        ], [], [], '', [], ['GET']));
+
         $engine->setRoutes($routes);
 
         return $engine;
@@ -135,6 +141,10 @@ class LpEngine
                                 Logger $logger,
                                 array $config)
     {
+        $logger->info(sprintf(
+            'LPE Version %s Running',
+            Version::VERSION
+        ));
         $this->request  = $request;
         $this->response = $response;
         $this->logger   = $logger;
@@ -162,6 +172,11 @@ class LpEngine
         }
 
         $this->twigEnv = new \Twig_Environment($loader, $twigEnvOptions);
+
+        // @todo needs to be more modular to lazy-load and plug them in
+        // provide global for thai_date
+        $this->twigEnv->addGlobal('thai_date', new ThaiDate());
+
         $this->loadThemeConfig();
     }
 
@@ -344,5 +359,15 @@ class LpEngine
     public function getRequest()
     {
         return $this->request;
+    }
+
+    /**
+     * Get the version id string
+     *
+     * @return string version id string for LPE
+     */
+    public function getVersionIdString()
+    {
+        return Version::VERSION;
     }
 }
