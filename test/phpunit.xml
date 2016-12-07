@@ -4,6 +4,10 @@
         <testsuite name="form-filters">
             <directory>./GmTest/LandingPageEngine/Form/Filter</directory>
         </testsuite>
+
+        <testsuite name="form-validators">
+            <directory>./GmTest/LandingPageEngine/Form/Validator</directory>
+        </testsuite>
     </testsuites>
 
     <filter>

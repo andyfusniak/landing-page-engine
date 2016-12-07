@@ -17,15 +17,10 @@ class FilterChain
      */
     protected $filters = [];
 
-
-    public function __construct()
-    {
-    }
-
     public function attach($filter)
     {
         if (!$filter instanceof FilterInterface) {
-            throw new Exception\InvalidArguementException(sprintf(
+            throw new Exception\InvalidArgumentException(sprintf(
                 '%s expects a FilterInterface object as its argument',
                 __METHOD__
             ));
@@ -42,6 +37,13 @@ class FilterChain
      */
     public function filter($value)
     {
+        if (!is_string($value)) {
+            throw new Exception\InvalidArgumentException(sprintf(
+                '%s expects a string value',
+                __METHOD__
+            ));
+        }
+
         foreach ($this->filters as $filter) {
             $value = $filter->filter($value);
         }
