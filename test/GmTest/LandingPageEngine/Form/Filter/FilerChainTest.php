@@ -14,6 +14,7 @@ use Gm\LandingPageEngine\Form\Filter\FilterChain;
 use Gm\LandingPageEngine\Form\Filter\FilterInterface as Filter;
 use Gm\LandingPageEngine\Form\Filter\PhonePrefixToZero;
 use Gm\LandingPageEngine\Form\Filter\Trim;
+use Gm\LandingPageEngine\Form\Filter\Exception\InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 class FilterChainTest extends TestCase
@@ -72,4 +73,17 @@ class FilterChainTest extends TestCase
         $this->assertEquals('0843206078', $result);
         $this->assertInternalType('string', $result);
     }
+
+    public function testInvalidParameterType()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $result = self::$filterChain->filter((int) 1234);
+    }
+
+    public function testInvalidParameterTypeAttachMethod()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $result = self::$filterChain->attach(new \stdClass());
+    }
 }
+
