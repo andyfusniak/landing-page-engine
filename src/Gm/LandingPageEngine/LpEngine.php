@@ -4,6 +4,8 @@ namespace Gm\LandingPageEngine;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
+use Gm\LandingPageEngine\Form\Filter\FilterChain;
+use Gm\LandingPageEngine\Form\Validator\ValidatorChain;
 use Gm\LandingPageEngine\Service\CaptureService;
 use Gm\LandingPageEngine\Version\Version;
 use Gm\LandingPageEngine\TwigGlobals\ThaiDate;
@@ -55,7 +57,22 @@ class LpEngine
     /**
      * @var array
      */
+    protected $twigGlobals;
+
+    /**
+     * @var array
+     */
     protected $themeConfig;
+
+    /**
+     * @var string
+     */
+    protected $theme;
+
+    /**
+     * @var array
+     */
+    protected $fieldToFilterAndValidatorLookup;
 
     /**
      * @var CaptureService
@@ -149,9 +166,25 @@ class LpEngine
         $this->response = $response;
         $this->logger   = $logger;
         $this->config   = $config;
+       
+        $host = $this->request->getHost(); 
+        if (isset($config['hosts'][$host])) {
+            $theme = $config['hosts'][$host];
+            $logger->debug(sprintf(
+                'Host "%s" is configure to use theme "%s".  Checking theme exists',
+                $host,
+                $theme
+            ));
+            \Twig_Autoloader::register();
+            $twigTemplateDir = $config['themes_root'] . '/' . $theme . '/templates';
+            $this->theme = $theme;
+        } else {
+            throw new \Exception(sprintf(
+                'No host-to-template mapping configured for the host "%s".  Check your config.php file',
+                $host
+            ));
+        }
 
-        \Twig_Autoloader::register();
-        $twigTemplateDir = $config['themes_root'] . '/activetheme/templates';
         $loader = new \Twig_Loader_Filesystem($twigTemplateDir);
         $logger->debug(sprintf(
             'Setting the Twig Loader filesystem path to %s',
@@ -200,6 +233,10 @@ class LpEngine
             $controller = new $controller($this);
             $controller->setMatch($parameters);
 
+            // return [
+            $this->addTwigGlobal('ip_address', $this->request->getClientIp());
+            $this->addTwigGlobal('q', $this->getSession()->get('initial_query_params'));
+    
             // dispatch the request and get the return string
             $this->response->setContent(
                 $controller->dispatch($this->request, $this->response)
@@ -220,8 +257,7 @@ class LpEngine
 
     public function loadThemeConfig()
     {
-        $jsonThemeFilepath = $this->config['themes_root'] 
-                             . '/activetheme/theme.json';
+        $jsonThemeFilepath = $this->config['themes_root'] . '/' . $this->theme . '/theme.json';
         $this->logger->debug(sprintf(
             'Loaded JSON theme from %s',
             $jsonThemeFilepath
@@ -237,8 +273,10 @@ class LpEngine
                 $jsonThemeFilepath
             ));
             throw new \Exception(sprintf(
-                'The theme JSON file "%s" could not be parsed',
-                $jsonThemeFilepath
+                'The theme JSON file "%s" could not be parsed. Err code %s, error message "%s"',
+                $jsonThemeFilepath,
+                json_last_error(),
+                json_last_error_msg()
             ));
         }
 
@@ -288,12 +326,15 @@ class LpEngine
         return $this->twigEnv;
     }
 
+    public function addTwigGlobal($name, $value)
+    {
+        $this->twigGlobals[$name] = $value;
+        return $this;
+    }
+
     public function getTwigTags()
     {
-        return [
-            'ip_address' => $this->request->getClientIp(),
-            'q' => $this->getSession()->get('initial_query_params')
-        ];
+        return $this->twigGlobals;
     }
 
     public function setCaptureService(CaptureService $captureService)
@@ -312,6 +353,80 @@ class LpEngine
             );
         }
         return $this->captureService;
+    }
+
+    public function loadFiltersAndValidators($formName)
+    {
+        // reset the filter and validator lookups as this is a new form
+        $this->fieldNameToFilterLookup = null;
+        $this->fieldNameToValidatorLookup = null;
+
+        // check for "forms": { "form-name": { ... } .. } section
+        if (!isset($this->themeConfig['forms'][$formName])) {
+            throw new \Exception(sprintf(
+                'Cannot find definition for form "%s" in theme.json',
+                $formName
+            ));
+        }
+
+        $formConfig = $this->themeConfig['forms'][$formName];
+
+        // check for { "form-name": { "map": { ... } } } section
+        if (!isset($formConfig['map'])) {
+            throw new \Exception(sprintf(
+                'Cannot find map section for form "%s" in theme.json file',
+                $formName
+            ));
+        }
+
+        $map = $formConfig['map'];
+
+        foreach ($map as $formFieldName => $formFieldConfig) {
+            foreach ($formFieldConfig as $section => $chain) {
+                if ('filters' === $section) {
+                    $this->fieldToFilterAndValidatorLookup[$formFieldName]['filters']
+                        = $this->loadFilterChain($chain);
+                } else if ('validators' === $section) {
+                    $this->fieldToFilterAndValidatorLookup[$formFieldName]['validators']
+                        = $this->loadValidatorChain($chain);
+                }
+            }
+        }
+    }
+
+    public function getFieldToFilterAndValidatorLookup()
+    {
+        return $this->fieldToFilterAndValidatorLookup;
+    }
+
+    private function loadValidatorChain($chain)
+    {
+        $validatorChain = new ValidatorChain();
+        foreach ($chain as $name => $block) {
+            $validatorChain->attach($this->loadValidator($name));
+        }
+        return $validatorChain;
+    }
+
+    private function loadValidator($name)
+    {
+        $name = 'Gm\\LandingPageEngine\\Form\\Validator\\' . $name;
+        return new $name();
+    }
+
+    private function loadFilterChain($chain)
+    {
+        $filterChain = new FilterChain();
+        foreach ($chain as $name => $block) {
+            $filterChain->attach($this->loadFilter($name));
+        }
+        return $filterChain;
+    }
+
+    private function loadFilter($name)
+    {
+        $name = 'Gm\\LandingPageEngine\\Form\\Filter\\' . $name;
+        return new $name();
     }
 
     /**
