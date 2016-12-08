@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.0.1 (8 Dec 2016)
+- Bootstrap based status page (not functional. visual only)
+
 ## 2.0.0 (8 Dec 2016)
 - Validators and Filters including chains (with Phpunit tests)
 - Change of format for theme.json file
@@ -12,7 +15,7 @@
 ## 1.1.0 (6 Dec 2016)
 - Adds 'thai_date' global to all Twig templates that returns in the format of "6 ธันวาคม 2559".
 
-## 1.0.0 (6 Dec 2016)
+## 1.0.0 (6 Dec 2016) Stable
 This is the first release of the Landing Page Engine (LPE).  It contains basic features for rapid landing page construction.
 
 Features include:
