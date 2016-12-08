@@ -1,9 +1,591 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Landing Page Engine :: Status Page</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
 </head>
-
 <body>
-<h1>Landing Page Engine Status</h1>
+
+<div class="container-fluid">
+
+<h2>Status Page</h2>
+
+<div class="alert alert-success" role="alert">
+    The system is running without known problems
+</div>
+
+<div class="alert alert-warning" role="alert">
+    theme.json file has fields not in use
+</div>
+<div class="alert alert-danger" role="alert">
+    Cannot connect to the database
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <!-- pannel start 2 div-->
+        <div class="panel panel-default">
+        <div class="panel-body">
+
+        <h4>System</h4>
+        <table class="table">
+        <tr>
+            <td>PHP Version</td>
+            <td>5.5.23</td>
+        </tr>
+        <tr>
+            <td>PHP Mycrypt</td>
+            <td><span class="label label-success">Success</span></td>
+        </tr>
+        <tr>
+            <td>PHP GD</td>
+            <td><span class="label label-success">Success</span></td>
+        </tr>
+        <tr>
+            <td>Server Disk Usage</td>
+            <td>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">60%
+                    </div>
+                </div>
+            </td>
+        </tr>
+        </table>
+        </div>
+        </div>
+        <!-- pannel end 2 divs -->
+    </div>
+    
+    <div class="col-md-4">
+        <!-- pannel start 2 div-->
+        <div class="panel panel-default">
+        <div class="panel-body">
+
+        <h4>Landing Page Engine</h4>
+        <table class="table">
+        <tr>
+            <td>Version</td>
+            <td>2.0.0</td>
+        </tr>
+        <tr>
+            <td>Release Date</td>
+            <td>8 ธันวาคม 2559</td>
+        </tr>
+        <tr>
+            <td>Installation Dir</td>
+            <td>/var/www/landing-pages</td>
+        </tr>
+        </table>
+        </div>
+        </div>
+        <!-- pannel end 2 divs -->
+    </div>
+    
+    <div class="col-md-4">
+        <!-- pannel start 2 div-->
+        <div class="panel panel-default">
+        <div class="panel-body">
+
+        <h4>Available Themes</h4>
+        <table class="table">
+        <tr>
+            <td>Mountain Mist</td>
+            <td>1.0.0</td>
+            <td><span class="label label-success">Active</span></td>
+        </tr>
+        <tr>
+            <td>November Twirl</td>
+            <td>1.5.5</td>
+            <td><span class="label label-default">Not in use</span></td>
+        </tr>
+        <tr>
+            <td>Seabreeze</td>
+            <td>1.0.0</td>
+            <td><span class="label label-success">Active</span></td>
+        </tr>
+        <tr>
+            <td>Special Promotion</td>
+            <td>3.5.7</td>
+            <td><span class="label label-default">Not in use</span></td>
+        </tr>
+        <tr>
+            <td>Tea Tree Lotion</td>
+            <td>2.4.1</td>
+            <td><span class="label label-default">Not in use</span></td>
+        </tr>
+        </table>
+        </div>
+        </div>
+        <!-- pannel end 2 divs -->
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-4">
+    
+    <!-- pannel start 2 div-->
+    <div class="panel panel-default">
+    <div class="panel-body">
+
+    <h4>Database</h4>
+    <table class="table">
+    <tr>
+        <td>Database Host</td>
+        <td>localhost</td>
+    </tr>
+    <tr>
+        <td>Database User</td>
+        <td>root</td>
+    </tr>
+    <tr>
+        <td>Database Name</td>
+        <td>nuc_f2</td>
+    </tr>
+    <tr>
+        <td>Connection Test</td>
+        <td><span class="label label-success">Success</span></td>
+    </tr>
+
+    <tr>
+        <td>Connection Test</td>
+        <td><span class="label label-danger">Failed to connect</span></td>
+    </tr>
+    </table>
+
+    </div>
+    </div>
+    <!-- pannel end 2 divs -->
+    </div>
+    
+    <div class="col-md-8">
+    
+    <!-- pannel start 2 div-->
+    <div class="panel panel-default">
+    <div class="panel-body">
+
+    <h4>Multi-site Mappings</h4>
+    <table class="table">
+    <tr>
+        <th>Host</th>
+        <th>Theme Name</th>
+        <th>Version</th>
+        <th>Theme Dir</th>
+    </tr>
+    <tr>
+        <td>f1.ifeelpure.com</td>
+        <td>Mountain Mist</td>
+        <td>1.0.0</td>
+        <td>mountainmist</td>
+    </tr>
+    <tr>
+        <td>f2.ifeelpure.com</td>
+        <td>Sea Breeze</td>
+        <td>1.4.5</td></td>
+        <td>seabreeze</td>
+    </tr>
+    </table>
+
+    </div>
+    </div>
+    <!-- pannel end 2 divs -->
+
+    </div>
+</div>
+
+<!-- pannel start 2 div-->
+<div class="panel panel-default">
+<div class="panel-body">
+
+<h4>f1.ifeelpure.com (Mountain Mist 1.0.0)</h4>
+<div class="panel panel-default">
+    <div class="panel-body">
+        <h4>Last lead captured</h4>
+        <table class="table table-condensed">
+        <tr>
+            <th>id</th>
+            <td>5</td>
+        </tr>
+        <tr>
+            <th>session_id</th>
+            <td>jh8e32cmude855eqprkbo2etr6</td>
+        </tr>
+
+        <tr>
+            <th>request_scheme</th>
+            <td>http</td>
+        </tr>
+
+        <tr>
+            <th>http_host</th>
+            <td>nuc.lpe-f2</td>
+        </tr>
+        <tr>
+            <th>theme</th>
+            <td>f2 Theme 1.0.0</td>
+        </tr>
+
+        <tr>
+            <th>route_config</th>
+            <td>{"/":"f2-lm.html.twig","/f2-lm":"f2-lm-5.html.twig","/f2-tw":"f2-tw.html.twig","/f2-in":"f2-in.html.twig","/f2-ca":"f2-ca.html.twig"}</td>
+        </tr>
+
+        <tr>
+            <th>user_agent</th>
+            <td>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.98 Safari/537.36</td>
+        </tr>
+
+        <tr>
+            <th>http_referer</th>
+            <td>http://www.google.com</td>
+        </tr>
+
+        <tr>
+            <th>remote_addr</th>
+            <td>192.168.0.11</td>
+        </tr>
+
+        <tr>
+            <th>utm_source</th>
+            <td>google</td>
+        </tr>
+
+        <tr>
+            <th>utm_medium</th>
+            <td>medium</td>
+        </tr>
+
+        <tr>
+            <th>utm_term</th>
+            <td>term</td>
+        </tr>
+
+        <tr>
+            <th>utm_content</th>
+            <td>term</td>
+        </tr>
+
+        <tr>
+            <th>utm_campaign</th>
+            <td>campaign</td>
+        </tr>
+
+        <tr>
+            <th>email</th>
+            <td>andy@greycatmedia.co.uk</td>
+        </tr>
+
+        <tr>
+            <th>name</th>
+            <td>Andy</td>
+        </tr>
+
+        <tr>
+            <th>phone</th>
+            <td>0843206078</td>
+        </tr>
+
+        <tr>
+            <th>created</th>
+            <td>2016-12-08 20:08:40</td>
+        </tr>
+
+        </table>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-body">
+        <h4>f1_leads table</h4>
+
+        <table class="table table-striped table-condensed">
+            <thead class="thead-inverse">
+            <tr>
+                <th>id</th>
+                <th>created</th>
+                <th>stage</th>
+                <th>theme</th>
+                <th>utm_source</th>
+                <th>utm_medium</th>
+                <th>utm_term</th>
+                <th>utm_content</th>
+                <th>utm_campaign</th>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Phone</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr>
+                <td>5</td>
+                <td>31 พฤศจิกายน 2559 22:30</td>
+                <td>1</td>
+                <td>f1 Theme 1.0.0</td>
+                <td>google</td>
+                <td>medium</td>
+                <td>term</td>
+                <td>content</td>
+                <td>campaign</td>
+                <td>andy@greycatmedia.co.uk</td>
+                <td>Andy</td>
+                <td>0843206078</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>31 พฤศจิกายน 2559 22:30</td>
+                <td>1</td>
+                <td>f1 Theme 1.0.0</td>
+                <td>google</td>
+                <td>medium</td>
+                <td>term</td>
+                <td>content</td>
+                <td>campaign</td>
+                <td>andy@greycatmedia.co.uk</td>
+                <td>Andy</td>
+                <td>0843206078</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>31 พฤศจิกายน 2559 22:30</td>
+                <td>1</td>
+                <td>f1 Theme 1.0.0</td>
+                <td>google</td>
+                <td>medium</td>
+                <td>term</td>
+                <td>content</td>
+                <td>campaign</td>
+                <td>andy@greycatmedia.co.uk</td>
+                <td>Andy</td>
+                <td>0843206078</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>31 พฤศจิกายน 2559 22:30</td>
+                <td>1</td>
+                <td>f1 Theme 1.0.0</td>
+                <td>google</td>
+                <td>medium</td>
+                <td>term</td>
+                <td>content</td>
+                <td>campaign</td>
+                <td>andy@greycatmedia.co.uk</td>
+                <td>Andy</td>
+                <td>0843206078</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>31 พฤศจิกายน 2559 22:30</td>
+                <td>1</td>
+                <td>f1 Theme 1.0.0</td>
+                <td>google</td>
+                <td>medium</td>
+                <td>term</td>
+                <td>content</td>
+                <td>campaign</td>
+                <td>andy@greycatmedia.co.uk</td>
+                <td>Andy</td>
+                <td>0843206078</td>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>31 พฤศจิกายน 2559 22:30</td>
+                <td>1</td>
+                <td>f1 Theme 1.0.0</td>
+                <td>google</td>
+                <td>medium</td>
+                <td>term</td>
+                <td>content</td>
+                <td>campaign</td>
+                <td>andy@greycatmedia.co.uk</td>
+                <td>Andy</td>
+                <td>0843206078</td>
+            </tr>
+            </tbody>
+
+            </table>
+    </div>
+</div>
+
+
+<!-- routing and form config -->
+<div class="row">
+    <div class="col-md-4">
+        <!-- pannel start 2 div-->
+        <div class="panel panel-default">
+        <div class="panel-body">
+
+        <h4>Routing for Mountain Mist 1.0.0</h4>
+        <table class="table table-striped">
+        <tr>
+            <th>Public URL</th>
+            <th>Template</th>
+            <th>Status</th>
+        </tr>
+        <tr>
+            <td>/</td>
+            <td>f1-lm.html.twig</td>
+            <td><span class="label label-success">Template Found</span></td>
+        </tr>
+
+        <tr>
+            <td>/f1-lm</td>
+            <td>f1-lm.html.twig</td>
+            <td><span class="label label-success">Template Found</span></td>
+        </tr>
+
+        <tr>
+            <td>/f1-tw</td>
+            <td>f1-tw.html.twig</td>
+            <td><span class="label label-success">Template Found</span></td>
+        </tr>
+
+        <tr>
+            <td>/f1-in</td>
+            <td>f1-in.html.twig</td>
+            <td><span class="label label-success">Template Found</span></td>
+        </tr>
+
+        <tr>
+            <td>/f1-ca</td>
+            <td>f1-ca.html.twig</td>
+            <td><span class="label label-danger">Missing Or Unreable</span></td>
+        </tr>
+        </table>
+        </div>
+        </div>
+        <!-- pannel end 2 divs -->
+    </div>
+    
+    <div class="col-md-8">
+        <!-- pannel start 2 div-->
+        <div class="panel panel-default">
+        <div class="panel-body">
+
+        <h4>Forms Overview</h4>
+        <table class="table table-striped">
+        <tr>
+            <th>Form Name</th>
+            <th>Number Fields</th>
+            <th>Capture Table</th>
+            <th>Fields Used</th>
+            <th>Next URL</th>
+        </tr>
+        <tr>
+            <td>f1-lm-form</td>
+            <td><span class="badge">1</span></td>
+            <td>f1_leads</td>
+            <td>email</td>
+            <td>/f1-tw</td>
+        </tr>
+        <tr>
+            <td>f1-tw-form</td>
+            <td><span class="badge">2</span></td>
+            <td>f1_leads</td>
+            <td>name, phone</td>
+        </tr>
+        <tr>
+            <td>f1-in-form</td>
+            <td><span class="badge">0</span></td>
+            <td>f1_leads</td>
+            <td></td>
+            <td>/f1-ca</td>
+        </tr>
+        </table>
+        </div>
+        </div>
+        <!-- pannel end 2 divs -->
+    </div>
+    
+    
+</div>
+
+<!-- routing and form config -->
+<div class="row">
+    <div class="col-md-12">
+        <!-- pannel start 2 div-->
+        <div class="panel panel-default">
+        <div class="panel-body">
+
+        <h4>Form Details for f1-lm-form</h4>
+        <table class="table">
+        <tr>
+            <th>Name</th>
+            <th>Field</th>
+            <th>Db Column</th>
+            <th>Filters</th>
+            <th>Validators</th>
+            <th>Validation Options</th>
+        </tr>
+
+        <tr>
+            <td>biscuit</td>
+            <td>email</td>
+            <td>email</td>
+            <td>
+                <ul class="list-group">
+                    <li class="list-group-item">Trim</li>
+                    <li class="list-group-item">Lower</li>
+                </ul>
+            </td>
+            <td>
+                <ul class="list-group">
+                    <li class="list-group-item">NotEmpty</li>
+                    <li class="list-group-item">EmailAddress</li>
+                </ul>
+            </td>
+            <td>
+                <ul class="list-group">
+                    <li class="list-group-item">not-empty message: กรอกอีเมล</li>
+                    <li class="list-group-item">invalid-email message: กรุณาพิมพ์อีเมลที่ถูกต้อง</li>
+                </ul>
+            </td>
+        </tr>
+
+        <tr>
+            <td>biscuit</td>
+            <td>phone</td>
+            <td>phone</td>
+            <td>
+                <ul class="list-group">
+                    <li class="list-group-item">Trim</li>
+                </ul>
+            </td>
+            <td>
+                <ul class="list-group">
+                    <li class="list-group-item">NotEmpty</li>
+                    <li class="list-group-item">ThaiMobilePhoneNumber</li>
+                </ul>
+            </td>
+            <td>
+                <ul class="list-group">
+                    <li class="list-group-item">not-empty message: ใส่อีเมล" dsfasd sad fsa d sad f sadf s d fasd sdfasdf  sadf asdf asdfasdfsadf</li>
+                    <li class="list-group-item">&nbsp;</li>
+                </ul>
+            </td>
+        </tr>
+        </table>
+
+        </div>
+        </div>
+        <!-- pannel end 2 divs -->
+    </div>
+</div>
+
+</div>
+</div>
+<!-- pannel end 2 divs -->
+
+
+
+
+</div>
+
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery-3.1.1.min.js"></script>
 </body>
 </html>
