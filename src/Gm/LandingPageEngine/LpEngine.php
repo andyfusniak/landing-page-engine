@@ -218,6 +218,7 @@ class LpEngine
         $session = $this->getSession();
         if (null === $session->get('initial_query_params')) {
             $session->set('initial_query_params', $this->getRequest()->query->all());
+            $session->set('ARRIVAL_HTTP_REFERER', $this->request->server->get('HTTP_REFERER'));
         }   
         $session->set('query_params', $this->getRequest()->query->all());
 
@@ -259,11 +260,10 @@ class LpEngine
     {
         $jsonThemeFilepath = $this->config['themes_root'] . '/' . $this->theme . '/theme.json';
         $this->logger->debug(sprintf(
-            'Loaded JSON theme from %s',
+            'Attempt to loaded theme configuration "%s"',
             $jsonThemeFilepath
         ));
 
-        $string = '{"title": "The lord of the rings"}';
         $string = file_get_contents($jsonThemeFilepath);
         $json = json_decode($string, true);
 
@@ -281,28 +281,36 @@ class LpEngine
         }
 
         // check the template contains appropriate contents
-        if (isset($json['name']) && (mb_strlen($json['name']) > 0)) {
+        if (isset($json['name']) && (isset($json['version']))) {
             $this->logger->info(sprintf(
-                'Template "%s" in use."',
-                $json['name']
-            ));
-        } else {
-            $this->logger->warning(sprintf(
-                'Template "%s" has a missing theme name.  Use {"name": "Template name"} to set your theme name.',
-                $jsonThemeFilepath
-            ));
-        }
-
-        if (isset($json['version']) && (mb_strlen($json['version']) > 0)) {
-            $this->logger->info(sprintf(
-                'Template version %s in use.',
+                'Template "%s" version %s in use."',
+                $json['name'],
                 $json['version']
             ));
         } else {
-            $this->logger->warning(sprintf(
-                'Template has no version string set in the theme config ("%s"), so we are running an unknown version of the theme.',
-                $jsonThemeFilepath
-            ));
+            if (!isset($json['name'])) {
+                $this->logger->error(sprintf(
+                    'Template "%s" has a missing theme name.  Use {"name": "Template name"} section.',
+                    $jsonThemeFilepath
+                ));
+                throw new \Exception(sprintf(
+                    'theme.json file "%s" is missing compulsory {"name": "Template name"}.  The \
+                    template name is needed as an autocapture field in the database.',
+                    $jsonThemeFilepath
+                ));
+            }
+
+            if (!isset($json['version'])) {
+                $this->logger->error(sprintf(
+                    'Template "%s" has a missing version.  Use {"version": "x.y.z"} section.',
+                    $jsonThemeFilepath
+                ));
+                throw new \Exception(sprintf(
+                    'theme.json file "%s" is missing compulsory {"version": "x.y.z"}.  The \
+                    template version is needed as an autocapture field in the database.',
+                    $jsonThemeFilepath
+                ));
+            }
         }
 
         $this->themeConfig = $json;
@@ -349,7 +357,8 @@ class LpEngine
             $this->captureService = new CaptureService(
                 $this->logger,
                 $this->config,
-                $this->getSession()
+                $this->getSession(),
+                $this->getRequest()
             );
         }
         return $this->captureService;

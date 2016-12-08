@@ -32,7 +32,6 @@ class TableMapper
         $sql = '
             INSERT INTO ' . $tableName . ' (id, ' . $columnList
             . ') VALUES (NULL, ' . $columnPlaceHolders . ')';
-        $this->logger->debug($sql);
         $statement = $this->pdo->prepare($sql);
       
         foreach ($sqlFieldMap as $columnName => $value) {
@@ -40,6 +39,10 @@ class TableMapper
         }
 
         $statement->execute();
+        $this->logger->debug(sprintf(
+            'SQL Query executed %s',
+            $sql
+        ));
         return $this->pdo->lastInsertId();
     }
 
@@ -56,11 +59,14 @@ class TableMapper
      */
     public function findRowBySessionId($tableName, $sessionId)
     {
-        $statement = $this->pdo->prepare(
-            'SELECT id FROM ' . $tableName . ' WHERE session_id = :session_id'
-        );
+        $sql = 'SELECT id FROM ' . $tableName . ' WHERE session_id = :session_id';
+        $statement = $this->pdo->prepare($sql);
         $statement->bindValue(':session_id', $sessionId, \PDO::PARAM_STR);
         $statement->execute();
+        $this->logger->debug(sprintf(
+            'SQL Query executed %s',
+            $sql
+        ));
         return $statement->fetch(\PDO::FETCH_ASSOC);
     }
 
@@ -96,5 +102,9 @@ class TableMapper
             $statement->bindValue(':' . $columnName, $value, \PDO::PARAM_STR);
         }
         $statement->execute();
+        $this->logger->debug(sprintf(
+            'SQL Query executed %s',
+            $sql
+        ));
     }
 }
