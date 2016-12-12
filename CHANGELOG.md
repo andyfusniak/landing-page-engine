@@ -1,4 +1,9 @@
 # CHANGELOG
+## 2.1.1 (12 Dec 2016)
+- Fix UTF-8 database writing columns
+- Fix checkbox array items to json_encoded strings in db
+- Fix empty filter and validator chains in theme.json being accepted
+
 ## 2.1.0 (12 Dec 2016)
 - Automatic creation of project_root/var/{twig_cache,log} directories and permissions
 - Automatic activation of themes based on config.php file (symlinks from public/assets to themes)
