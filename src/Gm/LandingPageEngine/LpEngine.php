@@ -85,12 +85,17 @@ class LpEngine
     protected $session;
 
     /**
-     * Initialise a Landing Page Engine instance and wire it up
+     * Create the following directories with file permissions
      *
-     * @param array $config the application configuration
-     * @return LpEngine
+     *   project_root/var               0777
+     *   project_root/var/log           0777
+     *   project_root/var/twig_cache    0777
+     *
+     * @param @config array the application config
+     * @return bool true if the /var/log was successfully created
+     * @throws \Exception if the project_root/var dir cannot be written to
      */
-    public static function init($config)
+    public static function setupVarDirectoryAndPermissions($config)
     {
         // Check the var directory structure is in place
         $varDir = $config['project_root'] . '/var';
@@ -128,9 +133,157 @@ class LpEngine
             $logDirExists = true;
         }
 
+        return $logDirExists;
+    }
+
+    public function activateThemes()
+    {
+        $hostsConfig = isset($this->config['hosts']) ? $this->config['hosts'] : null;
+        if (null === $hostsConfig) {
+            throw new \Exception(
+                'config.php contains no \'hosts\' configuration.  You must have at least one valid host-to-theme mapping.'
+            );
+        }
+
+        $publicAssets = $this->config['web_root'] . '/assets';
+        if (!is_dir($publicAssets)) {
+            throw new \Exception(sprintf(
+                '%s directory does not exist.  You should create this directory and make it writeable by the web server',
+                $publicAssets
+            ));
+        }
+
+        if (!is_writeable($publicAssets)) {
+            throw new \Exception(sprintf(
+                '%s directory is not writeable by the web server.  Change the permissions using chmod g+w,o+w %s',
+                $publicAssets,
+                $publicAssets
+            ));
+        }
+
+        // iterate the list of hosts in their natural order
+        // and check the theme for each is activated
+        $hosts = array_keys($hostsConfig);
+        natsort($hosts);
+ 
+        // remove duplicates    
+        $themesToActivate = [];
+        foreach ($hosts as $host) {
+            $theme = $hostsConfig[$host];
+            $parts = explode(':', $theme);
+            $theme = $parts[0];
+
+            if (!in_array($theme, $themesToActivate)) {
+                array_push($themesToActivate, $theme);
+            }
+        }
+        
+        
+        // deactivate any themes that aren't going to be in use
+        // On a broken symlink is_link() returns true and file_exists() returns false.
+        $publicAssets = $this->config['web_root'] . '/assets';
+        foreach (scandir($publicAssets) as $entry) {
+            if (('.' === $entry) || ('..' === $entry)) {
+                continue;
+            }
+            
+            // check if the current symlink in the public/assets directory
+            // is still in use.  If not, remove it
+            if (!in_array($entry, $themesToActivate)) {
+                $this->logger->debug(sprintf(
+                    '%s link found in %s directory',
+                    $entry,
+                    $publicAssets
+                ));
+                $fullpath = $publicAssets . '/' . $entry;
+                
+                if (false === unlink($fullpath)) {
+                    $logger->info(sprintf(
+                        'Failed to unlink "%s".  This theme needs to be deactivted as is no longer in use.',
+                        $fullpath
+                    ));
+                } else {
+                    $this->logger->debug(sprintf(
+                        'unlink %s',
+                        $fullpath
+                    ));
+                    $this->logger->info(sprintf(
+                        'Deactivating theme "%s" from the web root.',
+                        $entry
+                    ));
+                }
+            }
+        }
+
+        // activate each theme
+        foreach ($themesToActivate as $name) {
+            $this->activateTheme($name);
+        }
+    }
+
+    public function activateTheme($name)
+    {
+        if (!preg_match('/^[a-z0-9\-]+$/', $name)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s called for theme %s.  Theme names must use lower case a-z only, including the digits 0-9 and the hyphen character.',
+                __METHOD__,
+                $name
+            ));
+        }
+
+        $publicAssets = $this->config['web_root'] . '/assets';
+        if (!is_dir($publicAssets)) {
+            throw new \Exception(sprintf(
+                '%s directory does not exist.  You should create this directory and make it writeable by the web server',
+                $publicAssets
+            ));
+        }
+
+        if (!is_writeable($publicAssets)) {
+            throw new \Exception(sprintf(
+                '%s directory is not writeable by the web server.  Change the permissions using chmod g+w,o+w %s',
+                $publicAssets,
+                $publicAssets
+            ));
+        }
+
+        $target = '../../themes/' . $name . '/assets/' . $name;
+        $link = $this->config['web_root'] . '/assets/' . $name;
+
+        if (!is_link($link)) {
+            if (!@symlink($target, $link)) {
+                throw new \Exception(sprintf(
+                    'Failed to symlink %s to %s.  Make sure %s is writeable by the web server',
+                    $target,
+                    $link,
+                    $publicAssets
+                ));
+            }
+        }
+    }
+
+
+    /**
+     * Initialise a Landing Page Engine instance and wire it up
+     *
+     * @param array $config the application configuration
+     * @return LpEngine
+     */
+    public static function init($config)
+    {
+        
+        if (isset($config['skip_auto_var_dir_setup']) &&
+            (true === $config['skip_auto_var_dir_setup'])) {
+            $logDirReady = true;
+        } else {
+            $logDirReady = self::setupVarDirectoryAndPermissions($config);
+        }
+
+        $logDirReady = self::setupVarDirectoryAndPermissions($config);
+
         // setup the logging
         $logger = new Logger('lpengine');
-        if (true === $logDirExists) {
+        if (true === $logDirReady) {
             $logger->pushHandler(
                 new StreamHandler($config['log_fullpath'], $config['log_level'])
             );
@@ -143,6 +296,14 @@ class LpEngine
          
         // create a new landing page engine instance
         $engine = new LpEngine($request, $response, $logger, $config);
+
+        // activate the themes
+        if (isset($config['skip_auto_theme_activation']) &&
+            (true === $config['skip_auto_theme_activation'])) {
+            $logger->info('Skipping theme activation checks as skip_auto_theme_activation=true');
+        } else {
+            $engine->activateThemes();
+        }
 
         // Build the custom URL routes using the developer's theme.json file
         $themeConfig = $engine->getThemeConfig();
