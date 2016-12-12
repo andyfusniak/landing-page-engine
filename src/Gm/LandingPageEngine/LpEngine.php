@@ -92,11 +92,49 @@ class LpEngine
      */
     public static function init($config)
     {
+        // Check the var directory structure is in place
+        $varDir = $config['project_root'] . '/var';
+        if (!file_exists($varDir)) {
+            mkdir($varDir, 0777);
+            chmod($varDir, 0777); 
+        }
+
+        $twigCacheDir = isset($config['twig_cache_dir']) ? $config['twig_cache_dir'] : null;
+        if (null === $twigCacheDir) {
+            throw new \Exception(
+                'The config.php does not contain a \'twig_cache_dir\' entry'
+            );
+        }
+
+        if (!file_exists($twigCacheDir)) {
+            if ((false === @mkdir($twigCacheDir, 0777, true))
+                || (false === @chmod($twigCacheDir, 0777))) {
+                throw new \Exception(sprintf(
+                    'Your project root dir "%s" is not writeable by the web server. Change the permissions on this directory using "chmod g+w,o+w %s"',
+                    $config['project_root'],
+                    $config['project_root']
+                ));
+            }
+        }
+
+        $logDir = $varDir . '/log';
+        if (!file_exists($logDir)) {
+            $logDirExists = false;
+            if (true === @mkdir($varDir . '/log', 0777, true)) {
+                chmod($varDir . '/log', 0777);
+                $logDirExists = true;
+            }
+        } else {
+            $logDirExists = true;
+        }
+
         // setup the logging
         $logger = new Logger('lpengine');
-        $logger->pushHandler(
-            new StreamHandler($config['log_fullpath'], $config['log_level'])
-        );
+        if (true === $logDirExists) {
+            $logger->pushHandler(
+                new StreamHandler($config['log_fullpath'], $config['log_level'])
+            );
+        }
 
         // setup the request and response
         $request = Request::createFromGlobals();
