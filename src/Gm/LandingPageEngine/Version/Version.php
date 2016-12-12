@@ -15,5 +15,5 @@ final class Version
     /**
       * Landing Page Engine version identification
       */
-    const VERSION = '2.0.1';
+    const VERSION = '2.1.0';
 }

@@ -1,4 +1,8 @@
 # CHANGELOG
+## 2.1.0 (12 Dec 2016)
+- Automatic creation of project_root/var/{twig_cache,log} directories and permissions
+- Automatic activation of themes based on config.php file (symlinks from public/assets to themes)
+
 ## 2.0.1 (8 Dec 2016)
 - Bootstrap based status page (not functional. visual only)
 
