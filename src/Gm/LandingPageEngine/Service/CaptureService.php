@@ -191,12 +191,8 @@ class CaptureService
             ));
 
             if (!in_array($formFieldName, $formFieldColumns)) {
-                $this->logger->error(sprintf(
+                $this->logger->warning(sprintf(
                     'Form field %s is used in the template form but has no mapping entry in the theme.json file',
-                    $formFieldName
-                ));
-                throw new \Exception(sprintf(
-                    'Form field %s is used in the template form but has no mapping     entry in the theme.json file.  Edit your theme.json file to include the missing field name.',
                     $formFieldName
                 ));
             }
@@ -272,7 +268,10 @@ class CaptureService
                     'mysql:host=' . $this->config['db']['dbhost'] . ';dbname='
                     . $this->config['db']['dbname'],
                     $this->config['db']['dbuser'],
-                    $this->config['db']['dbpass']
+                    $this->config['db']['dbpass'],
+                    [
+                        \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
+                    ]
                 );
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             } catch (\PDOException $e) {

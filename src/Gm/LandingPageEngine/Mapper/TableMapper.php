@@ -33,8 +33,11 @@ class TableMapper
             INSERT INTO ' . $tableName . ' (id, ' . $columnList
             . ') VALUES (NULL, ' . $columnPlaceHolders . ')';
         $statement = $this->pdo->prepare($sql);
-      
+     
         foreach ($sqlFieldMap as $columnName => $value) {
+            if (is_array($value)) {
+                $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            }
             $statement->bindValue(':' . $columnName, $value, \PDO::PARAM_STR);
         }
 
@@ -99,6 +102,9 @@ class TableMapper
         $sql .= ' WHERE session_id = :session_id';
         $statement = $this->pdo->prepare($sql);
         foreach ($sqlFieldMap as $columnName => $value) {
+            if (is_array($value)) {
+                $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            }
             $statement->bindValue(':' . $columnName, $value, \PDO::PARAM_STR);
         }
         $statement->execute();
