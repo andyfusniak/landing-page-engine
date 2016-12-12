@@ -30,16 +30,28 @@ class FormController extends AbstractController
             $originalValue = $value;
             if ('_' !== substr($name, 0, 1)) {
                 if (isset($filterAndValidatorLookup[$name])) {
-                    $filterChain = $filterAndValidatorLookup[$name]['filters'];
-                    $value = $filterChain->filter($value);
+                    // check this form element has a filter chain
+                    // and if it does, then run through the filters
+                    if (isset($filterAndValidatorLookup[$name]['filters'])) {
+                        $filterChain = $filterAndValidatorLookup[$name]['filters'];
 
-                    $validatorChain = $filterAndValidatorLookup[$name]['validators'];
+                        // checkbox and radio boxes use arrays
+                        // if the value is not a string it's likely a checkbox
+                        // so we will not run the filters on it
+                        if (is_string($value)) {
+                            $value = $filterChain->filter($value);
+                        }
+                    }
+
+                    if (isset($filterAndValidatorLookup[$name]['validators'])) {
+                        $validatorChain = $filterAndValidatorLookup[$name]['validators'];
                     
-                    if (false === $validatorChain->isValid($value)) {
-                        $formErrors = true;
-                        $errors[$name] = $validatorChain->getMessages();
-                        $this->lpEngine->addTwigGlobal($name . '_err', true);
-                        $this->lpEngine->addTwigGlobal($name . '_errors', $errors[$name]);
+                        if (false === $validatorChain->isValid($value)) {
+                            $formErrors = true;
+                            $errors[$name] = $validatorChain->getMessages();
+                            $this->lpEngine->addTwigGlobal($name . '_err', true);
+                            $this->lpEngine->addTwigGlobal($name . '_errors', $errors[$name]);
+                        }
                     }
                 }
                 
