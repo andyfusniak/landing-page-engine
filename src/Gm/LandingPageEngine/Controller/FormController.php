@@ -20,6 +20,58 @@ class FormController extends AbstractController
     {
         $postParams = $this->request->request->all();
 
+        $this->lpEngine->loadFiltersAndValidators($postParams['_form']);
+
+        $filterAndValidatorLookup = $this->lpEngine->getFieldToFilterAndValidatorLookup();
+
+        $formErrors = false;
+        $errors = [];
+        foreach ($postParams as $name => $value) {
+            $originalValue = $value;
+            if ('_' !== substr($name, 0, 1)) {
+                if (isset($filterAndValidatorLookup[$name])) {
+                    // check this form element has a filter chain
+                    // and if it does, then run through the filters
+                    if (isset($filterAndValidatorLookup[$name]['filters'])) {
+                        $filterChain = $filterAndValidatorLookup[$name]['filters'];
+
+                        // checkbox and radio boxes use arrays
+                        // if the value is not a string it's likely a checkbox
+                        // so we will not run the filters on it
+                        if (is_string($value)) {
+                            $value = $filterChain->filter($value);
+                        }
+                    }
+
+                    if (isset($filterAndValidatorLookup[$name]['validators'])) {
+                        $validatorChain = $filterAndValidatorLookup[$name]['validators'];
+                    
+                        if (false === $validatorChain->isValid($value)) {
+                            $formErrors = true;
+                            $errors[$name] = $validatorChain->getMessages();
+                            $this->lpEngine->addTwigGlobal($name . '_err', true);
+                            $this->lpEngine->addTwigGlobal($name . '_errors', $errors[$name]);
+                        }
+                    }
+                }
+                
+                $this->lpEngine->addTwigGlobal($name, $originalValue);
+            }
+        }
+
+        // if the form is invalid
+        if (true === $formErrors) {
+            $twigEnv = $this->lpEngine->getTwigEnv();
+
+            $themeConfig = $this->lpEngine->getThemeConfig();
+            $template = $themeConfig['routes'][$postParams['_url']];
+            $template = $twigEnv->load($template);
+
+            return $template->render(
+                $this->lpEngine->getTwigTags()
+            );
+        }
+
         $captureService = $this->lpEngine->getCaptureService();
 
         $captureService->save(

@@ -4,9 +4,19 @@ namespace Gm\LandingPageEngine\Service;
 use Monolog\Logger;
 use Gm\LandingPageEngine\Mapper\TableMapper;
 use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Request;
 
 class CaptureService
 {
+    const STAGE          = 'stage';
+    const REQUEST_SCHEME = 'request_scheme';
+    const HTTP_HOST      = 'http_host';
+    const THEME          = 'theme';
+    const ROUTE_CONFIG   = 'route_config';
+    const USER_AGENT     = 'user_agent';
+    const HTTP_REFERER   = 'http_referer';
+    const REMOTE_ADDR    = 'remote_addr';
+
     const UTM_SOURCE   = 'utm_source';
     const UTM_MEDIUM   = 'utm_medium';
     const UTM_TERM     = 'utm_term';
@@ -42,15 +52,24 @@ class CaptureService
     protected $session;
 
     /**
+     * @var Request
+     */
+    protected $request;
+
+    /**
      * @param Logger  $logger application logger
      * @param array   $config global configuration for LP Engine
      * @param Session $session session instance used for multi-page flow
      */
-    public function __construct(Logger $logger, array $config, Session $session)
+    public function __construct(Logger $logger,
+                                array $config,
+                                Session $session,
+                                Request $request)
     {
         $this->logger  = $logger;
         $this->config  = $config;
         $this->session = $session;
+        $this->request = $request;
     }
 
     public function save(array $params, array $themeConfig)
@@ -109,6 +128,14 @@ class CaptureService
                     $params['_form']
                 ));
                 $formNameMatch = true;
+
+                if (!isset($details['dbtable'])) {
+                    throw new \Exception(sprintf(
+                        'Form "%s" is missing "dbtable" entry',
+                        $formName
+                    ));
+                }
+
                 $tableName = $details['dbtable'];
                 $mappings = $details['map'];
                 break;
@@ -129,7 +156,14 @@ class CaptureService
         // build a lookup table from database column name to form field value
         $lookup = [];
         $formFieldColumns = [];
-        foreach ($mappings as $formFieldName => $databaseColumnName) {
+        foreach ($mappings as $formFieldName => $formConfig) {
+            if (!isset($formConfig['dbcolumn'])) {
+                throw new \Exception(sprintf(
+                    'Form field "%s" does not contain a "dbcolumn" entry in the theme.json file',
+                    $formFieldName
+                ));
+            }
+            $databaseColumnName = $formConfig['dbcolumn'];
             if (isset($params[$formFieldName])) {
                 $lookup[$databaseColumnName] = $params[$formFieldName];
             } else {
@@ -146,7 +180,7 @@ class CaptureService
         // would silently be lost and never catpured to the database
         foreach (array_keys($params) as $formFieldName) {
             // skip system fields
-            if (in_array($formFieldName, ['_nexturl', '_form'])) {
+            if (in_array($formFieldName, ['_form', '_url', '_nexturl'])) {
                 continue;
             }
 
@@ -157,30 +191,13 @@ class CaptureService
             ));
 
             if (!in_array($formFieldName, $formFieldColumns)) {
-                $this->logger->error(sprintf(
+                $this->logger->warning(sprintf(
                     'Form field %s is used in the template form but has no mapping entry in the theme.json file',
-                    $formFieldName
-                ));
-                throw new \Exception(sprintf(
-                    'Form field %s is used in the template form but has no mapping     entry in the theme.json file.  Edit your theme.json file to include the missing field name.',
                     $formFieldName
                 ));
             }
         }
 
-        // automatically save the UTM tracking in the datbase
-        if ((null !== $this->session) 
-            && ($this->session instanceof Session)
-            && (null !== $this->session->get('initial_query_params'))) {
-            $queryParams = $this->session->get('initial_query_params');
-            foreach (self::$utmTrackingTags as $utmTag) {
-                if (isset($queryParams[$utmTag]) && (strlen($queryParams[$utmTag]) > 0)) {
-                    $lookup[$utmTag] = $queryParams[$utmTag];
-                } else {
-                    $lookup[$utmTag] = null;
-                }
-            }
-        }
 
         // add the session id to the sql parameters
         // every insert will use the session id, or null is not set
@@ -189,6 +206,7 @@ class CaptureService
         } else {
             $lookup['session_id'] = null;
         }
+
 
         $mapper = $this->getTableMapper();
 
@@ -209,6 +227,33 @@ class CaptureService
         // otherwise we are in the same web session and the end-user is
         // reposting the capture data, or on a multi-page landing site
         if (null === $row) {
+            // automatically save the UTM tracking in the datbase
+            if ((null !== $this->session) 
+                && ($this->session instanceof Session)
+                && (null !== $this->session->get('initial_query_params'))) {
+                $queryParams = $this->session->get('initial_query_params');
+                foreach (self::$utmTrackingTags as $utmTag) {
+                    if (isset($queryParams[$utmTag]) && (strlen($queryParams[$utmTag]) > 0)) {
+                        $lookup[$utmTag] = $queryParams[$utmTag];
+                    } else {
+                        $lookup[$utmTag] = null;
+                    }
+                }
+            }
+
+            // add the stage, request_scheme, http_host, theme, route_config
+            // user_agent, referer and remote_addr fields.  These only need
+            // to be inserted once and are not updated.
+            $lookup[self::STAGE]          = 1;
+            $lookup[self::REQUEST_SCHEME] = $this->request->getScheme();
+            $lookup[self::HTTP_HOST]      = $this->request->getHost();
+            $lookup[self::THEME]          = $themeConfig['name'] . ' ' . $themeConfig['version'];
+            $lookup[self::ROUTE_CONFIG]   = json_encode($themeConfig['routes'],
+                                                        JSON_UNESCAPED_SLASHES);
+            $lookup[self::USER_AGENT]     = $this->request->server->get('HTTP_USER_AGENT');
+            $lookup[self::HTTP_REFERER]   = $this->session->get('ARRIVAL_HTTP_REFERER');
+            $lookup[self::REMOTE_ADDR]    = $this->request->getClientIp();
+
             $mapper->insert($tableName, $lookup);
         } else {
             $mapper->update($tableName, $lookup);
@@ -223,7 +268,10 @@ class CaptureService
                     'mysql:host=' . $this->config['db']['dbhost'] . ';dbname='
                     . $this->config['db']['dbname'],
                     $this->config['db']['dbuser'],
-                    $this->config['db']['dbpass']
+                    $this->config['db']['dbpass'],
+                    [
+                        \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
+                    ]
                 );
                 $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             } catch (\PDOException $e) {
