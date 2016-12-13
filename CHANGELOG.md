@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.2.0 (13 Dec 2016)
+- Add UtmQueryParams {{ utm_query_params }} urlencoded googlet tracking Twig global
+
 ## 2.1.1 (12 Dec 2016)
 - Fix UTF-8 database writing columns
 - Fix checkbox array items to json_encoded strings in db
