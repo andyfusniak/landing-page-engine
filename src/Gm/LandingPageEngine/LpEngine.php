@@ -9,6 +9,7 @@ use Gm\LandingPageEngine\Form\Validator\ValidatorChain;
 use Gm\LandingPageEngine\Service\CaptureService;
 use Gm\LandingPageEngine\Version\Version;
 use Gm\LandingPageEngine\TwigGlobals\ThaiDate;
+use Gm\LandingPageEngine\TwigGlobals\UtmQueryParams;
 
 use Symfony\Component\HttpFoundation\Session\Session;
 
@@ -419,6 +420,11 @@ class LpEngine
             $session->set('initial_query_params', $this->getRequest()->query->all());
             $session->set('ARRIVAL_HTTP_REFERER', $this->request->server->get('HTTP_REFERER'));
         }   
+        
+        $this->twigEnv->addGlobal(
+            'utm_query_params',
+             new UtmQueryParams($session->get('initial_query_params'))
+        );
         $session->set('query_params', $this->getRequest()->query->all());
 
         try {
