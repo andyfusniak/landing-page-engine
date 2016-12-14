@@ -33,8 +33,8 @@ class StatusPageController extends AbstractController
             'auto_reload' => true,
         ]);
 
-        $this->statusService->getPhpSettings();
-        
+        $this->statusService->systemSettings();
+
         $template = $twigEnv->load('show.html.twig');
         return $template->render(
             $this->lpEngine->getTwigTags()
