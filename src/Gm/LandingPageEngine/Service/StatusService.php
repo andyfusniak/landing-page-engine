@@ -42,7 +42,6 @@ class StatusService
         $this->pdoService  = $pdoService;
         $this->lpEngine    = $lpEngine;
         $this->config      = $config;
-        $this->tableMapper = $this->getTableMapper();
     }
 
     public function systemSettings()
@@ -90,8 +89,6 @@ class StatusService
                 (($totalSpace - $freeSpace) / $totalSpace) * 100.00
             )
         );
-
-
     }
 
     public function getTableMapper()
