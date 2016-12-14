@@ -7,6 +7,8 @@ use Monolog\Handler\StreamHandler;
 use Gm\LandingPageEngine\Form\Filter\FilterChain;
 use Gm\LandingPageEngine\Form\Validator\ValidatorChain;
 use Gm\LandingPageEngine\Service\CaptureService;
+use Gm\LandingPageEngine\Service\PdoService;
+use Gm\LandingPageEngine\Service\StatusService;
 use Gm\LandingPageEngine\Version\Version;
 use Gm\LandingPageEngine\TwigGlobals\ThaiDate;
 use Gm\LandingPageEngine\TwigGlobals\UtmQueryParams;
@@ -290,13 +292,16 @@ class LpEngine
             );
         }
 
+        // setup the PdoService
+        $pdoService = new PdoService($config);
+
         // setup the request and response
         $request = Request::createFromGlobals();
         $response = new Response();
         $response->setProtocolVersion('1.1');
          
         // create a new landing page engine instance
-        $engine = new LpEngine($request, $response, $logger, $config);
+        $engine = new LpEngine($request, $response, $logger, $pdoService, $config);
 
         // activate the themes
         if (isset($config['skip_auto_theme_activation']) &&
@@ -356,16 +361,18 @@ class LpEngine
     public function __construct(Request $request,
                                 Response $response,
                                 Logger $logger,
+                                PdoService $pdoService,
                                 array $config)
     {
         $logger->info(sprintf(
             'LPE Version %s Running',
             Version::VERSION
         ));
-        $this->request  = $request;
-        $this->response = $response;
-        $this->logger   = $logger;
-        $this->config   = $config;
+        $this->request    = $request;
+        $this->response   = $response;
+        $this->logger     = $logger;
+        $this->pdoService = $pdoService;
+        $this->config     = $config;
        
         $host = $this->request->getHost(); 
         if (isset($config['hosts'][$host])) {
@@ -561,6 +568,7 @@ class LpEngine
         if (null === $this->captureService) {
             $this->captureService = new CaptureService(
                 $this->logger,
+                $this->pdoService,
                 $this->config,
                 $this->getSession(),
                 $this->getRequest()
@@ -641,6 +649,23 @@ class LpEngine
     {
         $name = 'Gm\\LandingPageEngine\\Form\\Filter\\' . $name;
         return new $name();
+    }
+
+    /**
+     * Lazy-load the status service
+     * @return StatusService
+     */
+    public function getStatusService()
+    {
+        if (null === $this->statusService) {
+            $this->statusService = new StatusService(
+                $this->logger,
+                $this->pdoService,
+                $this,
+                $this->config
+            );
+        }
+        return $this->statusService;
     }
 
     /**

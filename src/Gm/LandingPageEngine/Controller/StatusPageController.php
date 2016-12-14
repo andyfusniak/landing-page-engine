@@ -10,18 +10,34 @@ class StatusPageController extends AbstractController
      */
     private $lpEngine;
 
+    /**
+     * @var StatusService
+     */
+    protected $statusService;
+
     public function __construct(LpEngine $lpEngine)
     {
-        $this->lpEngine = $lpEngine;
+        $this->lpEngine      = $lpEngine;
+        $this->statusService = $lpEngine->getStatusService();
     }
 
     public function showAction()
     {
-        ob_start();
-        include __DIR__ . '/../../../../views/status-page/show.phtml';
-        $content = ob_get_contents();
-        ob_end_clean();
+        // setup a private twig environment for the status page
+        $loader = new \Twig_Loader_Filesystem(
+            dirname(__FILE__) . '/../../../../views/status-page/'
+        );
+        $twigEnv = new \Twig_Environment($loader, [
+            'debug'       => true,
+            'cache'       => false,
+            'auto_reload' => true,
+        ]);
 
-        return $content;
+        $this->statusService->systemSettings();
+
+        $template = $twigEnv->load('show.html.twig');
+        return $template->render(
+            $this->lpEngine->getTwigTags()
+        );
     }
 }
