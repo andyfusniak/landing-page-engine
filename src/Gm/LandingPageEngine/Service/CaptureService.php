@@ -3,6 +3,7 @@ namespace Gm\LandingPageEngine\Service;
 
 use Monolog\Logger;
 use Gm\LandingPageEngine\Mapper\TableMapper;
+use Gm\LandingPageEngine\Service\PdoService;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -37,6 +38,11 @@ class CaptureService
     protected $logger;
 
     /**
+     * @var PdoService
+     */
+    protected $pdoService;
+
+    /**
      * @var array
      */
     protected $config;
@@ -62,14 +68,16 @@ class CaptureService
      * @param Session $session session instance used for multi-page flow
      */
     public function __construct(Logger $logger,
+                                PdoService $pdoService,
                                 array $config,
                                 Session $session,
                                 Request $request)
     {
-        $this->logger  = $logger;
-        $this->config  = $config;
-        $this->session = $session;
-        $this->request = $request;
+        $this->logger     = $logger;
+        $this->pdoService = $pdoService;
+        $this->config     = $config;
+        $this->session    = $session;
+        $this->request    = $request;
     }
 
     public function save(array $params, array $themeConfig)
@@ -263,22 +271,7 @@ class CaptureService
     public function getTableMapper()
     {
         if (null === $this->tableMapper) {
-            try {
-                $pdo = new \PDO(
-                    'mysql:host=' . $this->config['db']['dbhost'] . ';dbname='
-                    . $this->config['db']['dbname'],
-                    $this->config['db']['dbuser'],
-                    $this->config['db']['dbpass'],
-                    [
-                        \PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"
-                    ]
-                );
-                $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            } catch (\PDOException $e) {
-                throw $e;
-            } catch (\Exception $e) {
-                throw $e;
-            }
+            $pdo = $this->pdoService->getPdoObject();
             $this->tableMapper = new TableMapper($this->logger, $pdo);
         }
         return $this->tableMapper;
