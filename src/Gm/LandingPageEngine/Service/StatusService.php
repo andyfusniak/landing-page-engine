@@ -55,8 +55,10 @@ class StatusService
 
         // PHP extensions loaded
         $phpExtensions = [
-            'mbstring' => (true === extension_loaded('mbstring')) ? 1 : 0,
-            'curl'     => (true === extension_loaded('curl')) ? 1 : 0
+            'pdo_mysql' => (true === extension_loaded('pdo_mysql')) ? 1 : 0,
+            'mysql'     => (true === extension_loaded('mysql')) ? 1 : 0
+            'mbstring'  => (true === extension_loaded('mbstring')) ? 1 : 0,
+            'curl'      => (true === extension_loaded('curl')) ? 1 : 0,
         ];
 
         $this->lpEngine->addTwigGlobal(
