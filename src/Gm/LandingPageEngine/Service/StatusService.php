@@ -4,6 +4,8 @@ namespace Gm\LandingPageEngine\Service;
 use Gm\LandingPageEngine\Mapper\TableMapper;
 use Gm\LandingPageEngine\Service\PdoService;
 use Gm\LandingPageEngine\LpEngine;
+use Gm\LandingPageEngine\Version\Version;
+
 use Monolog\Logger;
 
 class StatusService
@@ -90,6 +92,25 @@ class StatusService
             round(
                 (($totalSpace - $freeSpace) / $totalSpace) * 100.00
             )
+        );
+    }
+
+    public function LandingPageEngine()
+    {
+        // LPE Version and release date
+        $this->lpEngine->addTwigGlobal(
+            'lpe_version',
+            Version::VERSION
+        );
+
+        $this->lpEngine->addTwigGlobal(
+            'lpe_release_date',
+            Version::RELEASE_DATE
+        );
+
+        $this->lpEngine->addTwigGlobal(
+            'lpe_project_root',
+            $this->config['project_root']
         );
     }
 
