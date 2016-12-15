@@ -4,6 +4,8 @@ namespace Gm\LandingPageEngine\Service;
 use Gm\LandingPageEngine\Mapper\TableMapper;
 use Gm\LandingPageEngine\Service\PdoService;
 use Gm\LandingPageEngine\LpEngine;
+use Gm\LandingPageEngine\Version\Version;
+
 use Monolog\Logger;
 
 class StatusService
@@ -42,7 +44,6 @@ class StatusService
         $this->pdoService  = $pdoService;
         $this->lpEngine    = $lpEngine;
         $this->config      = $config;
-        $this->tableMapper = $this->getTableMapper();
     }
 
     public function systemSettings()
@@ -56,8 +57,10 @@ class StatusService
 
         // PHP extensions loaded
         $phpExtensions = [
-            'mbstring' => (true === extension_loaded('mbstring')) ? 1 : 0,
-            'curl'     => (true === extension_loaded('curl')) ? 1 : 0
+            'pdo_mysql' => (true === extension_loaded('pdo_mysql')) ? 1 : 0,
+            'mysql'     => (true === extension_loaded('mysql')) ? 1 : 0,
+            'mbstring'  => (true === extension_loaded('mbstring')) ? 1 : 0,
+            'curl'      => (true === extension_loaded('curl')) ? 1 : 0,
         ];
 
         $this->lpEngine->addTwigGlobal(
@@ -90,8 +93,25 @@ class StatusService
                 (($totalSpace - $freeSpace) / $totalSpace) * 100.00
             )
         );
+    }
 
+    public function LandingPageEngine()
+    {
+        // LPE Version and release date
+        $this->lpEngine->addTwigGlobal(
+            'lpe_version',
+            Version::VERSION
+        );
 
+        $this->lpEngine->addTwigGlobal(
+            'lpe_release_date',
+            Version::RELEASE_DATE
+        );
+
+        $this->lpEngine->addTwigGlobal(
+            'lpe_project_root',
+            $this->config['project_root']
+        );
     }
 
     public function getTableMapper()

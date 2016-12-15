@@ -293,7 +293,7 @@ class LpEngine
         }
 
         // setup the PdoService
-        $pdoService = new PdoService($config);
+        $pdoService = new PdoService($logger, $config);
 
         // setup the request and response
         $request = Request::createFromGlobals();
@@ -466,6 +466,8 @@ class LpEngine
         }
 
         $this->response->send();
+
+        $this->logger->info('LPE Terminating');
     }
 
     public function loadThemeConfig()
@@ -579,41 +581,44 @@ class LpEngine
 
     public function loadFiltersAndValidators($formName)
     {
-        // reset the filter and validator lookups as this is a new form
-        $this->fieldNameToFilterLookup = null;
-        $this->fieldNameToValidatorLookup = null;
+        // reset the lookup table as this is a new form
+        $this->fieldToFilterAndValidatorLookup = null;
 
-        // check for "forms": { "form-name": { ... } .. } section
+        // check for forms->form-name section
         if (!isset($this->themeConfig['forms'][$formName])) {
             throw new \Exception(sprintf(
-                'Cannot find definition for form "%s" in theme.json',
+                'Cannot find definition for form "%s" in theme config file',
                 $formName
             ));
         }
 
         $formConfig = $this->themeConfig['forms'][$formName];
 
-        // check for { "form-name": { "map": { ... } } } section
+        // check for form->form-name->map section
         if (!isset($formConfig['map'])) {
-            throw new \Exception(sprintf(
-                'Cannot find map section for form "%s" in theme.json file',
+            $this->logger->info(sprintf(
+                'Form "%s" contains no map section in theme config file',
                 $formName
             ));
+
+            return null;
         }
 
         $map = $formConfig['map'];
-
-        foreach ($map as $formFieldName => $formFieldConfig) {
-            foreach ($formFieldConfig as $section => $chain) {
-                if ('filters' === $section) {
-                    $this->fieldToFilterAndValidatorLookup[$formFieldName]['filters']
-                        = $this->loadFilterChain($chain);
-                } else if ('validators' === $section) {
-                    $this->fieldToFilterAndValidatorLookup[$formFieldName]['validators']
-                        = $this->loadValidatorChain($chain);
+        if (null !== $map) {
+            foreach ($map as $formFieldName => $formFieldConfig) {
+                foreach ($formFieldConfig as $section => $chain) {
+                    if ('filters' === $section) {
+                        $this->fieldToFilterAndValidatorLookup[$formFieldName]['filters']
+                            = $this->loadFilterChain($chain);
+                    } else if ('validators' === $section) {
+                        $this->fieldToFilterAndValidatorLookup[$formFieldName]['validators']
+                            = $this->loadValidatorChain($chain);
+                    }
                 }
             }
         }
+        return $this->fieldToFilterAndValidatorLookup;
     }
 
     public function getFieldToFilterAndValidatorLookup()
@@ -666,6 +671,16 @@ class LpEngine
             );
         }
         return $this->statusService;
+    }
+
+    /**
+     * Get the logger instance
+     *
+     * @return Logger the logger instance
+     */
+    public function getLogger()
+    {
+        return $this->logger;
     }
 
     /**
