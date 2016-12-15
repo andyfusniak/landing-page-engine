@@ -684,6 +684,15 @@ class LpEngine
     }
 
     /**
+     * Get the application config
+     * @return array the config associative array
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    /**
      * Set a session to use within the Landing Page Engine
      *
      * @param Session $session
