@@ -95,7 +95,7 @@ class StatusService
         );
     }
 
-    public function LandingPageEngine()
+    public function landingPageEngine()
     {
         // LPE Version and release date
         $this->lpEngine->addTwigGlobal(
@@ -112,6 +112,40 @@ class StatusService
             'lpe_project_root',
             $this->config['project_root']
         );
+    }
+
+    public function databaseSettings()
+    {
+        // database host, user and name
+        foreach (['dbhost', 'dbuser', 'dbname'] as $key) {
+            $this->lpEngine->addTwigGlobal(
+                $key,
+                isset($this->config['db'][$key])
+                    ? $this->config['db'][$key] : null
+            );
+        }
+
+        // database connection status
+        if (isset($this->config['developer_mode'])
+            && ($this->config['developer_mode'] === true)
+            && (isset($this->config['no_capture']))
+            && ($this->config['no_capture'] === true)) {
+            $this->lpEngine->addTwigGlobal('no_capture', 1);
+        } else {
+            $this->lpEngine->addTwigGlobal('no_capture', 0);
+        }
+
+        try {
+            $pdo = $this->pdoService->getPdoObject();
+            if ($pdo instanceof \PDO) {
+                $this->lpEngine->addTwigGlobal('has_database_connection', 1);
+            } else {
+                $this->lpEngine->addTwigGlobal('has_database_connection', 0);
+            }
+        } catch (\Exception $e) {
+            $this->lpEngine->addTwigGlobal('has_database_connection', 0);
+            //throw $e;
+        }
     }
 
     public function getTableMapper()

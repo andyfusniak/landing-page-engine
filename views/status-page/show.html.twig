@@ -14,16 +14,9 @@
 
 <h2>Status Page</h2>
 
-<p>THIS IS AN EXAMPLE TEMPLATE.  NO REAL DATA IS CURRENTLY SHOWN</p>
-<div class="alert alert-success" role="alert">
-    The system is running without known problems
-</div>
-
-<div class="alert alert-warning" role="alert">
-    theme.json file has fields not in use
-</div>
 <div class="alert alert-danger" role="alert">
-    Cannot connect to the database
+<p>THIS STATUS PAGE IS PARTIALLY IMPLEMENTED.  ONLY System, Landing Page Engine and
+Database Panels contain real data.</p>
 </div>
 
 <div>
@@ -117,6 +110,70 @@
         <div class="panel panel-default">
         <div class="panel-body">
 
+        <h4>Database</h4>
+        <table class="table">
+        <tr>
+            <td>Database Host</td>
+            <td>
+                {% if dbhost != null %}
+                {{ dbhost }}
+                {% else %}
+                <span class="label label-danger">Not configured</span>
+                {% endif %}
+            </td>
+        </tr>
+
+        <tr>
+            <td>Database User</td>
+            <td>
+                {% if dbuser != null %}
+                {{ dbuser }}
+                {% else %}
+                <span class="label label-danger">Not configured</span>
+                {% endif %}
+            </td>
+        </tr>
+
+        <tr>
+            <td>Database Name</td>
+            <td>
+                {% if dbname != null %}
+                {{ dbname }}
+                {% else %}
+                <span class="label label-danger">Not configured</span>
+                {% endif %}
+            </td>
+        </tr>
+
+        <tr>
+            <td>Connection Test</td>
+            <td>
+                {% if no_capture == 1 %}
+                <span class="label label-warning">No Capture Mode On</span>
+                {% else %}
+                    {% if has_database_connection == 1 %}
+                    <span class="label label-success">Success</span>
+                    {% else %}
+                    <span class="label label-danger">Failed to establish connection</span>
+                    {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        </table>
+
+        </div>
+        </div>
+        <!-- pannel end 2 divs -->        
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-md-4">
+        <!-- pannel start 2 div-->
+        <div class="panel panel-default">
+        <div class="panel-body">
+
         <h4>Available Themes</h4>
         <table class="table">
         <tr>
@@ -148,45 +205,6 @@
         </div>
         </div>
         <!-- pannel end 2 divs -->
-    </div>
-</div>
-
-
-<div class="row">
-    <div class="col-md-4">
-    
-    <!-- pannel start 2 div-->
-    <div class="panel panel-default">
-    <div class="panel-body">
-
-    <h4>Database</h4>
-    <table class="table">
-    <tr>
-        <td>Database Host</td>
-        <td>localhost</td>
-    </tr>
-    <tr>
-        <td>Database User</td>
-        <td>root</td>
-    </tr>
-    <tr>
-        <td>Database Name</td>
-        <td>nuc_f2</td>
-    </tr>
-    <tr>
-        <td>Connection Test</td>
-        <td><span class="label label-success">Success</span></td>
-    </tr>
-
-    <tr>
-        <td>Connection Test</td>
-        <td><span class="label label-danger">Failed to connect</span></td>
-    </tr>
-    </table>
-
-    </div>
-    </div>
-    <!-- pannel end 2 divs -->
     </div>
     
     <div class="col-md-8">
@@ -606,6 +624,17 @@
 </div>
 </div>
 <!-- pannel end 2 divs -->
+
+<div class="alert alert-success" role="alert">
+    The system is running without known problems
+</div>
+
+<div class="alert alert-warning" role="alert">
+    theme.json file has fields not in use
+</div>
+<div class="alert alert-danger" role="alert">
+    Cannot connect to the database
+</div>
 
 </div>
 
