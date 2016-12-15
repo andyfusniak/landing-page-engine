@@ -11,9 +11,15 @@ class FormController extends AbstractController
      */
     protected $lpEngine;
 
+    /**
+     * @var array
+     */
+    protected $themeConfig;
+
     public function __construct(LpEngine $lpEngine)
     {
-        $this->lpEngine = $lpEngine;
+        $this->lpEngine    = $lpEngine;
+        $this->themeConfig = $lpEngine->getThemeConfig();
     }
 
     public function postAction()
@@ -25,7 +31,8 @@ class FormController extends AbstractController
             $formName
         );
 
-        if (null === $filterAndValidatorLookup) {
+        if (!isset($this->themeConfig['forms'][$formName]['dbtable'])
+            && (null === $filterAndValidatorLookup)) {
             $customParams = [];
             foreach ($postParams as $name => $value) {
                 if ('_' === substr($name, 0, 1)) {
