@@ -215,6 +215,17 @@ class CaptureService
             $lookup['session_id'] = null;
         }
 
+        if ((isset($this->config['developer_mode'])
+            && ($this->config['developer_mode'] === true))
+            && (isset($this->config['no_capture']))
+            && ($this->config['no_capture'] === true)) {
+            $this->logger->warning(sprintf(
+                'developer_mode=%s and no_capture=%s so data catpure is switch off',
+                (true === $this->config['developer_mode']) ? 'true' : 'false',
+                (true === $this->config['no_capture']) ? 'true' : 'false'
+            ));
+            return;
+        }
 
         $mapper = $this->getTableMapper();
 
