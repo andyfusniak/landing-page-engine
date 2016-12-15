@@ -1,4 +1,8 @@
 # CHANGELOG
+## 2.3.0 (15 Dec 2016)
+- System, Landing Page Engine and Database panels for /status-page show real data
+- Bugfix [1](https://bitbucket.org/sudtanadevteam/landing-page-engine/issues/1/http-post-on-fieldless-forms-causes-error) additional fix
+
 ## 2.2.0 (13 Dec 2016)
 - Add UtmQueryParams {{ utm_query_params }} urlencoded googlet tracking Twig global
 
