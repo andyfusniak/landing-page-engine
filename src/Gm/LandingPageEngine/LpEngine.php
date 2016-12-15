@@ -282,9 +282,9 @@ class LpEngine
             $logDirReady = self::setupVarDirectoryAndPermissions($config);
         }
 
-        $logDirReady = self::setupVarDirectoryAndPermissions($config);
-
-        // setup the logging
+        // setup the logging and stream for log file only if the var/log
+        // directory is ready and writeble.  If it's not writeable, we
+        // will have an null logger 
         $logger = new Logger('lpengine');
         if (true === $logDirReady) {
             $logger->pushHandler(
@@ -322,23 +322,43 @@ class LpEngine
             );
         }
 
-        // Check the "routes" section of the theme.json config file contains at least one route
+        // Check that the "routes" section of the theme config file contains
+        // at least one route
         if (count($themeConfig['routes']) < 1) {
-            $logger->warning('Your theme.json contains a "routes" section but defines no mappings.');
+            $logger->warning(
+                'Your theme.json contains a "routes" section but defines no mappings.'
+            );
         }
 
         $routes = new RouteCollection();
-        foreach ($themeConfig['routes'] as $url => $template) {
-            $routes->add($url, new Route('/' . $url, [
-                '_controller' =>
-                    'Gm\LandingPageEngine\Controller\FrontController:showAction',
-                    'template' => $template
-            ]));
-            $logger->info(sprintf(
-                'Configured route "%s" to map to twig template "%s"',
-                $url,
-                $template
-            ));
+        foreach ($themeConfig['routes'] as $url => $templateOrRedirectUrl) {
+            // if the template has a leading / or starts with http
+            // then we will treat it as a redirct
+            if ((substr($templateOrRedirectUrl, 0, 1) === '/')
+                || (substr($templateOrRedirectUrl, 0, 4) === 'http')) {
+                $routes->add(uniqid('redirect_'), new Route($url, [
+                    '_controller'
+                        => 'Gm\LandingPageEngine\Controller\RedirectController:redirectAction',
+                    'redirect_url' => $templateOrRedirectUrl,
+                    'title' => 'The Lost World'
+                ]));
+                $logger->info(sprintf(
+                    'Configured redirect "%s" to map to url "%s"',
+                    $url,
+                    $templateOrRedirectUrl
+                ));
+            } else {
+                $routes->add($url, new Route('/' . $url, [
+                    '_controller' =>
+                        'Gm\LandingPageEngine\Controller\FrontController:showAction',
+                    'template' => $templateOrRedirectUrl
+                ]));
+                $logger->info(sprintf(
+                    'Configured route "%s" to map to twig template "%s"',
+                    $url,
+                    $templateOrRedirectUrl
+                ));
+            }
         }
 
         // Build a dedicated URL route for handling form posts
