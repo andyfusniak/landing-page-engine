@@ -293,7 +293,7 @@ class LpEngine
         }
 
         // setup the PdoService
-        $pdoService = new PdoService($config);
+        $pdoService = new PdoService($logger, $config);
 
         // setup the request and response
         $request = Request::createFromGlobals();
