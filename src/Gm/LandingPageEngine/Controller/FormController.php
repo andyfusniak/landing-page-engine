@@ -19,10 +19,40 @@ class FormController extends AbstractController
     public function postAction()
     {
         $postParams = $this->request->request->all();
+       
+        $formName = $postParams['_form'];
+        $fieldToFilterAndValidatorLookup = $this->lpEngine->loadFiltersAndValidators(
+            $formName
+        );
 
-        $this->lpEngine->loadFiltersAndValidators($postParams['_form']);
+        if (null === $filterAndValidatorLookup) {
+            $customParams = [];
+            foreach ($postParams as $name => $value) {
+                if ('_' === substr($name, 0, 1)) {
+                    continue;
+                }
+                $customParams[$name] = $value;
+            }
 
-        $filterAndValidatorLookup = $this->lpEngine->getFieldToFilterAndValidatorLookup();
+            $logger = $this->lpEngine->getLogger();
+            if (($count = count($customParams)) > 0) {
+                $logger->warning(sprintf(
+                    '%s custom params sent via HTTP POST but theme config indicates this should be an empty form.  See fields sent below:',
+                    $count
+                ));
+                foreach ($customParams as $name => $value) {
+                    $logger->warning(sprintf(
+                        'HTTP POST name="%s" value="%s" but no map for this field',
+                        $name,
+                        $value
+                    ));
+                }
+            }
+
+            $nextUrl = $this->request->get('_nexturl');
+            $this->redirectToUrl($nextUrl);
+            return;
+        }
 
         $formErrors = false;
         $errors = [];
