@@ -1,4 +1,10 @@
 # CHANGELOG
+## 2.5.0 (16 Dec 2016)
+- Removal of /process-post route.  In its place HTTP POSTs are sent back to the page whence they came.
+- Improved logging for form fields including validators
+- Fix for empty forms producing a PHP error.  Empty forms now progress without database update.
+- Remove the need for _url in HTML forms
+
 ## 2.4.0 (16 Dec 2016)
 - Redirects for routing
 
