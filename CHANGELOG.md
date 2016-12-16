@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.4.0 (16 Dec 2016)
+- Redirects for routing
+
 ## 2.3.0 (15 Dec 2016)
 - System, Landing Page Engine and Database panels for /status-page show real data
 - Bugfix [1](https://bitbucket.org/sudtanadevteam/landing-page-engine/issues/1/http-post-on-fieldless-forms-causes-error) additional fix
