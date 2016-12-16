@@ -40,4 +40,13 @@ abstract class AbstractValidator implements ValidatorInterface
     {
         return $this->messages;
     }
+
+    /**
+     * @return string name of the validator
+     */
+    public function __toString()
+    {
+        $parts = explode('\\', get_class($this));
+        return $parts[count($parts) - 1];
+    }
 }

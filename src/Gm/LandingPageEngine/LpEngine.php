@@ -316,9 +316,9 @@ class LpEngine
 
         // Check for missing routes section in theme.json config file
         if (isset($themeConfig) && (!isset($themeConfig['routes']))) {
-            $logger->error('Your theme.json is missing a "routes" section.  You must define at least one route.');
+            $logger->error('Your theme config file is missing a routes section.  You must define at least one route.');
             throw new \Exception(
-                'Your theme.json file is missing a "routes" section.  You must define at least one route.'
+                'The theme config file is missing a routes section.  You must define at least one route.'
             );
         }
 
@@ -326,7 +326,7 @@ class LpEngine
         // at least one route
         if (count($themeConfig['routes']) < 1) {
             $logger->warning(
-                'Your theme.json contains a "routes" section but defines no mappings.'
+                'The theme config contains a "routes" section but defines no mappings.'
             );
         }
 
@@ -352,22 +352,20 @@ class LpEngine
                     '_controller' =>
                         'Gm\LandingPageEngine\Controller\FrontController:showAction',
                     'template' => $templateOrRedirectUrl
-                ]));
+                ], [], [], '', [], ['GET']));
+
+                $routes->add($url . '_post', new Route($url, [
+                    '_controller' => 'Gm\LandingPageEngine\Controller\FormController:postAction',
+                ], [], [], '', [], ['POST']));
+
                 $logger->info(sprintf(
-                    'Configured route "%s" to map to twig template "%s"',
+                    'Configured both HTTP GET and POST routes "%s" and "%s" to map to twig template "%s"',
                     $url,
+                    $url . '-post',
                     $templateOrRedirectUrl
                 ));
             }
         }
-
-        // Build a dedicated URL route for handling form posts
-        $routes->add('http-post', new Route('/process-post', [
-            '_controller' => 'Gm\LandingPageEngine\Controller\FormController:postAction',
-        ], [], [], '', [], ['POST']));
-        $logger->info(sprintf(
-            'Added dedicated route for /process-post for HTTP form POSTS'
-        ));
 
         $routes->add('status-page', new Route('/status-page', [
             '_controller' => 'Gm\LandingPageEngine\Controller\StatusPageController:showAction'
@@ -646,11 +644,22 @@ class LpEngine
         return $this->fieldToFilterAndValidatorLookup;
     }
 
+    /**
+     * Create a ValidatorChain instance and attach validators
+     * according to theme config
+     *
+     * @param $chain array associative array of validator names
+     *               and options
+     */
     private function loadValidatorChain($chain)
     {
         $validatorChain = new ValidatorChain();
-        foreach ($chain as $name => $block) {
+        foreach ($chain as $name => $options) {
             $validatorChain->attach($this->loadValidator($name));
+            $this->logger->info(sprintf(
+                'Attached validator "%s" to the validator chain',
+                $name
+            ));
         }
         return $validatorChain;
     }

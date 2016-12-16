@@ -12,6 +12,8 @@ namespace Gm\LandingPageEngine\Form\Validator;
 
 class ValidatorChain implements ValidatorInterface
 {
+    const CHAIN_STRING_DELIMITER = ' -> ';
+
     /**
      * @var array of Validator objects
      */
@@ -63,5 +65,21 @@ class ValidatorChain implements ValidatorInterface
     public function getMessages()
     {
         return $this->messages;
+    }
+
+    public function __toString()
+    {
+        $validatorChainString = '{ ';
+        foreach ($this->validators as $validator) {
+            $validatorChainString .= $validator;
+            $validatorChainString .= self::CHAIN_STRING_DELIMITER;
+        }
+
+        // cut off the trailing comma ', ' (last 2 characters)
+        return substr(
+            $validatorChainString,
+            0,
+            strlen($validatorChainString) - strlen(self::CHAIN_STRING_DELIMITER)
+        ) . ' }';
     }
 }
