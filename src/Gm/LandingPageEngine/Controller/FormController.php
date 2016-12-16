@@ -122,7 +122,7 @@ class FormController extends AbstractController
 
                     if (isset($filterAndValidatorLookup[$name]['validators'])) {
                         $validatorChain = $filterAndValidatorLookup[$name]['validators'];
-                    
+
                         $validatorChainResult = $validatorChain->isValid($value);
                         $this->logger->debug(sprintf(
                             'Validation chain %s returned %s for value="%s"',
@@ -134,7 +134,7 @@ class FormController extends AbstractController
                         if (false === $validatorChainResult) {
                             $formErrors = true;
                             $errors[$name] = $validatorChain->getMessages();
-                            
+
                             foreach ($errors[$name] as $msg) {
                                 $this->logger->debug(sprintf(
                                     'Adding error message "%s" for form field "%s" on form "%s"',
@@ -146,10 +146,10 @@ class FormController extends AbstractController
 
                             $this->lpEngine->addTwigGlobal($name . '_err', true);
                             $this->lpEngine->addTwigGlobal($name . '_errors', array_values($errors[$name]));
-                        }                        
+                        }
                     }
                 }
-                
+
                 $this->lpEngine->addTwigGlobal($name, $originalValue);
             }
         }
@@ -163,7 +163,7 @@ class FormController extends AbstractController
 
             $template = $this->themeConfig['routes'][$route];
             $template = $twigEnv->load($template);
-            
+
             // add {{ is_http_post }}
             $this->lpEngine->addTwigGlobal('is_http_post', true);
 
