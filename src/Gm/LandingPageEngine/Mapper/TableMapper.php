@@ -81,12 +81,23 @@ class TableMapper
      */
     public function update($tableName, $sqlFieldMap)
     {
-        $columns = array_keys($sqlFieldMap);
         // remove 'session_id' from the db columns as we do not
         // want to update this value.  instead we use it in the
         // SQL WHERE clause.
+        $columns = array_keys($sqlFieldMap);
         if (($key = array_search('session_id', $columns)) !== false) {
             unset($columns[$key]);
+        }
+
+        // after removing session_id, if there is nothing left then
+        // there is nothing to update
+        if (empty($columns)) {
+            $this->logger->debug(sprintf(
+                "%s:%s has no columns to write so returning *without* doing SQL UPDATE",
+                __CLASS__,
+                __METHOD__
+            ));
+            return;
         }
 
         $sql = 'UPDATE ' . $tableName . ' SET ';
@@ -101,6 +112,7 @@ class TableMapper
         }
         $sql .= ' WHERE session_id = :session_id';
         $statement = $this->pdo->prepare($sql);
+        
         foreach ($sqlFieldMap as $columnName => $value) {
             if (is_array($value)) {
                 $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

@@ -88,13 +88,19 @@ class CaptureService
         if ((isset($params['_form']))
             && (mb_strlen($params['_form']) > 0)) {
             $this->logger->debug(sprintf(
-                'Processing HTTP POST _form=%s',
+                '%s +%s in %s Processing HTTP POST _form="%s"',
+                __FILE__,
+                __LINE__,
+                __METHOD__,
                 $params['_form']
             ));
         } else {
-            $this->logger->error(
-                'HTTP POST called without passing _form parameter'
-            );
+            $this->logger->error(sprintf(
+                '%s +%s in %s HTTP POST called without passing _form parameter',
+                __FILE__,
+                __LINE__,
+                __METHOD__
+            ));
             throw new \Exception(
                 'HTTP POST called without passing _form parameter'
             );
@@ -104,30 +110,33 @@ class CaptureService
         // The theme.json file must contain form field name to database field
         // name mappings grouped by _form
         if (!isset($themeConfig['forms'])) {
-            $this->logger->error(
-                'HTTP POST called but theme.json contains no "forms" section'
-            );
-            throw new \Exception(
-                'HTTP POST called but theme.json contains no "forms" section'
-            ); 
+            $this->logger->error(sprintf(
+                'HTTP POST called for form "%s", but theme config file contains no "forms" section',
+                $params['_form']
+            ));
+            throw new \Exception(sprintf(
+                'HTTP POST called for form "%s", but theme config file contains no "forms" section',
+                $params['_form']
+            ));
         }
 
         if (count($themeConfig['forms']) < 1) {
-            throw new \Exception(
-                'HTTP POST called but theme.json contains no form definitions'
-            );
+            throw new \Exception(sprintf(
+                'HTTP POST called for form "%s", but theme config file contains no form definitions',
+                $params['_form']
+            ));
         }
 
 
         $this->logger->debug(sprintf(
-            'Scanning theme.json forms section to find a match for %s',
+            'Scanning theme confifg file forms section to find a match for %s',
             $params['_form']
         ));
 
         $formNameMatch = false;
         foreach ($themeConfig['forms'] as $formName => $details) {
             $this->logger->debug(sprintf(
-                'Checking theme.json config _form=%s',
+                'Checking theme config file _form=%s',
                 $formName
             ));
             if ($params['_form'] === $formName) {
@@ -145,7 +154,7 @@ class CaptureService
                 }
 
                 $tableName = $details['dbtable'];
-                $mappings = $details['map'];
+                $mappings = isset($details['map']) ? $details['map'] : [];
                 break;
             }
         }
@@ -193,15 +202,16 @@ class CaptureService
             }
 
             $this->logger->debug(sprintf(
-                'Checking that form field %s has a mapping entry in the theme.json file for section _form=%s',
+                'Checking that form field %s has a mapping entry in the theme config file for section _form=%s',
                 $formFieldName,
                 $params['_form']
             ));
 
             if (!in_array($formFieldName, $formFieldColumns)) {
                 $this->logger->warning(sprintf(
-                    'Form field %s is used in the template form but has no mapping entry in the theme.json file',
-                    $formFieldName
+                    'Form field "%s" is used in the template form "%s", but has no mapping entry in the theme config file',
+                    $formFieldName,
+                    $params['_form']
                 ));
             }
         }
