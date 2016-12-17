@@ -25,7 +25,7 @@ class FormController extends AbstractController
     public function __construct(LpEngine $lpEngine)
     {
         $this->lpEngine    = $lpEngine;
-        $this->themeConfig = $lpEngine->getThemeConfig();
+        $this->themeConfig = $lpEngine->getThemeConfigService()->getThemeConfig();
         $this->logger      = $lpEngine->getLogger();
     }
 
