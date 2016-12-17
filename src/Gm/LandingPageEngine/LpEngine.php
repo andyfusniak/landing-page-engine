@@ -9,6 +9,7 @@ use Gm\LandingPageEngine\Form\Validator\ValidatorChain;
 use Gm\LandingPageEngine\Service\CaptureService;
 use Gm\LandingPageEngine\Service\PdoService;
 use Gm\LandingPageEngine\Service\StatusService;
+use Gm\LandingPageEngine\Service\ThemeConfigService;
 use Gm\LandingPageEngine\Version\Version;
 use Gm\LandingPageEngine\TwigGlobals\ThaiDate;
 use Gm\LandingPageEngine\TwigGlobals\UtmQueryParams;
@@ -46,12 +47,12 @@ class LpEngine
      * @var array
      */
     protected $config;
-   
+
     /**
      * @var Logger
      */
     protected $logger;
-     
+
     /**
      * @var \Twig_Environment
      */
@@ -63,14 +64,14 @@ class LpEngine
     protected $twigGlobals;
 
     /**
-     * @var array
-     */
-    protected $themeConfig;
-
-    /**
      * @var string
      */
     protected $theme;
+
+    /**
+     * @var ThemeConfigService
+     */
+    protected $themeConfigService;
 
     /**
      * @var array
@@ -104,7 +105,7 @@ class LpEngine
         $varDir = $config['project_root'] . '/var';
         if (!file_exists($varDir)) {
             mkdir($varDir, 0777);
-            chmod($varDir, 0777); 
+            chmod($varDir, 0777);
         }
 
         $twigCacheDir = isset($config['twig_cache_dir']) ? $config['twig_cache_dir'] : null;
@@ -139,133 +140,6 @@ class LpEngine
         return $logDirExists;
     }
 
-    public function activateThemes()
-    {
-        $hostsConfig = isset($this->config['hosts']) ? $this->config['hosts'] : null;
-        if (null === $hostsConfig) {
-            throw new \Exception(
-                'config.php contains no \'hosts\' configuration.  You must have at least one valid host-to-theme mapping.'
-            );
-        }
-
-        $publicAssets = $this->config['web_root'] . '/assets';
-        if (!is_dir($publicAssets)) {
-            throw new \Exception(sprintf(
-                '%s directory does not exist.  You should create this directory and make it writeable by the web server',
-                $publicAssets
-            ));
-        }
-
-        if (!is_writeable($publicAssets)) {
-            throw new \Exception(sprintf(
-                '%s directory is not writeable by the web server.  Change the permissions using chmod g+w,o+w %s',
-                $publicAssets,
-                $publicAssets
-            ));
-        }
-
-        // iterate the list of hosts in their natural order
-        // and check the theme for each is activated
-        $hosts = array_keys($hostsConfig);
-        natsort($hosts);
- 
-        // remove duplicates    
-        $themesToActivate = [];
-        foreach ($hosts as $host) {
-            $theme = $hostsConfig[$host];
-            $parts = explode(':', $theme);
-            $theme = $parts[0];
-
-            if (!in_array($theme, $themesToActivate)) {
-                array_push($themesToActivate, $theme);
-            }
-        }
-        
-        
-        // deactivate any themes that aren't going to be in use
-        // On a broken symlink is_link() returns true and file_exists() returns false.
-        $publicAssets = $this->config['web_root'] . '/assets';
-        foreach (scandir($publicAssets) as $entry) {
-            if (('.' === $entry) || ('..' === $entry)) {
-                continue;
-            }
-            
-            // check if the current symlink in the public/assets directory
-            // is still in use.  If not, remove it
-            if (!in_array($entry, $themesToActivate)) {
-                $this->logger->debug(sprintf(
-                    '%s link found in %s directory',
-                    $entry,
-                    $publicAssets
-                ));
-                $fullpath = $publicAssets . '/' . $entry;
-                
-                if (false === unlink($fullpath)) {
-                    $logger->info(sprintf(
-                        'Failed to unlink "%s".  This theme needs to be deactivted as is no longer in use.',
-                        $fullpath
-                    ));
-                } else {
-                    $this->logger->debug(sprintf(
-                        'unlink %s',
-                        $fullpath
-                    ));
-                    $this->logger->info(sprintf(
-                        'Deactivating theme "%s" from the web root.',
-                        $entry
-                    ));
-                }
-            }
-        }
-
-        // activate each theme
-        foreach ($themesToActivate as $name) {
-            $this->activateTheme($name);
-        }
-    }
-
-    public function activateTheme($name)
-    {
-        if (!preg_match('/^[a-z0-9\-]+$/', $name)) {
-            throw new \InvalidArgumentException(sprintf(
-                '%s called for theme %s.  Theme names must use lower case a-z only, including the digits 0-9 and the hyphen character.',
-                __METHOD__,
-                $name
-            ));
-        }
-
-        $publicAssets = $this->config['web_root'] . '/assets';
-        if (!is_dir($publicAssets)) {
-            throw new \Exception(sprintf(
-                '%s directory does not exist.  You should create this directory and make it writeable by the web server',
-                $publicAssets
-            ));
-        }
-
-        if (!is_writeable($publicAssets)) {
-            throw new \Exception(sprintf(
-                '%s directory is not writeable by the web server.  Change the permissions using chmod g+w,o+w %s',
-                $publicAssets,
-                $publicAssets
-            ));
-        }
-
-        $target = '../../themes/' . $name . '/assets/' . $name;
-        $link = $this->config['web_root'] . '/assets/' . $name;
-
-        if (!is_link($link)) {
-            if (!@symlink($target, $link)) {
-                throw new \Exception(sprintf(
-                    'Failed to symlink %s to %s.  Make sure %s is writeable by the web server',
-                    $target,
-                    $link,
-                    $publicAssets
-                ));
-            }
-        }
-    }
-
-
     /**
      * Initialise a Landing Page Engine instance and wire it up
      *
@@ -274,7 +148,6 @@ class LpEngine
      */
     public static function init($config)
     {
-        
         if (isset($config['skip_auto_var_dir_setup']) &&
             (true === $config['skip_auto_var_dir_setup'])) {
             $logDirReady = true;
@@ -284,7 +157,7 @@ class LpEngine
 
         // setup the logging and stream for log file only if the var/log
         // directory is ready and writeble.  If it's not writeable, we
-        // will have an null logger 
+        // will have an null logger
         $logger = new Logger('lpengine');
         if (true === $logDirReady) {
             $logger->pushHandler(
@@ -299,20 +172,23 @@ class LpEngine
         $request = Request::createFromGlobals();
         $response = new Response();
         $response->setProtocolVersion('1.1');
-         
+
         // create a new landing page engine instance
-        $engine = new LpEngine($request, $response, $logger, $pdoService, $config);
+        $engine = new LpEngine(
+            $request,
+            $response,
+            $logger,
+            new ThemeConfigService($logger, $config),
+            $pdoService,
+            $config
+        );
 
         // activate the themes
-        if (isset($config['skip_auto_theme_activation']) &&
-            (true === $config['skip_auto_theme_activation'])) {
-            $logger->info('Skipping theme activation checks as skip_auto_theme_activation=true');
-        } else {
-            $engine->activateThemes();
-        }
+        $themeConfigService = $engine->getThemeConfigService();
+        $themeConfigService->activateThemes();
 
         // Build the custom URL routes using the developer's theme.json file
-        $themeConfig = $engine->getThemeConfig();
+        $themeConfig = $themeConfigService->getThemeConfig();
 
         // Check for missing routes section in theme.json config file
         if (isset($themeConfig) && (!isset($themeConfig['routes']))) {
@@ -375,10 +251,11 @@ class LpEngine
 
         return $engine;
     }
-    
+
     public function __construct(Request $request,
                                 Response $response,
                                 Logger $logger,
+                                ThemeConfigService $themeConfigService,
                                 PdoService $pdoService,
                                 array $config)
     {
@@ -386,29 +263,31 @@ class LpEngine
             'LPE Version %s Running',
             Version::VERSION
         ));
-        $this->request    = $request;
-        $this->response   = $response;
-        $this->logger     = $logger;
-        $this->pdoService = $pdoService;
-        $this->config     = $config;
-       
-        $host = $this->request->getHost(); 
+        $this->request            = $request;
+        $this->response           = $response;
+        $this->logger             = $logger;
+        $this->themeConfigService = $themeConfigService;
+        $this->pdoService         = $pdoService;
+        $this->config             = $config;
+
+        $host = $this->request->getHost();
         if (isset($config['hosts'][$host])) {
-            $theme = $config['hosts'][$host];
+            $this->theme = $config['hosts'][$host];
             $logger->debug(sprintf(
                 'Host "%s" is configure to use theme "%s".  Checking theme exists',
                 $host,
-                $theme
+                $this->theme
             ));
             \Twig_Autoloader::register();
-            $twigTemplateDir = $config['themes_root'] . '/' . $theme . '/templates';
-            $this->theme = $theme;
+            $twigTemplateDir = $config['themes_root'] . '/' . $this->theme . '/templates';
         } else {
             throw new \Exception(sprintf(
                 'No host-to-template mapping configured for the host "%s".  Check your config.php file',
                 $host
             ));
         }
+
+        $this->getThemeConfigService()->loadThemeConfig($this->theme);
 
         $loader = new \Twig_Loader_Filesystem($twigTemplateDir);
         $logger->debug(sprintf(
@@ -426,7 +305,7 @@ class LpEngine
         } else {
             $twigEnvOptions = [
                 'cache' => $config['twig_cache_dir'],
-            ]; 
+            ];
         }
 
         $this->twigEnv = new \Twig_Environment($loader, $twigEnvOptions);
@@ -434,18 +313,18 @@ class LpEngine
         // @todo needs to be more modular to lazy-load and plug them in
         // provide global for thai_date
         $this->twigEnv->addGlobal('thai_date', new ThaiDate());
-
-        $this->loadThemeConfig();
     }
 
     public function run()
     {
+        $this->getThemeConfigService()->loadThemeConfig($this->theme);
+
         $session = $this->getSession();
         if (null === $session->get('initial_query_params')) {
             $session->set('initial_query_params', $this->getRequest()->query->all());
             $session->set('ARRIVAL_HTTP_REFERER', $this->request->server->get('HTTP_REFERER'));
-        }   
-        
+        }
+
         $this->twigEnv->addGlobal(
             'utm_query_params',
              new UtmQueryParams($session->get('initial_query_params'))
@@ -467,7 +346,7 @@ class LpEngine
             // return [
             $this->addTwigGlobal('ip_address', $this->request->getClientIp());
             $this->addTwigGlobal('q', $this->getSession()->get('initial_query_params'));
-    
+
             // dispatch the request and get the return string
             $this->response->setContent(
                 $controller->dispatch($this->request, $this->response)
@@ -478,7 +357,7 @@ class LpEngine
         } catch (Exception $e) {
             $this->response->setContent('An error occurred');
             $this->response->setStatusCode(500);
-            
+
             // rethrow the exception a quick and dirty bailout
             throw $e;
         }
@@ -488,73 +367,14 @@ class LpEngine
         $this->logger->info('LPE Terminating');
     }
 
-    public function loadThemeConfig()
-    {
-        $jsonThemeFilepath = $this->config['themes_root'] . '/' . $this->theme . '/theme.json';
-        $this->logger->debug(sprintf(
-            'Attempt to loaded theme configuration "%s"',
-            $jsonThemeFilepath
-        ));
-
-        $string = file_get_contents($jsonThemeFilepath);
-        $json = json_decode($string, true);
-
-        if (null === $json) {
-            $this->logger->error(sprintf(
-                'The theme JSON file "%s" could not be parsed',
-                $jsonThemeFilepath
-            ));
-            throw new \Exception(sprintf(
-                'The theme JSON file "%s" could not be parsed. Err code %s, error message "%s"',
-                $jsonThemeFilepath,
-                json_last_error(),
-                json_last_error_msg()
-            ));
-        }
-
-        // check the template contains appropriate contents
-        if (isset($json['name']) && (isset($json['version']))) {
-            $this->logger->info(sprintf(
-                'Template "%s" version %s in use."',
-                $json['name'],
-                $json['version']
-            ));
-        } else {
-            if (!isset($json['name'])) {
-                $this->logger->error(sprintf(
-                    'Template "%s" has a missing theme name.  Use {"name": "Template name"} section.',
-                    $jsonThemeFilepath
-                ));
-                throw new \Exception(sprintf(
-                    'theme.json file "%s" is missing compulsory {"name": "Template name"}.  The \
-                    template name is needed as an autocapture field in the database.',
-                    $jsonThemeFilepath
-                ));
-            }
-
-            if (!isset($json['version'])) {
-                $this->logger->error(sprintf(
-                    'Template "%s" has a missing version.  Use {"version": "x.y.z"} section.',
-                    $jsonThemeFilepath
-                ));
-                throw new \Exception(sprintf(
-                    'theme.json file "%s" is missing compulsory {"version": "x.y.z"}.  The \
-                    template version is needed as an autocapture field in the database.',
-                    $jsonThemeFilepath
-                ));
-            }
-        }
-
-        $this->themeConfig = $json;
-    }
-
     /**
-     * Return the theme config as an array
-     * @return array
+     * Get the ThemeConfigService
+     *
+     * @return ThemeConfigService
      */
-    public function getThemeConfig()
+    public function getThemeConfigService()
     {
-        return $this->themeConfig;
+        return $this->themeConfigService;
     }
 
     /**
@@ -599,18 +419,20 @@ class LpEngine
 
     public function loadFiltersAndValidators($formName)
     {
+        $themeConfig = $this->getThemeConfigService()->getThemeConfig();
+
         // reset the lookup table as this is a new form
         $this->fieldToFilterAndValidatorLookup = null;
 
         // check for forms->form-name section
-        if (!isset($this->themeConfig['forms'][$formName])) {
+        if (!isset($themeConfig['forms'][$formName])) {
             throw new \Exception(sprintf(
                 'Cannot find definition for form "%s" in theme config file',
                 $formName
             ));
         }
 
-        $formConfig = $this->themeConfig['forms'][$formName];
+        $formConfig = $themeConfig['forms'][$formName];
 
         // check for form->form-name->map section
         if (!isset($formConfig['map'])) {
