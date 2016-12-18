@@ -31,6 +31,7 @@ class FormController extends AbstractController
 
     public function postAction()
     {
+        $postParams = $this->request->request->all();
 
         $formName = $postParams['_form'];
 
@@ -50,15 +51,16 @@ class FormController extends AbstractController
             ));
         }
 
-        $postParams = $this->request->request->all();
-
-        $formName = $postParams['_form'];
         $filterAndValidatorLookup = $this->lpEngine->loadFiltersAndValidators(
             $formName
         );
 
-        if (!isset($this->themeConfig['forms'][$formName]['dbtable'])
-            && (null === $filterAndValidatorLookup)) {
+        $dbTable = $this->themeConfig
+                        ->getFormConfigCollection()
+                        ->getFormConfigByName($formName)
+                        ->getDbTable();
+
+        if (!isset($dbtable) && (null === $filterAndValidatorLookup)) {
             $customParams = [];
             foreach ($postParams as $name => $value) {
                 if ('_' === substr($name, 0, 1)) {
@@ -161,7 +163,7 @@ class FormController extends AbstractController
             // HTTP POST routes have a '_post' postfix that needs removing
             $route = substr($this->match['_route'], 0, strlen($this->match['_route']) - strlen('_post'));
 
-            $template = $this->themeConfig['routes'][$route];
+            $template = $this->themeConfig->getRoutes()[$route];
             $template = $twigEnv->load($template);
 
             // add {{ is_http_post }}

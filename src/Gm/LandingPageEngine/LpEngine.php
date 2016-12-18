@@ -1,9 +1,12 @@
 <?php
 namespace Gm\LandingPageEngine;
 
+
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
+use Gm\LandingPageEngine\Entity\FilterConfigCollection;
+use Gm\LandingPageEngine\Entity\ValidatorConfigCollection;
 use Gm\LandingPageEngine\Form\Filter\FilterChain;
 use Gm\LandingPageEngine\Form\Validator\ValidatorChain;
 use Gm\LandingPageEngine\Service\CaptureService;
@@ -14,8 +17,9 @@ use Gm\LandingPageEngine\Version\Version;
 use Gm\LandingPageEngine\TwigGlobals\ThaiDate;
 use Gm\LandingPageEngine\TwigGlobals\UtmQueryParams;
 
-use Symfony\Component\HttpFoundation\Session\Session;
 
+use Symfony\Component\Debug\Debug;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -148,6 +152,10 @@ class LpEngine
      */
     public static function init($config)
     {
+        if (isset($config['developer_mode']) && (true === $config['developer_mode'])) {
+            Debug::enable();
+        }
+
         if (isset($config['skip_auto_var_dir_setup']) &&
             (true === $config['skip_auto_var_dir_setup'])) {
             $logDirReady = true;
@@ -186,28 +194,60 @@ class LpEngine
         // activate the themes
         $themeConfigService = $engine->getThemeConfigService();
         $themeConfigService->activateThemes();
+        return $engine;
+    }
 
-        // Build the custom URL routes using the developer's theme.json file
-        $themeConfig = $themeConfigService->getThemeConfig();
+    public function __construct(Request $request,
+                                Response $response,
+                                Logger $logger,
+                                ThemeConfigService $themeConfigService,
+                                PdoService $pdoService,
+                                array $config)
+    {
+        $logger->info(sprintf(
+            'LPE Version %s Running',
+            Version::VERSION
+        ));
+        $this->request            = $request;
+        $this->response           = $response;
+        $this->logger             = $logger;
+        $this->themeConfigService = $themeConfigService;
+        $this->pdoService         = $pdoService;
+        $this->config             = $config;
 
-        // Check for missing routes section in theme.json config file
-        if (isset($themeConfig) && (!isset($themeConfig['routes']))) {
-            $logger->error('Your theme config file is missing a routes section.  You must define at least one route.');
-            throw new \Exception(
-                'The theme config file is missing a routes section.  You must define at least one route.'
-            );
+        $host = $this->request->getHost();
+        if (isset($config['hosts'][$host])) {
+            $this->theme = $config['hosts'][$host];
+            $logger->debug(sprintf(
+                'Host "%s" is configure to use theme "%s".  Checking theme exists',
+                $host,
+                $this->theme
+            ));
+            \Twig_Autoloader::register();
+            $twigTemplateDir = $config['themes_root'] . '/' . $this->theme . '/templates';
+        } else {
+            throw new \Exception(sprintf(
+                'No host-to-template mapping configured for the host "%s".  Check your config.php file',
+                $host
+            ));
         }
 
-        // Check that the "routes" section of the theme config file contains
-        // at least one route
-        if (count($themeConfig['routes']) < 1) {
-            $logger->warning(
-                'The theme config contains a "routes" section but defines no mappings.'
+        $this->themeConfigService->loadThemeConfig($this->theme);
+
+        // Build the custom URL routes using the theme config file
+        $themeConfig = $this->themeConfigService->getThemeConfig();
+
+        $themeConfigRoutes = $themeConfig->getRoutes();
+
+        if (null === $themeConfigRoutes) {
+            $logger->critical(
+                'No routes defined'
             );
+            throw new \Exception('No routes defined');
         }
 
         $routes = new RouteCollection();
-        foreach ($themeConfig['routes'] as $url => $templateOrRedirectUrl) {
+        foreach ($themeConfigRoutes as $url => $templateOrRedirectUrl) {
             // if the template has a leading / or starts with http
             // then we will treat it as a redirct
             if ((substr($templateOrRedirectUrl, 0, 1) === '/')
@@ -247,47 +287,7 @@ class LpEngine
             '_controller' => 'Gm\LandingPageEngine\Controller\StatusPageController:showAction'
         ], [], [], '', [], ['GET']));
 
-        $engine->setRoutes($routes);
-
-        return $engine;
-    }
-
-    public function __construct(Request $request,
-                                Response $response,
-                                Logger $logger,
-                                ThemeConfigService $themeConfigService,
-                                PdoService $pdoService,
-                                array $config)
-    {
-        $logger->info(sprintf(
-            'LPE Version %s Running',
-            Version::VERSION
-        ));
-        $this->request            = $request;
-        $this->response           = $response;
-        $this->logger             = $logger;
-        $this->themeConfigService = $themeConfigService;
-        $this->pdoService         = $pdoService;
-        $this->config             = $config;
-
-        $host = $this->request->getHost();
-        if (isset($config['hosts'][$host])) {
-            $this->theme = $config['hosts'][$host];
-            $logger->debug(sprintf(
-                'Host "%s" is configure to use theme "%s".  Checking theme exists',
-                $host,
-                $this->theme
-            ));
-            \Twig_Autoloader::register();
-            $twigTemplateDir = $config['themes_root'] . '/' . $this->theme . '/templates';
-        } else {
-            throw new \Exception(sprintf(
-                'No host-to-template mapping configured for the host "%s".  Check your config.php file',
-                $host
-            ));
-        }
-
-        $this->getThemeConfigService()->loadThemeConfig($this->theme);
+        $this->setRoutes($routes);
 
         $loader = new \Twig_Loader_Filesystem($twigTemplateDir);
         $logger->debug(sprintf(
@@ -317,7 +317,7 @@ class LpEngine
 
     public function run()
     {
-        $this->getThemeConfigService()->loadThemeConfig($this->theme);
+        $themeConfig = $this->getThemeConfigService()->loadThemeConfig($this->theme);
 
         $session = $this->getSession();
         if (null === $session->get('initial_query_params')) {
@@ -424,40 +424,24 @@ class LpEngine
         // reset the lookup table as this is a new form
         $this->fieldToFilterAndValidatorLookup = null;
 
-        // check for forms->form-name section
-        if (!isset($themeConfig['forms'][$formName])) {
-            throw new \Exception(sprintf(
-                'Cannot find definition for form "%s" in theme config file',
-                $formName
-            ));
-        }
+        $formConfigCollection = $themeConfig->getFormConfigCollection();
 
-        $formConfig = $themeConfig['forms'][$formName];
+        $formConfig = $formConfigCollection->getFormConfigByName($formName);
 
-        // check for form->form-name->map section
-        if (!isset($formConfig['map'])) {
-            $this->logger->info(sprintf(
-                'Form "%s" contains no map section in theme config file',
-                $formName
-            ));
+        $fields = $formConfig->getFieldsConfigCollection();
+        foreach ($fields as $fieldConfig) {
+            $formFieldName = $fieldConfig->getName();
+            if ($fieldConfig->hasFilters()) {
+                $this->fieldToFilterAndValidatorLookup[$formFieldName]['filters']
+                    = $this->loadFilterChain($fieldConfig->getFilterConfigCollection());
+            }
 
-            return null;
-        }
-
-        $map = $formConfig['map'];
-        if (null !== $map) {
-            foreach ($map as $formFieldName => $formFieldConfig) {
-                foreach ($formFieldConfig as $section => $chain) {
-                    if ('filters' === $section) {
-                        $this->fieldToFilterAndValidatorLookup[$formFieldName]['filters']
-                            = $this->loadFilterChain($chain);
-                    } else if ('validators' === $section) {
-                        $this->fieldToFilterAndValidatorLookup[$formFieldName]['validators']
-                            = $this->loadValidatorChain($chain);
-                    }
-                }
+            if ($fieldConfig->hasValidators()) {
+                $this->fieldToFilterAndValidatorLookup[$formFieldName]['validators']
+                    = $this->loadValidatorChain($fieldConfig->getValidatorConfigCollection());
             }
         }
+
         return $this->fieldToFilterAndValidatorLookup;
     }
 
@@ -470,15 +454,15 @@ class LpEngine
      * Create a ValidatorChain instance and attach validators
      * according to theme config
      *
-     * @param $chain array associative array of validator names
-     *               and options
+     * @param $validatorConfigCollection
      */
-    private function loadValidatorChain($chain)
+    private function loadValidatorChain(ValidatorConfigCollection $validatorConfigCollection)
     {
         $validatorChain = new ValidatorChain();
-        foreach ($chain as $name => $options) {
+        foreach ($validatorConfigCollection as $validatorConfig) {
+            $name = $validatorConfig->getName();
             $validatorChain->attach($this->loadValidator($name));
-            $this->logger->info(sprintf(
+            $this->logger->debug(sprintf(
                 'Attached validator "%s" to the validator chain',
                 $name
             ));
@@ -492,11 +476,19 @@ class LpEngine
         return new $name();
     }
 
-    private function loadFilterChain($chain)
+    /**
+     * @param FilerConfigCollection
+     */
+    private function loadFilterChain(FilterConfigCollection $filterConfigCollection)
     {
         $filterChain = new FilterChain();
-        foreach ($chain as $name => $block) {
+        foreach ($filterConfigCollection as $name => $filterConfig) {
+            $name = $filterConfig->getName();
             $filterChain->attach($this->loadFilter($name));
+            $this->logger->debug(sprintf(
+                'Attached filter "%s" to the validator chain',
+                $name
+            ));
         }
         return $filterChain;
     }
