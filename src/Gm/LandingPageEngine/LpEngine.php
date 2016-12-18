@@ -78,6 +78,11 @@ class LpEngine
     protected $themeConfigService;
 
     /**
+     * @var StatusService
+     */
+    protected $statusService;
+
+    /**
      * @var array
      */
     protected $fieldToFilterAndValidatorLookup;
@@ -426,7 +431,25 @@ class LpEngine
 
         $formConfigCollection = $themeConfig->getFormConfigCollection();
 
+        if (null === $formConfigCollection) {
+            // no forms section in the config
+            return null;
+        }
+
         $formConfig = $formConfigCollection->getFormConfigByName($formName);
+
+        if (null === $formConfig) {
+            $this->logger->critical(sprintf(
+                'Theme "%s" config contains no form with name "%s" section',
+                $this->theme,
+                $formName
+            ));
+            throw new \Exception(sprintf(
+                'Theme "%s" config contains no form with name "%s" section',
+                $this->theme,
+                $formName
+            ));
+        }
 
         $fields = $formConfig->getFieldsConfigCollection();
         foreach ($fields as $fieldConfig) {

@@ -15,7 +15,7 @@ class FormConfigCollection
     /**
      * @var array lookup table of form to FormConfig entries
      */
-    protected $forms;
+    protected $forms = [];
 
     /**
      * @param FormConfig $formConfig form config object
@@ -38,6 +38,7 @@ class FormConfigCollection
 
     /**
      * Get a FormConfig by name
+     * @return FormConfig
      */
     public function getFormConfigByName($name)
     {
