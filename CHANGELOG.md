@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.6.1 (18 Dec 2016)
+- Uses the symfony/symfony full stack instead of cherry picking symfony components
+
 ## 2.6.0 (18 Dec 2016)
 - Complete overhaul of theme config loading include switch to XML
 
