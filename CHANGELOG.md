@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.6.0 (18 Dec 2016)
+- Complete overhaul of theme config loading include switch to XML
+
 ## 2.5.0 (16 Dec 2016)
 - Removal of /process-post route.  In its place HTTP POSTs are sent back to the page whence they came.
 - Improved logging for form fields including validators
