@@ -1,4 +1,9 @@
 # CHANGELOG
+## 2.6.2 (18 Dec 2016)
+- Fix various bugs including theme.xml loadng issues when a missing section form
+- Fix status-page PHP notice on Mac
+- Fix HTTP form POST writing to DB (introduced in 2.6 with XML theme config)
+
 ## 2.6.1 (18 Dec 2016)
 - Uses the symfony/symfony full stack instead of cherry picking symfony components
 
