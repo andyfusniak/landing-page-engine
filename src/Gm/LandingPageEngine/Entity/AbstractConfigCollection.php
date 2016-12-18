@@ -20,7 +20,7 @@ class AbstractConfigCollection implements \Iterator, \Countable
     /**
      * @var array
      */
-    protected $collection;
+    protected $collection = [];
 
     public function rewind()
     {

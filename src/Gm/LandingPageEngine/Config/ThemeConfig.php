@@ -107,6 +107,11 @@ class ThemeConfig
         // theme forms
         $formsNodeElement = $themeElement->getElementsByTagName('forms')->item(0);
 
+        // if there is no form section then we're done
+        if (null === $formsNodeElement) {
+            return;
+        }
+
         $formNodeList = $formsNodeElement->getElementsByTagName('form');
 
         // forms
@@ -165,26 +170,6 @@ class ThemeConfig
                 }
             }
         }
-
-
-        // @todo
-        // check for forms->form-name section
-        //if (null === $formConfig = $themeConfig->getFormConfigByName($formName)) {
-        //    throw new \Exception(sprintf(
-        //        'Cannot find config definition for form "%s" in theme config',
-        //        $formName
-        //    ));
-        //}
-
-        // check for form->form-name->map section
-        //if (!isset($formConfig['map'])) {
-        //    $this->logger->info(sprintf(
-        //        'Form "%s" contains no map section in theme config file',
-        //        $formName
-        //    ));
-        //
-        //    return null;
-        //}
 
         return $this->formConfigCollection = $formConfigCollection;
     }

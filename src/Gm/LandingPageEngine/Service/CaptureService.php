@@ -2,6 +2,7 @@
 namespace Gm\LandingPageEngine\Service;
 
 use Monolog\Logger;
+use Gm\LandingPageEngine\Config\ThemeConfig;
 use Gm\LandingPageEngine\Mapper\TableMapper;
 use Gm\LandingPageEngine\Service\PdoService;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -80,7 +81,7 @@ class CaptureService
         $this->request    = $request;
     }
 
-    public function save(array $params, array $themeConfig)
+    public function save(array $params, ThemeConfig $themeConfig)
     {
         // check the HTTP POST contains a _form
         // otherwise there is no way to lookup the mappings
@@ -109,7 +110,8 @@ class CaptureService
         // make sure the _form given exists in the theme JSON config
         // The theme.json file must contain form field name to database field
         // name mappings grouped by _form
-        if (!isset($themeConfig['forms'])) {
+        $formConfigCollection = $themeConfig->getFormConfigCollection();
+        if (null === $formConfigCollection) {
             $this->logger->error(sprintf(
                 'HTTP POST called for form "%s", but theme config file contains no "forms" section',
                 $params['_form']
@@ -120,7 +122,7 @@ class CaptureService
             ));
         }
 
-        if (count($themeConfig['forms']) < 1) {
+        if (count($formConfigCollection) < 1) {
             throw new \Exception(sprintf(
                 'HTTP POST called for form "%s", but theme config file contains no form definitions',
                 $params['_form']
@@ -134,55 +136,44 @@ class CaptureService
         ));
 
         $formNameMatch = false;
-        foreach ($themeConfig['forms'] as $formName => $details) {
-            $this->logger->debug(sprintf(
-                'Checking theme config file _form=%s',
-                $formName
-            ));
-            if ($params['_form'] === $formName) {
-                $this->logger->debug(sprintf(
-                    'Found a match for _form=%s',
-                    $params['_form']
-                ));
-                $formNameMatch = true;
 
-                if (!isset($details['dbtable'])) {
-                    throw new \Exception(sprintf(
-                        'Form "%s" is missing "dbtable" entry',
-                        $formName
-                    ));
-                }
-
-                $tableName = $details['dbtable'];
-                $mappings = isset($details['map']) ? $details['map'] : [];
-                break;
-            }
-        }
-
-        if (false === $formNameMatch) {
+        $formConfig = $formConfigCollection->getFormConfigByName($params['_form']);
+        if (null === $formConfig) {
             $this->logger->error(sprintf(
-                'Cannot find a definition for _form=%s whilst scanning theme.json "forms" section',
+                'Cannot find a definition for _form=%s in theme config forms section',
                 $params['_form']
             ));
             throw new \Exception(sprintf(
-                'Cannot find a definition for _form=%s whilst scanning theme.json "forms" section',
+                'Cannot find a definition for _form=%s in theme config forms section',
                 $params['_form']
             ));
         }
+
+        $tableName = $formConfig->getDbTable();
+        if (empty($tableName)) {
+            throw new \Exception(sprintf(
+                'Form "%s" is missing a "dbtable"',
+                $formName
+            ));
+        }
+
+        $fields = $formConfig->getFieldsConfigCollection();
 
         // build a lookup table from database column name to form field value
         $lookup = [];
         $formFieldColumns = [];
-        foreach ($mappings as $formFieldName => $formConfig) {
-            if (!isset($formConfig['dbcolumn'])) {
+        foreach ($fields as $fieldConfig) {
+            $formFieldName = $fieldConfig->getName();
+            $dbColumn = $fieldConfig->getDbColumn();
+            if (empty($dbColumn)) {
                 throw new \Exception(sprintf(
                     'Form field "%s" does not contain a "dbcolumn" entry in the theme.json file',
                     $formFieldName
                 ));
             }
-            $databaseColumnName = $formConfig['dbcolumn'];
+
             if (isset($params[$formFieldName])) {
-                $lookup[$databaseColumnName] = $params[$formFieldName];
+                $lookup[$dbColumn] = $params[$formFieldName];
             } else {
                 $this->logger->warning(sprintf(
                     'Form field "%s" is defined in the theme.json mappings for _form=%s but is has no value passed from the template form',
@@ -192,7 +183,7 @@ class CaptureService
             }
             $formFieldColumns[] = $formFieldName;
         }
-        
+
         // no mapping to database fields.  Without this check the values
         // would silently be lost and never catpured to the database
         foreach (array_keys($params) as $formFieldName) {
@@ -257,7 +248,7 @@ class CaptureService
         // reposting the capture data, or on a multi-page landing site
         if (null === $row) {
             // automatically save the UTM tracking in the datbase
-            if ((null !== $this->session) 
+            if ((null !== $this->session)
                 && ($this->session instanceof Session)
                 && (null !== $this->session->get('initial_query_params'))) {
                 $queryParams = $this->session->get('initial_query_params');
@@ -276,8 +267,9 @@ class CaptureService
             $lookup[self::STAGE]          = 1;
             $lookup[self::REQUEST_SCHEME] = $this->request->getScheme();
             $lookup[self::HTTP_HOST]      = $this->request->getHost();
-            $lookup[self::THEME]          = $themeConfig['name'] . ' ' . $themeConfig['version'];
-            $lookup[self::ROUTE_CONFIG]   = json_encode($themeConfig['routes'],
+            $lookup[self::THEME]          = $themeConfig->getThemeName()
+                                          . ' ' . $themeConfig->getThemeVersion();
+            $lookup[self::ROUTE_CONFIG]   = json_encode($themeConfig->getRoutes(),
                                                         JSON_UNESCAPED_SLASHES);
             $lookup[self::USER_AGENT]     = $this->request->server->get('HTTP_USER_AGENT');
             $lookup[self::HTTP_REFERER]   = $this->session->get('ARRIVAL_HTTP_REFERER');

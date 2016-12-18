@@ -55,10 +55,14 @@ class FormController extends AbstractController
             $formName
         );
 
-        $dbTable = $this->themeConfig
-                        ->getFormConfigCollection()
-                        ->getFormConfigByName($formName)
-                        ->getDbTable();
+        if (null === ($formConfigCollection = $this->themeConfig->getFormConfigCollection())) {
+            throw new \Exception(sprintf(
+                'Template attemtped HTTP POST but theme config is missing a forms section for form "%s"',
+                $formName
+            ));
+        }
+
+        $dbTable = $formConfigCollection->getFormConfigByName($formName)->getDbTable();
 
         if (!isset($dbtable) && (null === $filterAndValidatorLookup)) {
             $customParams = [];
@@ -178,7 +182,7 @@ class FormController extends AbstractController
 
         $captureService->save(
             $postParams,
-            $this->lpEngine->getThemeConfig()
+            $this->themeConfig
         );
 
         $nextUrl = $this->request->get('_nexturl');
