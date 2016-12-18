@@ -10,8 +10,6 @@
  */
 namespace Gm\LandingPageEngine\Form\Validator;
 
-//use Nitrogen\Validator\Exception;
-
 class DigitsOnly extends AbstractValidator
 {
     const NOT_DIGITS = 'not-digits';

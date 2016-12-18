@@ -1,7 +1,12 @@
 <?php
 namespace Gm\LandingPageEngine\Service;
 
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\Loader\FileLoader;
 use Monolog\Logger;
+
+use Gm\LandingPageEngine\Config\ConfigLoader\XmlThemeConfigLoader;
+use Gm\LandingPageEngine\Config\ThemeConfig;
 
 class ThemeConfigService
 {
@@ -11,7 +16,7 @@ class ThemeConfigService
     protected $logger;
 
     /**
-     * @var array
+     * @var ThemeConfig
      */
     protected $themeConfig;
 
@@ -30,8 +35,26 @@ class ThemeConfigService
         $this->config = $config;
     }
 
+    /**
+     *
+     * @return ThemeConfig
+     */
     public function loadThemeConfig($theme)
     {
+        $directories = [
+            $this->config['themes_root'] . '/' . $theme
+        ];
+        $locator = new FileLocator($directories);
+        $loader = new XmlThemeConfigLoader($locator);
+        $themeDomDoc = $loader->load($locator->locate('theme.xml'));
+
+        return $this->themeConfig = new ThemeConfig(
+            $this->logger,
+            $themeDomDoc
+        );
+
+        // @todo legacy .json file below
+
         $jsonThemeFilepath = $this->config['themes_root'] . '/' . $theme . '/theme.json';
         $this->logger->debug(sprintf(
             'Attempt to loaded theme configuration "%s"',
@@ -87,7 +110,11 @@ class ThemeConfigService
             }
         }
 
-        $this->themeConfig = $json;
+        return $this->themeConfig = new ThemeConfig(
+            $this->logger,
+            $json,
+            ThemeConfig::CONFIG_TYPE_JSON
+        );
     }
 
     public function activateThemes()
@@ -223,7 +250,7 @@ class ThemeConfigService
 
     /**
      * Return the theme config as an array
-     * @return array
+     * @return ThemeConfig
      */
     public function getThemeConfig()
     {
