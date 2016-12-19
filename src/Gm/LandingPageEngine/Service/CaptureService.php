@@ -167,7 +167,7 @@ class CaptureService
             $dbColumn = $fieldConfig->getDbColumn();
             if (empty($dbColumn)) {
                 throw new \Exception(sprintf(
-                    'Form field "%s" does not contain a "dbcolumn" entry in the theme.json file',
+                    'Form field "%s" does not contain a "dbcolumn" entry in the theme file',
                     $formFieldName
                 ));
             }
@@ -176,7 +176,7 @@ class CaptureService
                 $lookup[$dbColumn] = $params[$formFieldName];
             } else {
                 $this->logger->warning(sprintf(
-                    'Form field "%s" is defined in the theme.json mappings for _form=%s but is has no value passed from the template form',
+                    'Form field "%s" is defined in the theme mappings for _form=%s but is has no value passed from the template form',
                     $formFieldName,
                     $params['_form']
                 ));

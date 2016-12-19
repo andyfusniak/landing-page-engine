@@ -103,11 +103,11 @@ class FormController extends AbstractController
         ));
 
         foreach ($postParams as $name => $value) {
-            $this->logger->debug(sprintf(
-                'HTTP POST parameters %s=%s',
-                $name,
-                $value
-            ));
+            //$this->logger->debug(sprintf(
+            //    'HTTP POST parameters %s=%s',
+            //    $name,
+            //    $value
+            //));
 
             $originalValue = $value;
 
