@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.6.4 (19 Dec 2016)
+- Work around temp fix for array to string conversion error when posting using checkboxes
+
 ## 2.6.3 (19 Dec 2016)
 - Critial Bugfix for failed update on second HTTP POST of form data
 
