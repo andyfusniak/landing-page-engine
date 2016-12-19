@@ -64,7 +64,7 @@ class FormController extends AbstractController
 
         $dbTable = $formConfigCollection->getFormConfigByName($formName)->getDbTable();
 
-        if (!isset($dbtable) && (null === $filterAndValidatorLookup)) {
+        if (!isset($dbTable) && (null === $filterAndValidatorLookup)) {
             $customParams = [];
             foreach ($postParams as $name => $value) {
                 if ('_' === substr($name, 0, 1)) {
