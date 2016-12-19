@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.6.3 (19 Dec 2016)
+- Critial Bugfix for failed update on second HTTP POST of form data
+
 ## 2.6.2 (18 Dec 2016)
 - Fix various bugs including theme.xml loadng issues when a missing section form
 - Fix status-page PHP notice on Mac
