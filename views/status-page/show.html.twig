@@ -64,7 +64,7 @@ Database Panels contain real data.</p>
 
         {% for name, value in php_extensions %}
         <tr>
-            <td>PHP {{ name}}</td>
+            <td>PHP {{ name }}</td>
             {% if value == 1 %}
             <td><span class="label label-success">Installed</span></td>
             {% else %}
@@ -234,31 +234,17 @@ Database Panels contain real data.</p>
 
         <h4>Available Themes</h4>
         <table class="table">
+        {% for name, value in theme_summary %}
         <tr>
-            <td>Mountain Mist</td>
-            <td>1.0.0</td>
-            <td><span class="label label-success">Active</span></td>
+            <td>{{ name }}</td>
+            {% if value == 'Enabled' %}
+            <td><span class="label label-success">Enabled</span></td>
+            {% else %}
+            <td><span class="label label-danger">Disabled</span></td>
+            {% endif %}
+            </td>
         </tr>
-        <tr>
-            <td>November Twirl</td>
-            <td>1.5.5</td>
-            <td><span class="label label-default">Not in use</span></td>
-        </tr>
-        <tr>
-            <td>Seabreeze</td>
-            <td>1.0.0</td>
-            <td><span class="label label-success">Active</span></td>
-        </tr>
-        <tr>
-            <td>Special Promotion</td>
-            <td>3.5.7</td>
-            <td><span class="label label-default">Not in use</span></td>
-        </tr>
-        <tr>
-            <td>Tea Tree Lotion</td>
-            <td>2.4.1</td>
-            <td><span class="label label-default">Not in use</span></td>
-        </tr>
+        {% endfor %}
         </table>
         </div>
         </div>

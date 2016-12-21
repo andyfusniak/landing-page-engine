@@ -184,6 +184,31 @@ class StatusService
         }
     }
 
+    public function themeSettings()
+    {
+        $availableThemeDirs = $this->listOfDirs(
+            $this->applicationConfig->getThemesRoot()
+        );
+
+        $activeThemeDirs = $this->listOfDirs(
+            $this->applicationConfig->getWebRoot() . '/assets'
+        );
+
+        $themeSummary = [];
+        foreach ($availableThemeDirs as $availableTheme) {
+            if (in_array($availableTheme, $activeThemeDirs)) {
+                $themeSummary[$availableTheme] = 'Enabled';
+            } else {
+                $themeSummary[$availableTheme] = 'Disabled';
+            }
+        }
+
+        $this->lpEngine->addTwigGlobal(
+            'theme_summary',
+            $themeSummary
+        );
+    }
+
     public function getTableMapper()
     {
         if (null === $this->tableMapper) {
@@ -217,8 +242,26 @@ class StatusService
                 . $suffixes[floor($base)];
     }
 
-    private function listOfThemes()
+    private function listOfDirs($dirRoot)
     {
-        scandir($this->applicationConfig->getThemesRoots());
+        if (false === file_exists($dirRoot)) {
+            return null;
+        }
+
+        if (false === is_dir($dirRoot)) {
+            return null;
+        }
+
+        $scan = scandir($dirRoot, SCANDIR_SORT_NONE);
+        $dirs = [];
+        foreach ($scan as $fileOrDir) {
+            if (in_array($fileOrDir, ['.', '..'])) {
+                continue;
+            }
+            if (is_dir($this->applicationConfig->getThemesRoot() . '/' . $fileOrDir)) {
+                $dirs[] = $fileOrDir;
+            }
+        }
+        return $dirs;
     }
 }
