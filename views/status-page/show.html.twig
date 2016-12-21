@@ -35,12 +35,12 @@ Database Panels contain real data.</p>
             <td>PHP Version</td>
             <td>{{ php_version }}</td>
         </tr>
-        
+
         <tr>
             <td>Disk Total</td>
             <td>{{ disk_total }}</td>
         </tr>
-        
+
         <tr>
             <td>Disk Used</td>
             <td>{{ disk_used }}</td>
@@ -79,7 +79,7 @@ Database Panels contain real data.</p>
         </div>
         <!-- pannel end 2 divs -->
     </div>
-    
+
     <div class="col-md-4">
         <!-- pannel start 2 div-->
         <div class="panel panel-default">
@@ -99,12 +99,66 @@ Database Panels contain real data.</p>
             <td>Installation Dir</td>
             <td>{{ lpe_project_root }}</td>
         </tr>
+        <tr>
+            <td>Log Filepath</td>
+            <td>{{ lpe_log_file_path }}</td>
+        </tr>
+        <tr>
+            <td>Log Level</td>
+            <td>{{ lpe_log_level }}</td>
+        </tr>
+
+
+
+        <tr>
+            <td>Developer Mode</td>
+            {% if lpe_developer_mode == 'True' %}
+            <td><span class="label label-default">{{ lpe_developer_mode }}</td>
+            {% else %}
+            <td><span class="label label-default">{{ lpe_developer_mode }}</td>
+            {% endif %}
+            </td>
+        </tr>
+
+        <tr>
+            <td>Skip Auto Var Dir Setup</td>
+            {% if lpe_skip_auto_var_dir_setup == 'True' %}
+            <td><span class="label label-default">{{ lpe_skip_auto_var_dir_setup }}</td>
+            {% else %}
+            <td><span class="label label-default">{{ lpe_skip_auto_var_dir_setup }}</td>
+            {% endif %}
+            </td>
+        </tr>
+
+        <tr>
+            <td>Skip Auto Theme Activation</td>
+            {% if lpe_skip_auto_theme_activation == 'True' %}
+            <td><span class="label label-default">{{ lpe_skip_auto_theme_activation }}</td>
+            {% else %}
+            <td><span class="label label-default">{{ lpe_skip_auto_theme_activation }}</td>
+            {% endif %}
+            </td>
+        </tr>
+
+        <tr>
+            <td>No Capture</td>
+            {% if lpe_no_capture == 'True' %}
+            <td><span class="label label-default">{{ lpe_no_capture }}</td>
+            {% else %}
+            <td><span class="label label-default">{{ lpe_no_capture }}</td>
+            {% endif %}
+            </td>
+        </tr>
+
+
+
+
         </table>
         </div>
         </div>
         <!-- pannel end 2 divs -->
     </div>
-    
+
     <div class="col-md-4">
         <!-- pannel start 2 div-->
         <div class="panel panel-default">
@@ -148,8 +202,8 @@ Database Panels contain real data.</p>
         <tr>
             <td>Connection Test</td>
             <td>
-                {% if no_capture == 1 %}
-                <span class="label label-warning">No Capture Mode On</span>
+                {% if capturing_data == 1 %}
+                <span class="label label-warning">DATA NOT BEING CAPTURED</span>
                 {% else %}
                     {% if has_database_connection == 1 %}
                     <span class="label label-success">Success</span>
@@ -163,7 +217,7 @@ Database Panels contain real data.</p>
 
         </div>
         </div>
-        <!-- pannel end 2 divs -->        
+        <!-- pannel end 2 divs -->
     </div>
 </div>
 
@@ -206,9 +260,9 @@ Database Panels contain real data.</p>
         </div>
         <!-- pannel end 2 divs -->
     </div>
-    
+
     <div class="col-md-8">
-    
+
     <!-- pannel start 2 div-->
     <div class="panel panel-default">
     <div class="panel-body">
@@ -505,7 +559,7 @@ Database Panels contain real data.</p>
         </div>
         <!-- pannel end 2 divs -->
     </div>
-    
+
     <div class="col-md-8">
         <!-- pannel start 2 div-->
         <div class="panel panel-default">
@@ -545,8 +599,8 @@ Database Panels contain real data.</p>
         </div>
         <!-- pannel end 2 divs -->
     </div>
-    
-    
+
+
 </div>
 
 <!-- routing and form config -->

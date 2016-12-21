@@ -337,14 +337,14 @@ class ApplicationConfig
     }
 
     /**
-     * 0  Emergency         Logger::EMERG
-     * 1  Alert             Logger::ALERT
-     * 2  Critical          Logger::CRITICAL
-     * 3  Error             Logger::ERROR
-     * 4  Warning           Logger::WARNING
-     * 5  Notice            Logger::NOTICE
-     * 6  Informational     Logger::INFO
-     * 7  Debug             Logger::DEBUG
+     * Emergency         Logger::EMERG
+     * Alert             Logger::ALERT
+     * Critical          Logger::CRITICAL
+     * Error             Logger::ERROR
+     * Warning           Logger::WARNING
+     * Notice            Logger::NOTICE
+     * Informational     Logger::INFO
+     * Debug             Logger::DEBUG
      */
     public function setLogLevel($logLevel)
     {

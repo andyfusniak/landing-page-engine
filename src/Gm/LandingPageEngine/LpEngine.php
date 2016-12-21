@@ -225,6 +225,7 @@ class LpEngine
         $this->logger             = $logger;
         $this->themeConfigService = $themeConfigService;
         $this->pdoService         = $pdoService;
+        $this->applicationConfig  = $applicationConfig;
         $this->config             = $config;
 
         $host = $this->request->getHost();
@@ -546,11 +547,29 @@ class LpEngine
 
     /**
      * Get the application config
-     * @return array the config associative array
+     * @return ApplicationConfig object
      */
     public function getApplicationConfig()
     {
         return $this->applicationConfig;
+    }
+
+    /**
+     * Get the config
+     * @return array config associative array
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    /**
+     * Get the PdoService instance
+     * @return PdoService instance
+     */
+    public function getPdoService()
+    {
+        return $this->pdoService;
     }
 
     /**
