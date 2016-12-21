@@ -5,6 +5,7 @@ namespace Gm\LandingPageEngine;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
+use Gm\LandingPageEngine\Config\ApplicationConfig;
 use Gm\LandingPageEngine\Entity\FilterConfigCollection;
 use Gm\LandingPageEngine\Entity\ValidatorConfigCollection;
 use Gm\LandingPageEngine\Form\Filter\FilterChain;
@@ -157,6 +158,8 @@ class LpEngine
      */
     public static function init($config)
     {
+        $applicationConfig = new ApplicationConfig(__DIR__);
+
         if (isset($config['developer_mode']) && (true === $config['developer_mode'])) {
             Debug::enable();
         }
@@ -529,12 +532,7 @@ class LpEngine
     public function getStatusService()
     {
         if (null === $this->statusService) {
-            $this->statusService = new StatusService(
-                $this->logger,
-                $this->pdoService,
-                $this,
-                $this->config
-            );
+            $this->statusService = new StatusService($this);
         }
         return $this->statusService;
     }
