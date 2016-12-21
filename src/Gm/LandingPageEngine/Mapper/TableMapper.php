@@ -33,7 +33,7 @@ class TableMapper
             INSERT INTO ' . $tableName . ' (id, ' . $columnList
             . ') VALUES (NULL, ' . $columnPlaceHolders . ')';
         $statement = $this->pdo->prepare($sql);
-     
+
         foreach ($sqlFieldMap as $columnName => $value) {
             if (is_array($value)) {
                 $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -58,6 +58,7 @@ class TableMapper
      * been done, then the service layer can use update
      * to overwrite fields or capture missing columns
      *
+     * @param string $tableName the database table
      * @param string $sessionId the PHPSESSID from the Session instance
      */
     public function findRowBySessionId($tableName, $sessionId)
@@ -71,6 +72,18 @@ class TableMapper
             $sql
         ));
         return $statement->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    public function fetchLastNRowsAssocArray($tableName, $number = 5)
+    {
+        $sql = 'SELECT * FROM ' . $tableName . ' LIMIT ' . strval($number);
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute();
+        $this->logger->debug(sprintf(
+            'SQL Query executed %s',
+            $sql
+        ));
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -112,7 +125,7 @@ class TableMapper
         }
         $sql .= ' WHERE session_id = :session_id';
         $statement = $this->pdo->prepare($sql);
-        
+
         foreach ($sqlFieldMap as $columnName => $value) {
             if (is_array($value)) {
                 $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

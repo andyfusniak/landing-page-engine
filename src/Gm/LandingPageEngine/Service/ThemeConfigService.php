@@ -5,6 +5,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\FileLoader;
 use Monolog\Logger;
 
+use Gm\LandingPageEngine\Config\ApplicationConfig;
 use Gm\LandingPageEngine\Config\ConfigLoader\XmlThemeConfigLoader;
 use Gm\LandingPageEngine\Config\ThemeConfig;
 
@@ -21,18 +22,18 @@ class ThemeConfigService
     protected $themeConfig;
 
     /**
-     * @var array
+     * @var ApplicationConfig
      */
-    protected $config;
+    protected $applicationConfig;
 
     /**
      *
      * @param $config application config
      */
-    public function __construct(Logger $logger, $config)
+    public function __construct(Logger $logger, $applicationConfig)
     {
         $this->logger = $logger;
-        $this->config = $config;
+        $this->applicationConfig = $applicationConfig;
     }
 
     /**
@@ -41,9 +42,11 @@ class ThemeConfigService
      */
     public function loadThemeConfig($theme)
     {
+        $themesRoot = $this->applicationConfig->getThemesRoot();
         $directories = [
-            $this->config['themes_root'] . '/' . $theme
+            $themesRoot . '/' . $theme
         ];
+
         $locator = new FileLocator($directories);
         $loader = new XmlThemeConfigLoader($locator);
         $themeDomDoc = $loader->load($locator->locate('theme.xml'));
@@ -52,87 +55,23 @@ class ThemeConfigService
             $this->logger,
             $themeDomDoc
         );
-
-        // @todo legacy .json file below
-
-        $jsonThemeFilepath = $this->config['themes_root'] . '/' . $theme . '/theme.json';
-        $this->logger->debug(sprintf(
-            'Attempt to loaded theme configuration "%s"',
-            $jsonThemeFilepath
-        ));
-
-        $string = file_get_contents($jsonThemeFilepath);
-        $json = json_decode($string, true);
-
-        if (null === $json) {
-            $this->logger->error(sprintf(
-                'The theme JSON file "%s" could not be parsed',
-                $jsonThemeFilepath
-            ));
-            throw new \Exception(sprintf(
-                'The theme JSON file "%s" could not be parsed. Err code %s, error message "%s"',
-                $jsonThemeFilepath,
-                json_last_error(),
-                json_last_error_msg()
-            ));
-        }
-
-        // check the template contains appropriate contents
-        if (isset($json['name']) && (isset($json['version']))) {
-            $this->logger->info(sprintf(
-                'Template "%s" version %s in use."',
-                $json['name'],
-                $json['version']
-            ));
-        } else {
-            if (!isset($json['name'])) {
-                $this->logger->error(sprintf(
-                    'Template "%s" has a missing theme name.  Use {"name": "Template name"} section.',
-                    $jsonThemeFilepath
-                ));
-                throw new \Exception(sprintf(
-                    'theme.json file "%s" is missing compulsory {"name": "Template name"}.  The \
-                    template name is needed as an autocapture field in the database.',
-                    $jsonThemeFilepath
-                ));
-            }
-
-            if (!isset($json['version'])) {
-                $this->logger->error(sprintf(
-                    'Template "%s" has a missing version.  Use {"version": "x.y.z"} section.',
-                    $jsonThemeFilepath
-                ));
-                throw new \Exception(sprintf(
-                    'theme.json file "%s" is missing compulsory {"version": "x.y.z"}.  The \
-                    template version is needed as an autocapture field in the database.',
-                    $jsonThemeFilepath
-                ));
-            }
-        }
-
-        return $this->themeConfig = new ThemeConfig(
-            $this->logger,
-            $json,
-            ThemeConfig::CONFIG_TYPE_JSON
-        );
     }
 
-    public function activateThemes()
+    public function activateThemes($config)
     {
-        if (isset($this->config['skip_auto_theme_activation']) &&
-            (true === $this->config['skip_auto_theme_activation'])) {
+        if (true === $this->applicationConfig->getSkipAutoThemeActivation()) {
             $logger->info('Skipping theme activation checks as skip_auto_theme_activation=true');
             return;
         }
 
-        $hostsConfig = isset($this->config['hosts']) ? $this->config['hosts'] : null;
+        $hostsConfig = isset($config['hosts']) ? $config['hosts'] : null;
         if (null === $hostsConfig) {
             throw new \Exception(
                 'config.php contains no \'hosts\' configuration.  You must have at least one valid host-to-theme mapping.'
             );
         }
 
-        $publicAssets = $this->config['web_root'] . '/assets';
+        $publicAssets = $this->applicationConfig->getWebRoot() . '/assets';
         if (!is_dir($publicAssets)) {
             throw new \Exception(sprintf(
                 '%s directory does not exist.  You should create this directory and make it writeable by the web server',
@@ -167,7 +106,6 @@ class ThemeConfigService
 
         // deactivate any themes that aren't going to be in use
         // On a broken symlink is_link() returns true and file_exists() returns false.
-        $publicAssets = $this->config['web_root'] . '/assets';
         foreach (scandir($publicAssets) as $entry) {
             if (('.' === $entry) || ('..' === $entry)) {
                 continue;
@@ -217,7 +155,8 @@ class ThemeConfigService
             ));
         }
 
-        $publicAssets = $this->config['web_root'] . '/assets';
+        $webRoot = $this->applicationConfig->getWebRoot();
+        $publicAssets = $webRoot . '/assets';
         if (!is_dir($publicAssets)) {
             throw new \Exception(sprintf(
                 '%s directory does not exist.  You should create this directory and make it writeable by the web server',
@@ -234,7 +173,7 @@ class ThemeConfigService
         }
 
         $target = '../../themes/' . $name . '/assets/' . $name;
-        $link = $this->config['web_root'] . '/assets/' . $name;
+        $link = $webRoot . '/assets/' . $name;
 
         if (!is_link($link)) {
             if (!@symlink($target, $link)) {

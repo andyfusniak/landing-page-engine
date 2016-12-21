@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="Bootstrap.php" colors="true">
     <testsuites>
+        <testsuite name="application-config">
+            <directory>./GmTest/LandingPageEngine/Config</directory>
+        </testsuite>
+
         <testsuite name="form-filters">
             <directory>./GmTest/LandingPageEngine/Form/Filter</directory>
         </testsuite>
@@ -15,7 +19,7 @@
             <directory suffix=".php">../src</directory>
         </whitelist>
     </filter>
-    
+
     <logging>
         <log type="coverage-html"
              target="/tmp/report"

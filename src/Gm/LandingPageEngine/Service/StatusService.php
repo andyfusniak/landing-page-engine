@@ -2,8 +2,8 @@
 namespace Gm\LandingPageEngine\Service;
 
 use Gm\LandingPageEngine\Mapper\TableMapper;
-use Gm\LandingPageEngine\Service\PdoService;
 use Gm\LandingPageEngine\LpEngine;
+use Gm\LandingPageEngine\Config\ApplicationConfig;
 use Gm\LandingPageEngine\Version\Version;
 
 use Monolog\Logger;
@@ -16,34 +16,31 @@ class StatusService
     protected $logger;
 
     /**
-     * @var PdoService
-     */
-    protected $pdoService;
-
-    /**
      * @var LpEngine
      */
     protected $lpEngine;
-    
+
+    /**
+     * @var ApplicationConfig
+     */
+    protected $applicationConfig;
+
     /**
      * @var array
      */
     protected $config;
-    
+
     /**
      * @var TableMapper
      */
     protected $tableMapper;
 
-    public function __construct(Logger $logger,
-                                PdoService $pdoService,
-                                LpEngine $lpEngine,
-                                array $config)
+    public function __construct(LpEngine $lpEngine)
     {
-        $this->logger      = $logger;
-        $this->pdoService  = $pdoService;
-        $this->lpEngine    = $lpEngine;
-        $this->config      = $config;
+        $this->lpEngine          = $lpEngine;
+        $this->logger            = $lpEngine->getLogger();
+        $this->applicationConfig = $lpEngine->getApplicationConfig();
+        $this->config            = $lpEngine->getConfig();
     }
 
     public function systemSettings()
@@ -54,11 +51,10 @@ class StatusService
             phpversion()
         );
 
-
         // PHP extensions loaded
         $phpExtensions = [
             'pdo_mysql' => (true === extension_loaded('pdo_mysql')) ? 1 : 0,
-            'mysql'     => (true === extension_loaded('mysql')) ? 1 : 0,
+            'intl'      => (true === extension_loaded('intl')) ? 1 : 0,
             'mbstring'  => (true === extension_loaded('mbstring')) ? 1 : 0,
             'curl'      => (true === extension_loaded('curl')) ? 1 : 0,
         ];
@@ -110,8 +106,49 @@ class StatusService
 
         $this->lpEngine->addTwigGlobal(
             'lpe_project_root',
-            $this->config['project_root']
+            $this->applicationConfig->getProjectRoot()
         );
+
+        $this->lpEngine->addTwigGlobal(
+            'lpe_web_root',
+            $this->applicationConfig->getWebRoot()
+        );
+
+        $this->lpEngine->addTwigGlobal(
+            'lpe_log_file_path',
+            $this->applicationConfig->getLogFilePath()
+        );
+
+        $this->lpEngine->addTwigGlobal(
+            'lpe_log_level',
+            $this->logger->getLevelName($this->applicationConfig->getLogLevel())
+        );
+
+        $this->lpEngine->addTwigGlobal(
+            'lpe_developer_mode',
+            (true === $this->applicationConfig->getDeveloperMode())
+                ? 'True' : 'False'
+        );
+
+        $this->lpEngine->addTwigGlobal(
+            'lpe_skip_auto_var_dir_setup',
+            (true === $this->applicationConfig->getSkipAutoVarDirSetup())
+                ? 'True' : 'False'
+        );
+
+        $this->lpEngine->addTwigGlobal(
+            'lpe_skip_auto_theme_activation',
+            (true === $this->applicationConfig->getSkipAutoThemeActivation())
+                ? 'True' : 'False'
+        );
+
+        $this->lpEngine->addTwigGlobal(
+            'lpe_no_capture',
+            (true === $this->applicationConfig->getNoCapture())
+                ? 'True' : 'False'
+        );
+
+
     }
 
     public function databaseSettings()
@@ -126,17 +163,16 @@ class StatusService
         }
 
         // database connection status
-        if (isset($this->config['developer_mode'])
-            && ($this->config['developer_mode'] === true)
-            && (isset($this->config['no_capture']))
-            && ($this->config['no_capture'] === true)) {
-            $this->lpEngine->addTwigGlobal('no_capture', 1);
+
+        if ((true === $this->applicationConfig->getDeveloperMode()) &&
+            (true === $this->applicationConfig->getNoCapture())) {
+            $this->lpEngine->addTwigGlobal('capturing_data', 1);
         } else {
-            $this->lpEngine->addTwigGlobal('no_capture', 0);
+            $this->lpEngine->addTwigGlobal('capturing_data', 0);
         }
 
         try {
-            $pdo = $this->pdoService->getPdoObject();
+            $pdo = $this->lpEngine->getPdoService()->getPdoObject();
             if ($pdo instanceof \PDO) {
                 $this->lpEngine->addTwigGlobal('has_database_connection', 1);
             } else {
@@ -148,10 +184,35 @@ class StatusService
         }
     }
 
+    public function themeSettings()
+    {
+        $availableThemeDirs = $this->listOfDirs(
+            $this->applicationConfig->getThemesRoot()
+        );
+
+        $activeThemeDirs = $this->listOfDirs(
+            $this->applicationConfig->getWebRoot() . '/assets'
+        );
+
+        $themeSummary = [];
+        foreach ($availableThemeDirs as $availableTheme) {
+            if (in_array($availableTheme, $activeThemeDirs)) {
+                $themeSummary[$availableTheme] = 'Enabled';
+            } else {
+                $themeSummary[$availableTheme] = 'Disabled';
+            }
+        }
+
+        $this->lpEngine->addTwigGlobal(
+            'theme_summary',
+            $themeSummary
+        );
+    }
+
     public function getTableMapper()
     {
         if (null === $this->tableMapper) {
-            $pdo = $this->pdoService->getPdoObject();
+            $pdo = $this->lpEngine->getPdoService()->getPdoObject();
             $this->tableMapper = new TableMapper($this->logger, $pdo);
         }
         return $this->tableMapper;
@@ -167,11 +228,11 @@ class StatusService
     {
         $base = log($size, $oneK);
         if ($oneK === 1024) {
-            $suffixes = ['', 'KiB', 'MiB', 'GiB', 'TiB'];    
+            $suffixes = ['', 'KiB', 'MiB', 'GiB', 'TiB'];
         } else {
             $suffixes = ['', 'KB', 'MB', 'GB', 'TB'];
         }
-        
+
         return round(pow(
                     $oneK,
                     $base - floor($base)),
@@ -179,5 +240,28 @@ class StatusService
                 )
                 . ' '
                 . $suffixes[floor($base)];
+    }
+
+    private function listOfDirs($dirRoot)
+    {
+        if (false === file_exists($dirRoot)) {
+            return null;
+        }
+
+        if (false === is_dir($dirRoot)) {
+            return null;
+        }
+
+        $scan = scandir($dirRoot, SCANDIR_SORT_NONE);
+        $dirs = [];
+        foreach ($scan as $fileOrDir) {
+            if (in_array($fileOrDir, ['.', '..'])) {
+                continue;
+            }
+            if (is_dir($this->applicationConfig->getThemesRoot() . '/' . $fileOrDir)) {
+                $dirs[] = $fileOrDir;
+            }
+        }
+        return $dirs;
     }
 }

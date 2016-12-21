@@ -5,6 +5,7 @@ namespace Gm\LandingPageEngine;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
+use Gm\LandingPageEngine\Config\ApplicationConfig;
 use Gm\LandingPageEngine\Entity\FilterConfigCollection;
 use Gm\LandingPageEngine\Entity\ValidatorConfigCollection;
 use Gm\LandingPageEngine\Form\Filter\FilterChain;
@@ -48,9 +49,9 @@ class LpEngine
     protected $routes;
 
     /**
-     * @var array
+     * @var ApplicationConfig
      */
-    protected $config;
+    protected $applicationConfig;
 
     /**
      * @var Logger
@@ -104,24 +105,20 @@ class LpEngine
      *   project_root/var/log           0777
      *   project_root/var/twig_cache    0777
      *
-     * @param @config array the application config
+     * @param $varDir       string the application var root dir
+     * @param $twigCacheDir string the twig cache root dir
+     * @param $logDir       string the log root dir
      * @return bool true if the /var/log was successfully created
      * @throws \Exception if the project_root/var dir cannot be written to
      */
-    public static function setupVarDirectoryAndPermissions($config)
+    public static function setupVarDirectoryAndPermissions($varDir,
+                                                           $twigCacheDir,
+                                                           $logDir)
     {
         // Check the var directory structure is in place
-        $varDir = $config['project_root'] . '/var';
         if (!file_exists($varDir)) {
             mkdir($varDir, 0777);
             chmod($varDir, 0777);
-        }
-
-        $twigCacheDir = isset($config['twig_cache_dir']) ? $config['twig_cache_dir'] : null;
-        if (null === $twigCacheDir) {
-            throw new \Exception(
-                'The config.php does not contain a \'twig_cache_dir\' entry'
-            );
         }
 
         if (!file_exists($twigCacheDir)) {
@@ -152,20 +149,25 @@ class LpEngine
     /**
      * Initialise a Landing Page Engine instance and wire it up
      *
-     * @param array $config the application configuration
+     * @param array $config application configuration overrides
      * @return LpEngine
      */
     public static function init($config)
     {
-        if (isset($config['developer_mode']) && (true === $config['developer_mode'])) {
+        $applicationConfig = new ApplicationConfig($config['project_root']);
+
+        if (true === $applicationConfig->getDeveloperMode()) {
             Debug::enable();
         }
 
-        if (isset($config['skip_auto_var_dir_setup']) &&
-            (true === $config['skip_auto_var_dir_setup'])) {
+        if (true === $applicationConfig->getSkipAutoVarDirSetup()) {
             $logDirReady = true;
         } else {
-            $logDirReady = self::setupVarDirectoryAndPermissions($config);
+            $logDirReady = self::setupVarDirectoryAndPermissions(
+                $applicationConfig->getVarDir(),
+                $applicationConfig->getTwigCacheDir(),
+                $applicationConfig->getLogDir()
+            );
         }
 
         // setup the logging and stream for log file only if the var/log
@@ -174,7 +176,10 @@ class LpEngine
         $logger = new Logger('lpengine');
         if (true === $logDirReady) {
             $logger->pushHandler(
-                new StreamHandler($config['log_fullpath'], $config['log_level'])
+                new StreamHandler(
+                    $applicationConfig->getLogFilePath(),
+                    $applicationConfig->getLogLevel()
+                )
             );
         }
 
@@ -191,14 +196,15 @@ class LpEngine
             $request,
             $response,
             $logger,
-            new ThemeConfigService($logger, $config),
+            new ThemeConfigService($logger, $applicationConfig),
             $pdoService,
+            $applicationConfig,
             $config
         );
 
         // activate the themes
         $themeConfigService = $engine->getThemeConfigService();
-        $themeConfigService->activateThemes();
+        $themeConfigService->activateThemes($config);
         return $engine;
     }
 
@@ -207,6 +213,7 @@ class LpEngine
                                 Logger $logger,
                                 ThemeConfigService $themeConfigService,
                                 PdoService $pdoService,
+                                ApplicationConfig $applicationConfig,
                                 array $config)
     {
         $logger->info(sprintf(
@@ -218,6 +225,7 @@ class LpEngine
         $this->logger             = $logger;
         $this->themeConfigService = $themeConfigService;
         $this->pdoService         = $pdoService;
+        $this->applicationConfig  = $applicationConfig;
         $this->config             = $config;
 
         $host = $this->request->getHost();
@@ -229,7 +237,7 @@ class LpEngine
                 $this->theme
             ));
             \Twig_Autoloader::register();
-            $twigTemplateDir = $config['themes_root'] . '/' . $this->theme . '/templates';
+            $twigTemplateDir = $applicationConfig->getThemesRoot() . '/' . $this->theme . '/templates';
         } else {
             throw new \Exception(sprintf(
                 'No host-to-template mapping configured for the host "%s".  Check your config.php file',
@@ -300,8 +308,8 @@ class LpEngine
             $twigTemplateDir
         ));
 
-        if ((isset($config['developer_mode']))
-            && ($config['developer_mode'] === true)) {
+
+        if (true === $applicationConfig->getDeveloperMode()) {
             $twigEnvOptions = [
                 'debug'       => true,
                 'cache'       => false,
@@ -312,7 +320,6 @@ class LpEngine
                 'cache' => $config['twig_cache_dir'],
             ];
         }
-
         $this->twigEnv = new \Twig_Environment($loader, $twigEnvOptions);
 
         // @todo needs to be more modular to lazy-load and plug them in
@@ -411,13 +418,7 @@ class LpEngine
     public function getCaptureService()
     {
         if (null === $this->captureService) {
-            $this->captureService = new CaptureService(
-                $this->logger,
-                $this->pdoService,
-                $this->config,
-                $this->getSession(),
-                $this->getRequest()
-            );
+            $this->captureService = new CaptureService($this);
         }
         return $this->captureService;
     }
@@ -529,12 +530,7 @@ class LpEngine
     public function getStatusService()
     {
         if (null === $this->statusService) {
-            $this->statusService = new StatusService(
-                $this->logger,
-                $this->pdoService,
-                $this,
-                $this->config
-            );
+            $this->statusService = new StatusService($this);
         }
         return $this->statusService;
     }
@@ -551,11 +547,29 @@ class LpEngine
 
     /**
      * Get the application config
-     * @return array the config associative array
+     * @return ApplicationConfig object
+     */
+    public function getApplicationConfig()
+    {
+        return $this->applicationConfig;
+    }
+
+    /**
+     * Get the config
+     * @return array config associative array
      */
     public function getConfig()
     {
         return $this->config;
+    }
+
+    /**
+     * Get the PdoService instance
+     * @return PdoService instance
+     */
+    public function getPdoService()
+    {
+        return $this->pdoService;
     }
 
     /**
