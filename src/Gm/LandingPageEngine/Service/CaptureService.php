@@ -2,6 +2,7 @@
 namespace Gm\LandingPageEngine\Service;
 
 use Monolog\Logger;
+use Gm\LandingPageEngine\LpEngine;
 use Gm\LandingPageEngine\Config\ThemeConfig;
 use Gm\LandingPageEngine\Mapper\TableMapper;
 use Gm\LandingPageEngine\Service\PdoService;
@@ -44,11 +45,6 @@ class CaptureService
     protected $pdoService;
 
     /**
-     * @var array
-     */
-    protected $config;
-
-    /**
      * @var TableMapper
      */
     protected $tableMapper;
@@ -68,17 +64,12 @@ class CaptureService
      * @param array   $config global configuration for LP Engine
      * @param Session $session session instance used for multi-page flow
      */
-    public function __construct(Logger $logger,
-                                PdoService $pdoService,
-                                array $config,
-                                Session $session,
-                                Request $request)
+    public function __construct(LpEngine $lpEngine)
     {
-        $this->logger     = $logger;
-        $this->pdoService = $pdoService;
-        $this->config     = $config;
-        $this->session    = $session;
-        $this->request    = $request;
+        $this->logger     = $lpEngine->getLogger();
+        $this->pdoService = $lpEngine->getPdoService();
+        $this->session    = $lpEngine->getSession();
+        $this->request    = $lpEngine->getRequest();
     }
 
     public function save(array $params, ThemeConfig $themeConfig)
@@ -216,14 +207,16 @@ class CaptureService
             $lookup['session_id'] = null;
         }
 
-        if ((isset($this->config['developer_mode'])
-            && ($this->config['developer_mode'] === true))
-            && (isset($this->config['no_capture']))
-            && ($this->config['no_capture'] === true)) {
+        $applicationConfig = $this->lpEngine->getApplicationConfig();
+        $developerMode = $applicationConfig->getDeveloerMode();
+        $noCapture     = $applicationConfig->getNoCapture();
+
+        if ((true === $developerMode) &&
+            (true === $noCapture)) {
             $this->logger->warning(sprintf(
                 'developer_mode=%s and no_capture=%s so data catpure is switch off',
-                (true === $this->config['developer_mode']) ? 'true' : 'false',
-                (true === $this->config['no_capture']) ? 'true' : 'false'
+                (true === $developerMode) ? 'true' : 'false',
+                (true === $noCapture) ? 'true' : 'false'
             ));
             return;
         }

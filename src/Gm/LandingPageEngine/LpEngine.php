@@ -176,7 +176,10 @@ class LpEngine
         $logger = new Logger('lpengine');
         if (true === $logDirReady) {
             $logger->pushHandler(
-                new StreamHandler($config['log_fullpath'], $config['log_level'])
+                new StreamHandler(
+                    $applicationConfig->getLogFilePath(),
+                    $applicationConfig->getLogLevel()
+                )
             );
         }
 
@@ -195,6 +198,7 @@ class LpEngine
             $logger,
             new ThemeConfigService($logger, $applicationConfig),
             $pdoService,
+            $applicationConfig,
             $config
         );
 
@@ -209,6 +213,7 @@ class LpEngine
                                 Logger $logger,
                                 ThemeConfigService $themeConfigService,
                                 PdoService $pdoService,
+                                ApplicationConfig $applicationConfig,
                                 array $config)
     {
         $logger->info(sprintf(
@@ -231,7 +236,7 @@ class LpEngine
                 $this->theme
             ));
             \Twig_Autoloader::register();
-            $twigTemplateDir = $config['themes_root'] . '/' . $this->theme . '/templates';
+            $twigTemplateDir = $applicationConfig->getThemesRoot() . '/' . $this->theme . '/templates';
         } else {
             throw new \Exception(sprintf(
                 'No host-to-template mapping configured for the host "%s".  Check your config.php file',
@@ -302,8 +307,8 @@ class LpEngine
             $twigTemplateDir
         ));
 
-        if ((isset($config['developer_mode']))
-            && ($config['developer_mode'] === true)) {
+
+        if (true === $applicationConfig->getDeveloperMode()) {
             $twigEnvOptions = [
                 'debug'       => true,
                 'cache'       => false,
@@ -314,7 +319,6 @@ class LpEngine
                 'cache' => $config['twig_cache_dir'],
             ];
         }
-
         $this->twigEnv = new \Twig_Environment($loader, $twigEnvOptions);
 
         // @todo needs to be more modular to lazy-load and plug them in
@@ -413,13 +417,7 @@ class LpEngine
     public function getCaptureService()
     {
         if (null === $this->captureService) {
-            $this->captureService = new CaptureService(
-                $this->logger,
-                $this->pdoService,
-                $this->config,
-                $this->getSession(),
-                $this->getRequest()
-            );
+            $this->captureService = new CaptureService($this);
         }
         return $this->captureService;
     }
