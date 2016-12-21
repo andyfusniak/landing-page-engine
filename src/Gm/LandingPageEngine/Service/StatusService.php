@@ -6,6 +6,8 @@ use Gm\LandingPageEngine\LpEngine;
 use Gm\LandingPageEngine\Config\ApplicationConfig;
 use Gm\LandingPageEngine\Version\Version;
 
+use Gm\LandingPageEngine\Service\Exception\ThemeConfigFileNotFound;
+
 use Monolog\Logger;
 
 class StatusService
@@ -194,12 +196,34 @@ class StatusService
             $this->applicationConfig->getWebRoot() . '/assets'
         );
 
+
+        $themeConfigService = $this->lpEngine->getThemeConfigService();
         $themeSummary = [];
         foreach ($availableThemeDirs as $availableTheme) {
+            try {
+                $themeConfig = $themeConfigService->loadThemeConfig($availableTheme);
+            } catch (ThemeConfigFileNotFound $e) {
+                $themeConfig = null;
+            }
+
             if (in_array($availableTheme, $activeThemeDirs)) {
-                $themeSummary[$availableTheme] = 'Enabled';
+                $themeSummary[$availableTheme] = [
+                    'status' => 'Enabled',
+                ];
             } else {
-                $themeSummary[$availableTheme] = 'Disabled';
+                $themeSummary[$availableTheme] = [
+                    'status' => 'Disabled'
+                ];
+            }
+
+            if (null === $themeConfig) {
+                $themeSummary[$availableTheme]['name'] = 'theme.xml';
+                $themeSummary[$availableTheme]['version'] = 'theme.xml';
+            } else {
+                $themeSummary[$availableTheme]['name']
+                    = $themeConfig->getThemeName();
+                $themeSummary[$availableTheme]['version']
+                    = $themeConfig->getThemeVersion();
             }
         }
 

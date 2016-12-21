@@ -3,11 +3,13 @@ namespace Gm\LandingPageEngine\Service;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Loader\FileLoader;
+use Symfony\Component\Config\Exception\FileLocatorFileNotFoundException;
 use Monolog\Logger;
 
 use Gm\LandingPageEngine\Config\ApplicationConfig;
 use Gm\LandingPageEngine\Config\ConfigLoader\XmlThemeConfigLoader;
 use Gm\LandingPageEngine\Config\ThemeConfig;
+use Gm\LandingPageEngine\Service\Exception\ThemeConfigFileNotFound;
 
 class ThemeConfigService
 {
@@ -49,7 +51,12 @@ class ThemeConfigService
 
         $locator = new FileLocator($directories);
         $loader = new XmlThemeConfigLoader($locator);
-        $themeDomDoc = $loader->load($locator->locate('theme.xml'));
+
+        try {
+            $themeDomDoc = $loader->load($locator->locate('theme.xml'));
+        } catch (FileLocatorFileNotFoundException $e) {
+            throw new ThemeConfigFileNotFound($e);
+        }
 
         return $this->themeConfig = new ThemeConfig(
             $this->logger,
