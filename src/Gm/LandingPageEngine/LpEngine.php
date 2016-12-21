@@ -49,9 +49,9 @@ class LpEngine
     protected $routes;
 
     /**
-     * @var array
+     * @var ApplicationConfig
      */
-    protected $config;
+    protected $applicationConfig;
 
     /**
      * @var Logger
@@ -105,24 +105,20 @@ class LpEngine
      *   project_root/var/log           0777
      *   project_root/var/twig_cache    0777
      *
-     * @param @config array the application config
+     * @param $varDir       string the application var root dir
+     * @param $twigCacheDir string the twig cache root dir
+     * @param $logDir       string the log root dir
      * @return bool true if the /var/log was successfully created
      * @throws \Exception if the project_root/var dir cannot be written to
      */
-    public static function setupVarDirectoryAndPermissions($config)
+    public static function setupVarDirectoryAndPermissions($varDir,
+                                                           $twigCacheDir,
+                                                           $logDir)
     {
         // Check the var directory structure is in place
-        $varDir = $config['project_root'] . '/var';
         if (!file_exists($varDir)) {
             mkdir($varDir, 0777);
             chmod($varDir, 0777);
-        }
-
-        $twigCacheDir = isset($config['twig_cache_dir']) ? $config['twig_cache_dir'] : null;
-        if (null === $twigCacheDir) {
-            throw new \Exception(
-                'The config.php does not contain a \'twig_cache_dir\' entry'
-            );
         }
 
         if (!file_exists($twigCacheDir)) {
@@ -153,22 +149,25 @@ class LpEngine
     /**
      * Initialise a Landing Page Engine instance and wire it up
      *
-     * @param array $config the application configuration
+     * @param array $config application configuration overrides
      * @return LpEngine
      */
     public static function init($config)
     {
-        $applicationConfig = new ApplicationConfig(__DIR__);
+        $applicationConfig = new ApplicationConfig($config['project_root']);
 
-        if (isset($config['developer_mode']) && (true === $config['developer_mode'])) {
+        if (true === $applicationConfig->getDeveloperMode()) {
             Debug::enable();
         }
 
-        if (isset($config['skip_auto_var_dir_setup']) &&
-            (true === $config['skip_auto_var_dir_setup'])) {
+        if (true === $applicationConfig->getSkipAutoVarDirSetup()) {
             $logDirReady = true;
         } else {
-            $logDirReady = self::setupVarDirectoryAndPermissions($config);
+            $logDirReady = self::setupVarDirectoryAndPermissions(
+                $applicationConfig->getVarDir(),
+                $applicationConfig->getTwigCacheDir(),
+                $applicationConfig->getLogDir()
+            );
         }
 
         // setup the logging and stream for log file only if the var/log
@@ -194,14 +193,14 @@ class LpEngine
             $request,
             $response,
             $logger,
-            new ThemeConfigService($logger, $config),
+            new ThemeConfigService($logger, $applicationConfig),
             $pdoService,
             $config
         );
 
         // activate the themes
         $themeConfigService = $engine->getThemeConfigService();
-        $themeConfigService->activateThemes();
+        $themeConfigService->activateThemes($config);
         return $engine;
     }
 
@@ -551,9 +550,9 @@ class LpEngine
      * Get the application config
      * @return array the config associative array
      */
-    public function getConfig()
+    public function getApplicationConfig()
     {
-        return $this->config;
+        return $this->applicationConfig;
     }
 
     /**

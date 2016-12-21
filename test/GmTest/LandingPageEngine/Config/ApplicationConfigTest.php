@@ -57,6 +57,20 @@ class ApplicationConfigTest extends TestCase
         $this->assertInternalType('string', $result);
     }
 
+    public function testGetVarDir()
+    {
+        $result = $this->applicationConfig->getVarDir();
+        $this->assertEquals('/var/www/projectroot/var', $result);
+        $this->assertInternalType('string', $result);
+    }
+
+    public function testGetLogDir()
+    {
+        $result = $this->applicationConfig->getLogDir();
+        $this->assertEquals('/var/www/projectroot/var/log', $result);
+        $this->assertInternalType('string', $result);
+    }
+
     public function testGetWebRoot()
     {
         $result = $this->applicationConfig->getWebRoot();

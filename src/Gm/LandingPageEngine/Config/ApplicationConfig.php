@@ -58,6 +58,16 @@ class ApplicationConfig
     /**
      * @var string
      */
+    protected $varDir;
+
+    /**
+     * @var string
+     */
+    protected $logDir;
+
+    /**
+     * @var string
+     */
     protected $twigCacheDir;
 
     /**
@@ -93,9 +103,11 @@ class ApplicationConfig
             $this->themesRoot = (string) $themesRoot;
         }
 
-        $this->twigCacheDir = $projectRoot . '/' . self::VAR_ROOT . '/twig_cache';
-        $this->logFilePath  = $projectRoot . '/' . self::VAR_ROOT . '/log/lpengine.log';
+        $this->varDir = $projectRoot . '/' . self::VAR_ROOT;
+        $this->twigCacheDir = $this->varDir . '/twig_cache';
 
+        $this->logDir = $this->varDir . '/log';
+        $this->logFilePath  = $this->logDir . '/lpengine.log';
         $this->logLevel = self::DEFAULT_LOG_LEVEL;
     }
 
@@ -238,6 +250,26 @@ class ApplicationConfig
     public function getProjectRoot()
     {
         return $this->projectRoot;
+    }
+
+    /**
+     * Get the var root dir path
+     *
+     * @return string var root directory
+     */
+    public function getVarDir()
+    {
+        return $this->varDir;
+    }
+
+    /**
+     * Get the log root dir path
+     *
+     * @return string log root directory
+     */
+    public function getLogDir()
+    {
+        return $this->logDir;
     }
 
     /**
