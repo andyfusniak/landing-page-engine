@@ -110,6 +110,11 @@ class StatusService
         );
 
         $this->lpEngine->addTwigGlobal(
+            'lpe_web_root',
+            $this->applicationConfig->getWebRoot()
+        );
+
+        $this->lpEngine->addTwigGlobal(
             'lpe_log_file_path',
             $this->applicationConfig->getLogFilePath()
         );
