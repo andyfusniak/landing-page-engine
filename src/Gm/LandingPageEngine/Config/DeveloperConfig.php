@@ -106,8 +106,7 @@ class DeveloperConfig
     {
         if (false === $databaseNode->hasAttribute('profilename')) {
             throw new DeveloperConfigXmlException(sprintf(
-                'config.xml <databases> element contains an unknown element <%s> in config.xml line %s',
-                $databaseNode->nodeName,
+                'config.xml <database> has a missing profilename attribute in config.xml line %s',
                 $databaseNode->getLineNo()
             ));
         }
