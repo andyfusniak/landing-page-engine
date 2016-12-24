@@ -6,6 +6,7 @@ use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
 use Gm\LandingPageEngine\Config\ApplicationConfig;
+use Gm\LandingPageEngine\Config\DeveloperConfig;
 use Gm\LandingPageEngine\Entity\FilterConfigCollection;
 use Gm\LandingPageEngine\Entity\ValidatorConfigCollection;
 use Gm\LandingPageEngine\Form\Filter\FilterChain;
@@ -149,11 +150,16 @@ class LpEngine
     /**
      * Initialise a Landing Page Engine instance and wire it up
      *
-     * @param array $config application configuration overrides
+     * @param string $projectRoot project install root dir
      * @return LpEngine
      */
-    public static function init($config)
+    public static function init($projectRoot)
     {
+        $developerConfig = DeveloperConfig::loadXmlConfig($projectRoot . '/config/config.xml');
+
+        var_dump($developerConfig);
+        die();
+
         $applicationConfig = new ApplicationConfig($config['project_root']);
 
         if (true === $applicationConfig->getDeveloperMode()) {
