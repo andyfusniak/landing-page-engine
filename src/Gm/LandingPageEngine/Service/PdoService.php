@@ -2,6 +2,7 @@
 namespace Gm\LandingPageEngine\Service;
 
 use Monolog\Logger;
+use Gm\LandingPageEngine\Config\DeveloperConfig;
 
 class PdoService
 {
@@ -11,26 +12,29 @@ class PdoService
     protected $logger;
 
     /**
-     * @var array
+     * @var DeveloperConfig
      */
-    protected $config;
+    protected $developerConfig;
 
     /**
      * @var \PDO
      */
     protected $pdo;
 
-    public function __construct(Logger $logger, $config)
+    public function __construct(Logger $logger, DeveloperConfig $developerConfig)
     {
         $this->logger = $logger;
-        $this->config = $config;
+        $this->developerConfig = $developerConfig;
     }
 
     public function getPdoObject() {
-        
+
         if (null !== $this->pdo) {
             return $this-pdo;
         }
+
+        var_dump($this->developerConfig);
+        die();
 
         try {
             $dsn = 'mysql:host=' . $this->config['db']['dbhost'] . ';dbname=' .

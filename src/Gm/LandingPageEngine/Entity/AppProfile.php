@@ -12,6 +12,8 @@ namespace Gm\LandingPageEngine\Entity;
 
 class AppProfile
 {
+    const DEFAULT_VALUE = '@default';
+
     /**
      * @var string
      */

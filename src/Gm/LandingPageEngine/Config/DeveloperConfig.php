@@ -56,7 +56,8 @@ class DeveloperConfig
     /**
      * @var AppProfile
      */
-    protected $app ;
+    protected $appProfile;
+
     /**
      * @var array associative array of DeveloperDatabaseProfile objects
      */
@@ -158,6 +159,11 @@ class DeveloperConfig
                         $value,
                         $node->getLineNo()
                     ));
+                }
+
+                // special case for the <connection-profile> node
+                // as the value must match an existing datbase profile
+                if (self::NODE_APP_CONNECTION_PROFILE === $node->nodeName) {
                 }
                 return $node->nodeValue;
                 break;
@@ -269,7 +275,9 @@ class DeveloperConfig
         foreach ($databasesNode->childNodes as $node) {
             if (XML_ELEMENT_NODE === $node->nodeType) {
                 if ('database' === $node->nodeName) {
-                    $databases[] = self::processDatabaseDomNode($node);
+                    $developerDatabaseProfile = self::processDatabaseDomNode($node);
+                    $databases[$developerDatabaseProfile->getProfileName()]
+                        = self::processDatabaseDomNode($node);
                     $numDatabaseElements++;
                 } else {
                     throw new DeveloperConfigXmlException(sprintf(
@@ -398,10 +406,10 @@ class DeveloperConfig
         );
     }
 
-    public function __construct(AppProfile $app, array $databases, array $hosts)
+    public function __construct(AppProfile $appProfile, array $databases, array $hosts)
     {
         // app
-        $this->app = $app;
+        $this->appProfile = $appProfile;
 
         // databases
         foreach ($databases as $developerDatabaseProfile) {
@@ -426,8 +434,13 @@ class DeveloperConfig
      */
     public function addDatabaseProfile(DeveloperDatabaseProfile $databaseProfile) : DeveloperConfig
     {
-        $this->databases[] = $databaseProfile;
+        $this->databases[$databaseProfile->getProfileName()] = $databaseProfile;
         return $this;
+    }
+
+    public function getDatabaseProfiles() : array
+    {
+        return $this->databases;
     }
 
     /**
@@ -440,5 +453,15 @@ class DeveloperConfig
     {
         $this->hosts[] = $hostProfile;
         return $this;
+    }
+
+    public function getHostProfiles() : array
+    {
+        return $this->hosts;
+    }
+
+    public function getAppProfile() : AppProfile
+    {
+        return $this->appProfile;
     }
 }

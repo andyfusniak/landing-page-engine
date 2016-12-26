@@ -155,12 +155,12 @@ class LpEngine
      */
     public static function init($projectRoot)
     {
-        $developerConfig = DeveloperConfig::loadXmlConfig($projectRoot . '/config/config.xml');
-
-        var_dump($developerConfig);
-        die();
-
         $applicationConfig = new ApplicationConfig($config['project_root']);
+        $developerConfig =
+            DeveloperConfig::loadXmlConfig($projectRoot . '/config/config.xml');
+        $applicationConfig->overrideConfig($developerConfig);
+
+        var_dump($applicationConfig);
 
         if (true === $applicationConfig->getDeveloperMode()) {
             Debug::enable();
@@ -190,7 +190,7 @@ class LpEngine
         }
 
         // setup the PdoService
-        $pdoService = new PdoService($logger, $config);
+        $pdoService = new PdoService($logger, $developerConfig);
 
         // setup the request and response
         $request = Request::createFromGlobals();
@@ -205,7 +205,7 @@ class LpEngine
             new ThemeConfigService($logger, $applicationConfig),
             $pdoService,
             $applicationConfig,
-            $config
+            $developerConfig
         );
 
         // activate the themes
@@ -220,7 +220,7 @@ class LpEngine
                                 ThemeConfigService $themeConfigService,
                                 PdoService $pdoService,
                                 ApplicationConfig $applicationConfig,
-                                array $config)
+                                DeverloperConfig $developerConfig)
     {
         $logger->info(sprintf(
             'LPE Version %s Running',
@@ -232,7 +232,7 @@ class LpEngine
         $this->themeConfigService = $themeConfigService;
         $this->pdoService         = $pdoService;
         $this->applicationConfig  = $applicationConfig;
-        $this->config             = $config;
+        $this->developerConfig    = $developerConfig;
 
         $host = $this->request->getHost();
         if (isset($config['hosts'][$host])) {

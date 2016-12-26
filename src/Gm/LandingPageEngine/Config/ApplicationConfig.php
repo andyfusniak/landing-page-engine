@@ -11,6 +11,8 @@
 namespace Gm\LandingPageEngine\Config;
 
 use Monolog\Logger;
+use Gm\LandingPageEngine\Config\DeveloperConfig;
+use Gm\LandingPageEngine\Entity\AppProfile;
 
 class ApplicationConfig
 {
@@ -109,6 +111,24 @@ class ApplicationConfig
         $this->logDir = $this->varDir . '/log';
         $this->logFilePath  = $this->logDir . '/lpengine.log';
         $this->logLevel = self::DEFAULT_LOG_LEVEL;
+    }
+
+    /**
+     * Override the default application config with the developer's own
+     *
+     * @param DeveloperConfig $developerConfig
+     * @return ApplicationConfig
+     */
+    public function overrideConfig($developerConfig) : ApplicationConfig
+    {
+        $appProfile = $developerConfig->getAppProfile();
+
+        $developerMode = $appProfile->getDeveloperMode();
+        if ((AppProfile::DEFAULT_VALUE !== $developerMode)
+            && (null !== $developerMode)) {
+            $this->setDeveloperMode($developerMode);
+        }
+        return $this;
     }
 
     /**
