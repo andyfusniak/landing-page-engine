@@ -3,13 +3,13 @@
  * Landing Page Engine
  *
  * @package Gm\LandingPageEngine
- * @subpackage Config\Exception
+ * @subpackage Service\Exception
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
  * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace Gm\LandingPageEngine\Config\Exception;
 
-interface ExceptionInterface
+class DeveloperConfigXmlException extends \Exception implements ExceptionInterface
 {
 }

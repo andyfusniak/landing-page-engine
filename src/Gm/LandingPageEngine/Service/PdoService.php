@@ -2,6 +2,7 @@
 namespace Gm\LandingPageEngine\Service;
 
 use Monolog\Logger;
+use Gm\LandingPageEngine\Config\DeveloperConfig;
 
 class PdoService
 {
@@ -11,31 +12,33 @@ class PdoService
     protected $logger;
 
     /**
-     * @var array
+     * @var DeveloperConfig
      */
-    protected $config;
+    protected $developerConfig;
 
     /**
      * @var \PDO
      */
     protected $pdo;
 
-    public function __construct(Logger $logger, $config)
+    public function __construct(Logger $logger, DeveloperConfig $developerConfig)
     {
         $this->logger = $logger;
-        $this->config = $config;
+        $this->developerConfig = $developerConfig;
     }
 
     public function getPdoObject() {
-        
+
         if (null !== $this->pdo) {
             return $this-pdo;
         }
 
+        $databaseProfile = $this->developerConfig->getActiveDatabaseProfile();
+
         try {
-            $dsn = 'mysql:host=' . $this->config['db']['dbhost'] . ';dbname=' .
-                    $this->config['db']['dbname'];
-            $user = $this->config['db']['dbuser'];
+            $dsn = 'mysql:host=' . $databaseProfile->getDbHost() . ';dbname=' .
+                    $databaseProfile->getDbName();
+            $user = $databaseProfile->getDbUser();
 
             $this->logger->debug(sprintf(
                 'Data Source Name = %s, user = %s',
@@ -46,11 +49,12 @@ class PdoService
             $this->pdo = new \PDO(
                 $dsn,
                 $user,
-                $this->config['db']['dbpass'],
+                $databaseProfile->getDbPass(),
                 [
                     \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
                 ]
             );
+
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
             throw $e;

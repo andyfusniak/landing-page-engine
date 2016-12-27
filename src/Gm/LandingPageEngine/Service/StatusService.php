@@ -4,6 +4,7 @@ namespace Gm\LandingPageEngine\Service;
 use Gm\LandingPageEngine\Mapper\TableMapper;
 use Gm\LandingPageEngine\LpEngine;
 use Gm\LandingPageEngine\Config\ApplicationConfig;
+use Gm\LandingPageEngine\Config\DeveloperConfig;
 use Gm\LandingPageEngine\Version\Version;
 
 use Gm\LandingPageEngine\Service\Exception\ThemeConfigFileNotFound;
@@ -28,9 +29,9 @@ class StatusService
     protected $applicationConfig;
 
     /**
-     * @var array
+     * @var DeveloperConfig
      */
-    protected $config;
+    protected $developerConfig;
 
     /**
      * @var TableMapper
@@ -42,7 +43,7 @@ class StatusService
         $this->lpEngine          = $lpEngine;
         $this->logger            = $lpEngine->getLogger();
         $this->applicationConfig = $lpEngine->getApplicationConfig();
-        $this->config            = $lpEngine->getConfig();
+        $this->developerConfig   = $lpEngine->getDeveloperConfig();
     }
 
     public function systemSettings()

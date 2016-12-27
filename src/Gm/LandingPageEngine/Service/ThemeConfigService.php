@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 namespace Gm\LandingPageEngine\Service;
 
 use Symfony\Component\Config\FileLocator;
@@ -7,6 +7,7 @@ use Symfony\Component\Config\Exception\FileLocatorFileNotFoundException;
 use Monolog\Logger;
 
 use Gm\LandingPageEngine\Config\ApplicationConfig;
+use Gm\LandingPageEngine\Config\DeveloperConfig;
 use Gm\LandingPageEngine\Config\ConfigLoader\XmlThemeConfigLoader;
 use Gm\LandingPageEngine\Config\ThemeConfig;
 use Gm\LandingPageEngine\Service\Exception\ThemeConfigFileNotFound;
@@ -55,7 +56,9 @@ class ThemeConfigService
         try {
             $themeDomDoc = $loader->load($locator->locate('theme.xml'));
         } catch (FileLocatorFileNotFoundException $e) {
-            throw new ThemeConfigFileNotFound($e);
+            throw new ThemeConfigFileNotFound(sprintf(
+                'Theme not found'
+            ));
         }
 
         return $this->themeConfig = new ThemeConfig(
@@ -64,19 +67,14 @@ class ThemeConfigService
         );
     }
 
-    public function activateThemes($config)
+    public function activateThemes(DeveloperConfig $developerConfig)
     {
         if (true === $this->applicationConfig->getSkipAutoThemeActivation()) {
             $logger->info('Skipping theme activation checks as skip_auto_theme_activation=true');
             return;
         }
 
-        $hostsConfig = isset($config['hosts']) ? $config['hosts'] : null;
-        if (null === $hostsConfig) {
-            throw new \Exception(
-                'config.php contains no \'hosts\' configuration.  You must have at least one valid host-to-theme mapping.'
-            );
-        }
+        //$hostsConfig = isset($config['hosts']) ? $config['hosts'] : null;
 
         $publicAssets = $this->applicationConfig->getWebRoot() . '/assets';
         if (!is_dir($publicAssets)) {
@@ -94,18 +92,15 @@ class ThemeConfigService
             ));
         }
 
-        // iterate the list of hosts in their natural order
+        // iterate the list of hosts profiles
         // and check the theme for each is activated
-        $hosts = array_keys($hostsConfig);
-        natsort($hosts);
+
+        $hosts = $developerConfig->getHostProfiles();
 
         // remove duplicates
         $themesToActivate = [];
         foreach ($hosts as $host) {
-            $theme = $hostsConfig[$host];
-            $parts = explode(':', $theme);
-            $theme = $parts[0];
-
+            $theme = $host->getThemeName();
             if (!in_array($theme, $themesToActivate)) {
                 array_push($themesToActivate, $theme);
             }
