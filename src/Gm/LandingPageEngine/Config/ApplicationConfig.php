@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /**
  * Landing Page Engine
  *
@@ -56,6 +56,11 @@ class ApplicationConfig
      * @var string
      */
     protected $webRoot;
+
+    /**
+     * @var string
+     */
+    protected $themesRoot;
 
     /**
      * @var string
@@ -128,6 +133,62 @@ class ApplicationConfig
             && (null !== $developerMode)) {
             $this->setDeveloperMode($developerMode);
         }
+
+        $skipAutoVarDirSetup = $appProfile->getSkipAutoVarDirSetup();
+        if ((AppProfile::DEFAULT_VALUE !== $skipAutoVarDirSetup)
+            && (null !== $skipAutoVarDirSetup)) {
+            $this->setSkipAutoVarDirSetup($skipAutoVarDirSetup);
+        }
+
+        $skipAutoThemeActivation = $appProfile->getSkipAutoThemeActivation();
+        if ((AppProfile::DEFAULT_VALUE !== $skipAutoThemeActivation)
+            && (null !== $skipAutoThemeActivation)) {
+            $this->setSkipAutoThemeActivation($skipAutoThemeActivation);
+        }
+
+        $noCapture = $appProfile->getNoCapture();
+        if (null !== $noCapture) {
+            $this->setNoCapture($noCapture);
+        }
+
+        $projectRoot = $appProfile->getProjectRoot();
+        if ((AppProfile::DEFAULT_VALUE !== $projectRoot)
+            && (null !== $projectRoot)) {
+            $this->setProjectRoot($projectRoot);
+            $this->varDir = $projectRoot . '/' . self::VAR_ROOT;
+            $this->logDir = $this->varDir . '/log';
+        }
+
+        $webRoot = $appProfile->getWebRoot();
+        if ((AppProfile::DEFAULT_VALUE !== $webRoot)
+            && (null !== $webRoot)) {
+            $this->setWebRoot($webRoot);
+        }
+
+        $themesRoot = $appProfile->getThemesRoot();
+        if ((AppProfile::DEFAULT_VALUE !== $themesRoot)
+            && (null !== $themesRoot)) {
+            $this->setThemesRoot($themesRoot);
+        }
+
+        $twigCacheDir = $appProfile->getTwigCacheDir();
+        if ((AppProfile::DEFAULT_VALUE !== $twigCacheDir)
+            && (null !== $twigCacheDir)) {
+            $this->setTwigCacheDir($twigCacheDir);
+        }
+
+        $logFilePath = $appProfile->getLogFilePath();
+        if ((AppProfile::DEFAULT_VALUE !== $logFilePath)
+            && (null !== $logFilePath)) {
+            $this->setLogFilePath($logFilePath);
+        }
+
+        $logLevel = $appProfile->getLogLevel();
+        if ((AppProfile::DEFAULT_VALUE !== $logLevel)
+            && (null !== $logLevel)) {
+            $this->setLogLevel($logLevel);
+        }
+
         return $this;
     }
 
@@ -240,7 +301,7 @@ class ApplicationConfig
      * @param bool $value true or false
      * @return ApplicationConfig
      */
-    public function setNoCapture($value)
+    public function setNoCapture(bool $value)
     {
         if (!is_bool($value)) {
             throw new \InvalidArgumentException(sprintf(
@@ -260,6 +321,18 @@ class ApplicationConfig
     public function getNoCapture()
     {
         return $this->noCapture;
+    }
+
+    /**
+     * Set the project root
+     *
+     * @param string
+     * @return ApplicationConfig
+     */
+    public function setProjectRoot(string $projectRoot) : ApplicationConfig
+    {
+        $this->projectRoot = $projectRoot;
+        return $this;
     }
 
     /**
@@ -293,6 +366,18 @@ class ApplicationConfig
     }
 
     /**
+     * Set the web root
+     *
+     * @param string $webRoot web root
+     * @return ApplicationConfig
+     */
+    public function setWebRoot(string $webRoot) : ApplicationConfig
+    {
+        $this->webRoot = $webRoot;
+        return $this;
+    }
+
+    /**
      * Get the full path to the web root
      *
      * @return string web root directory
@@ -300,6 +385,18 @@ class ApplicationConfig
     public function getWebRoot()
     {
         return $this->webRoot;
+    }
+
+    /**
+     * Set the themes root
+     *
+     * @param string $themesRoot themes root
+     * @return ApplicationConfig
+     */
+    public function setThemesRoot($themesRoot) : ApplicationConfig
+    {
+        $this->themesRoot = $themesRoot;
+        return $this;
     }
 
     /**
@@ -366,9 +463,9 @@ class ApplicationConfig
      * Informational     Logger::INFO
      * Debug             Logger::DEBUG
      */
-    public function setLogLevel($logLevel)
+    public function setLogLevel(int $logLevel)
     {
-        $this->logLevel = (int) $logLevel;
+        $this->logLevel = $logLevel;
         return $this;
     }
 

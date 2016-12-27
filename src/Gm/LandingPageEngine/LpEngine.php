@@ -55,6 +55,11 @@ class LpEngine
     protected $applicationConfig;
 
     /**
+     * @var DeveloperConfig
+     */
+    protected $developerConfig;
+
+    /**
      * @var Logger
      */
     protected $logger;
@@ -112,9 +117,10 @@ class LpEngine
      * @return bool true if the /var/log was successfully created
      * @throws \Exception if the project_root/var dir cannot be written to
      */
-    public static function setupVarDirectoryAndPermissions($varDir,
-                                                           $twigCacheDir,
-                                                           $logDir)
+    public static function setupVarDirectoryAndPermissions(string $projectRoot,
+                                                           string $varDir,
+                                                           string $twigCacheDir,
+                                                           string $logDir)
     {
         // Check the var directory structure is in place
         if (!file_exists($varDir)) {
@@ -127,8 +133,8 @@ class LpEngine
                 || (false === @chmod($twigCacheDir, 0777))) {
                 throw new \Exception(sprintf(
                     'Your project root dir "%s" is not writeable by the web server. Change the permissions on this directory using "chmod g+w,o+w %s"',
-                    $config['project_root'],
-                    $config['project_root']
+                    $projectRoot,
+                    $projectRoot
                 ));
             }
         }
@@ -155,12 +161,10 @@ class LpEngine
      */
     public static function init($projectRoot)
     {
-        $applicationConfig = new ApplicationConfig($config['project_root']);
+        $applicationConfig = new ApplicationConfig($projectRoot);
         $developerConfig =
             DeveloperConfig::loadXmlConfig($projectRoot . '/config/config.xml');
         $applicationConfig->overrideConfig($developerConfig);
-
-        var_dump($applicationConfig);
 
         if (true === $applicationConfig->getDeveloperMode()) {
             Debug::enable();
@@ -170,6 +174,7 @@ class LpEngine
             $logDirReady = true;
         } else {
             $logDirReady = self::setupVarDirectoryAndPermissions(
+                $applicationConfig->getProjectRoot(),
                 $applicationConfig->getVarDir(),
                 $applicationConfig->getTwigCacheDir(),
                 $applicationConfig->getLogDir()
@@ -210,7 +215,7 @@ class LpEngine
 
         // activate the themes
         $themeConfigService = $engine->getThemeConfigService();
-        $themeConfigService->activateThemes($config);
+        $themeConfigService->activateThemes($developerConfig);
         return $engine;
     }
 
@@ -220,7 +225,7 @@ class LpEngine
                                 ThemeConfigService $themeConfigService,
                                 PdoService $pdoService,
                                 ApplicationConfig $applicationConfig,
-                                DeverloperConfig $developerConfig)
+                                DeveloperConfig $developerConfig)
     {
         $logger->info(sprintf(
             'LPE Version %s Running',
@@ -235,8 +240,8 @@ class LpEngine
         $this->developerConfig    = $developerConfig;
 
         $host = $this->request->getHost();
-        if (isset($config['hosts'][$host])) {
-            $this->theme = $config['hosts'][$host];
+        if (null !== ($hostProfile = $developerConfig->getHostByDomain($host))) {
+            $this->theme = $hostProfile->getThemeName();
             $logger->debug(sprintf(
                 'Host "%s" is configure to use theme "%s".  Checking theme exists',
                 $host,
@@ -246,7 +251,7 @@ class LpEngine
             $twigTemplateDir = $applicationConfig->getThemesRoot() . '/' . $this->theme . '/templates';
         } else {
             throw new \Exception(sprintf(
-                'No host-to-template mapping configured for the host "%s".  Check your config.php file',
+                'No host-to-template mapping configured for the host "%s".  Check the config.xml file.',
                 $host
             ));
         }
@@ -323,7 +328,7 @@ class LpEngine
             ];
         } else {
             $twigEnvOptions = [
-                'cache' => $config['twig_cache_dir'],
+                'cache' => $this->getApplicationConfig()->getTwigCacheDir(),
             ];
         }
         $this->twigEnv = new \Twig_Environment($loader, $twigEnvOptions);
@@ -561,12 +566,12 @@ class LpEngine
     }
 
     /**
-     * Get the config
-     * @return array config associative array
+     * Get the developer config
+     * @return DeveloperConfig instance
      */
-    public function getConfig()
+    public function getDeveloperConfig() : DeveloperConfig
     {
-        return $this->config;
+        return $this->developerConfig;
     }
 
     /**

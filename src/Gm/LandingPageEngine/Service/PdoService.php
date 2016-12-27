@@ -33,13 +33,12 @@ class PdoService
             return $this-pdo;
         }
 
-        var_dump($this->developerConfig);
-        die();
+        $databaseProfile = $this->developerConfig->getActiveDatabaseProfile();
 
         try {
-            $dsn = 'mysql:host=' . $this->config['db']['dbhost'] . ';dbname=' .
-                    $this->config['db']['dbname'];
-            $user = $this->config['db']['dbuser'];
+            $dsn = 'mysql:host=' . $databaseProfile->getDbHost() . ';dbname=' .
+                    $databaseProfile->getDbName();
+            $user = $databaseProfile->getDbUser();
 
             $this->logger->debug(sprintf(
                 'Data Source Name = %s, user = %s',
@@ -50,11 +49,12 @@ class PdoService
             $this->pdo = new \PDO(
                 $dsn,
                 $user,
-                $this->config['db']['dbpass'],
+                $databaseProfile->getDbPass(),
                 [
                     \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
                 ]
             );
+
             $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
         } catch (\PDOException $e) {
             throw $e;

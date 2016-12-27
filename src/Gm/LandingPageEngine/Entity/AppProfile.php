@@ -62,7 +62,7 @@ class AppProfile
     /**
      * @var string
      */
-    protected $logFullpath;
+    protected $logFilePath;
 
     /**
      * @var int
@@ -75,7 +75,7 @@ class AppProfile
         return $this;
     }
 
-    public function getConnectionProfile() : string
+    public function getConnectionProfile()
     {
         return $this->connectionProfile;
     }
@@ -86,7 +86,7 @@ class AppProfile
         return $this;
     }
 
-    public function getDeveloperMode() : bool
+    public function getDeveloperMode()
     {
         return $this->developerMode;
     }
@@ -97,7 +97,7 @@ class AppProfile
         return $this;
     }
 
-    public function getSkipAutoVarDirSetup() : bool
+    public function getSkipAutoVarDirSetup()
     {
         return $this->skipAutoVarDirSetup;
     }
@@ -108,18 +108,24 @@ class AppProfile
         return $this;
     }
 
-    public function getSkipAutoThemeActivation() : bool
+    public function getSkipAutoThemeActivation()
     {
         return $this->skipAutoThemeActivation;
     }
 
-    public function setNoCapture(bool $value) : AppProfile
+    /**
+     * @param bool|null $value
+     */
+    public function setNoCapture($value) : AppProfile
     {
         $this->noCapture = $value;
         return $this;
     }
 
-    public function getNoCapture() : string
+    /**
+     * @return bool|null
+     */
+    public function getNoCapture()
     {
         return $this->noCapture;
     }
@@ -130,7 +136,7 @@ class AppProfile
         return $this;
     }
 
-    public function getProjectRoot() : string
+    public function getProjectRoot()
     {
         return $this->projectRoot;
     }
@@ -141,7 +147,7 @@ class AppProfile
         return $this;
     }
 
-    public function getWebRoot() : string
+    public function getWebRoot()
     {
         return $this->webRoot;
     }
@@ -152,7 +158,7 @@ class AppProfile
         return $this;
     }
 
-    public function getThemesRoot() : string
+    public function getThemesRoot()
     {
         return $this->themesRoot;
     }
@@ -163,20 +169,20 @@ class AppProfile
         return $this;
     }
 
-    public function getTwigCacheDir() : string
+    public function getTwigCacheDir()
     {
         return $this->twigCacheDir;
     }
 
-    public function setLogFullpath(string $value) : AppProfile
+    public function setLogFilePath(string $value) : AppProfile
     {
-        $this->logFullpath = $value;
+        $this->logFilePath = $value;
         return $this;
     }
 
-    public function getLogFullpath() : string
+    public function getLogFilePath()
     {
-        return $this->logFullpath;
+        return $this->logFilePath;
     }
 
     public function setLogLevel(int $value) : AppProfile

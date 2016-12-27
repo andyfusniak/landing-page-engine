@@ -34,7 +34,7 @@ class DeveloperConfig
     const NODE_APP_WEB_ROOT                   = 'web-root';
     const NODE_APP_THEMES_ROOT                = 'themes-root';
     const NODE_APP_TWIG_CACHE_DIR             = 'twig-cache-dir';
-    const NODE_APP_LOG_FULLPATH               = 'log-fullpath';
+    const NODE_APP_LOG_FULLPATH               = 'log-file-path';
     const NODE_APP_LOG_LEVEL                  = 'log-level';
 
     const NODE_VALUE_DEFAULT = '@default';
@@ -123,7 +123,8 @@ class DeveloperConfig
         foreach ($hostsNode->childNodes as $node) {
             if (XML_ELEMENT_NODE === $node->nodeType) {
                 if ('host' === $node->nodeName) {
-                    $hosts[] = self::processHostDomNode($node);
+                    $hostProfile = self::processHostDomNode($node);
+                    $hosts[$hostProfile->getDomain()] = self::processHostDomNode($node);
                     $numHostElements++;
                 } else {
                     throw new DeveloperConfigXmlException(sprintf(
@@ -173,6 +174,8 @@ class DeveloperConfig
                     return true;
                 } else if ('false' === $value) {
                     return false;
+                } else if (self::NODE_VALUE_DEFAULT === $value) {
+                    return null;
                 } else {
                     throw new DeveloperConfigXmlException(sprintf(
                         'config.xml <%s> element expects a bool type value of true or false (%s given) in config.xml line %s',
@@ -196,6 +199,8 @@ class DeveloperConfig
                         Logger::class,
                         strtoupper($value)
                     ));
+                } else if (self::NODE_VALUE_DEFAULT === $value) {
+                    return null;
                 } else {
                     throw new DeveloperConfigXmlException(sprintf(
                         'config.xml <%s> element expects an enum type with values of {%s}, (%s given) in config.xml line %s',
@@ -209,8 +214,59 @@ class DeveloperConfig
         }
     }
 
+    private static function setAppProfileValue(AppProfile $appProfile, DOMElement $node)
+    {
+        $value = self::xmlValue(
+            $node,
+            self::$xmlNodeAppNodeTypes[$node->nodeName]
+        );
+
+        // ignore null or default values
+        if ((self::NODE_VALUE_DEFAULT === $value) ||
+            (null === $value)) {
+            return;
+        }
+        switch ($node->nodeName) {
+            case self::NODE_APP_CONNECTION_PROFILE:
+                $appProfile->setConnectionProfile($value);
+                break;
+            case self::NODE_APP_DEVELOPER_MODE:
+                $appProfile->setDeveloperMode($value);
+                break;
+            case self::NODE_APP_SKIP_AUTO_VAR_DIR_SETUP:
+                $appProfile->setSkipAutoVarDirSetup($value);
+                break;
+            case self::NODE_APP_SKIP_AUTO_THEME_ACTIVATION:
+                $appProfile->setSkipAutoThemeActivation($value);
+                break;
+            case self::NODE_APP_NO_CAPTURE:
+                $appProfile->setNoCapture($value);
+                break;
+            case self::NODE_APP_PROJECT_ROOT:
+                $appProfile->setProjectRoot($value);
+                break;
+            case self::NODE_APP_WEB_ROOT:
+                $appProfile->setWebRoot($value);
+                break;
+            case self::NODE_APP_THEMES_ROOT:
+                $appProfile->setThemesRoot($value);
+                break;
+            case self::NODE_APP_TWIG_CACHE_DIR:
+                $appProfile->setTwigCacheDir($value);
+                break;
+            case self::NODE_APP_LOG_FULLPATH:
+                $appProfile->setLogFilePath($value);
+                break;
+            case self::NODE_APP_LOG_LEVEL:
+                $appProfile->setLogLevel($value);
+                break;
+        }
+    }
+
     private static function processAppDomNode(DOMElement $appNode) : AppProfile
     {
+        static $appProfile;
+
         // use a lookup to denote values that haven't been set in the XML config
         $app = [];
         foreach (array_keys(self::$xmlNodeAppNodeTypes) as $key) {
@@ -220,10 +276,14 @@ class DeveloperConfig
         foreach ($appNode->childNodes as $node) {
             if (XML_ELEMENT_NODE === $node->nodeType) {
                 if (true === in_array($node->nodeName, array_keys(self::$xmlNodeAppNodeTypes))) {
+                    if (null === $appProfile) {
+                        $appProfile = new AppProfile();
+                    }
                     $app[$node->nodeName] = self::xmlValue(
                         $node,
                         self::$xmlNodeAppNodeTypes[$node->nodeName]
                     );
+                    self::setAppProfileValue($appProfile, $node);
                 } else {
                     throw new DeveloperConfigXmlException(sprintf(
                         'config.xml <app> element contains an unknown element <%s> in config.xml line %s',
@@ -234,9 +294,9 @@ class DeveloperConfig
             }
         }
 
-        // build a list of missing elements within the <app> element
+        // build a list of missing compulsory elements within the <app> element
         $missing = [];
-        if (in_array(null, array_values($app))) {
+        if (in_array(null, ['connection-profile'])) {
             foreach ($app as $n => $v) {
                 if (null === $v) {
                     $missing[] = '<' . $n . '>';
@@ -251,18 +311,6 @@ class DeveloperConfig
                 $appNode->getLineNo()
             ));
         }
-        $appProfile = new AppProfile();
-        $appProfile->setConnectionProfile($app[self::NODE_APP_CONNECTION_PROFILE])
-                   ->setDeveloperMode($app[self::NODE_APP_DEVELOPER_MODE])
-                   ->setSkipAutoVarDirSetup($app[self::NODE_APP_SKIP_AUTO_VAR_DIR_SETUP])
-                   ->setSkipAutoThemeActivation($app[self::NODE_APP_SKIP_AUTO_THEME_ACTIVATION])
-                   ->setNoCapture($app[self::NODE_APP_NO_CAPTURE])
-                   ->setProjectRoot($app[self::NODE_APP_PROJECT_ROOT])
-                   ->setWebRoot($app[self::NODE_APP_WEB_ROOT])
-                   ->setThemesRoot($app[self::NODE_APP_THEMES_ROOT])
-                   ->setTwigCacheDir($app[self::NODE_APP_TWIG_CACHE_DIR])
-                   ->setLogFullpath($app[self::NODE_APP_LOG_FULLPATH])
-                   ->setLogLevel($app[self::NODE_APP_LOG_LEVEL]);
         return $appProfile;
     }
 
@@ -443,6 +491,16 @@ class DeveloperConfig
         return $this->databases;
     }
 
+    public function getActiveDatabaseProfile() : DeveloperDatabaseProfile
+    {
+        foreach ($this->getDatabaseProfiles() as $databaseProfile) {
+            if ($databaseProfile->getProfileName() === $this->appProfile->getConnectionProfile()) {
+                return $databaseProfile;
+            }
+        }
+        return null;
+    }
+
     /**
      * Add a HostProfile to the hosts
      *
@@ -451,7 +509,7 @@ class DeveloperConfig
      */
     public function addHostProfile(HostProfile $hostProfile) : DeveloperConfig
     {
-        $this->hosts[] = $hostProfile;
+        $this->hosts[$hostProfile->getDomain()] = $hostProfile;
         return $this;
     }
 
@@ -463,5 +521,19 @@ class DeveloperConfig
     public function getAppProfile() : AppProfile
     {
         return $this->appProfile;
+    }
+
+    /**
+     * @param string $domain domain name to match
+     * @return HostProfile|null
+     */
+    public function getHostByDomain(string $domain)
+    {
+        foreach ($this->hosts as $host) {
+            if ($domain === $host->getDomain()) {
+                return $host;
+            }
+        }
+        return null;
     }
 }
