@@ -214,7 +214,7 @@ class CaptureService
         }
 
         $applicationConfig = $this->lpEngine->getApplicationConfig();
-        $developerMode = $applicationConfig->getDeveloerMode();
+        $developerMode = $applicationConfig->getDeveloperMode();
         $noCapture     = $applicationConfig->getNoCapture();
 
         if ((true === $developerMode) &&
