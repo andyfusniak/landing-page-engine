@@ -1,4 +1,10 @@
 # CHANGELOG
+## 2.7.0 (28 Dec 2016)
+- Application config has preset defaults (no need to developer to use a config.php file)
+- Developer config/config.xml file to override default application config and set hosts and database profiles
+- Extra /status-page components for runtime analysis
+- More PHPUnit test
+
 ## 2.6.4 (19 Dec 2016)
 - Work around temp fix for array to string conversion error when posting using checkboxes
 
