@@ -35,6 +35,11 @@ class CaptureService
     ];
 
     /**
+     * @var LpEngine
+     */
+    protected $lpEngine;
+
+    /**
      * @var Logger
      */
     protected $logger;
@@ -66,6 +71,7 @@ class CaptureService
      */
     public function __construct(LpEngine $lpEngine)
     {
+        $this->lpEngine   = $lpEngine;
         $this->logger     = $lpEngine->getLogger();
         $this->pdoService = $lpEngine->getPdoService();
         $this->session    = $lpEngine->getSession();

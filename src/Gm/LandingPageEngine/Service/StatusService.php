@@ -96,62 +96,45 @@ class StatusService
 
     public function landingPageEngine()
     {
-        // LPE Version and release date
-        $this->lpEngine->addTwigGlobal(
-            'lpe_version',
-            Version::VERSION
-        );
+        $appProfile = $this->developerConfig->getAppProfile();
+        $lpeSettings = [
+            'lpe_version'           => Version::VERSION,
+            'lpe_release_date'      => Version::RELEASE_DATE,
 
-        $this->lpEngine->addTwigGlobal(
-            'lpe_release_date',
-            Version::RELEASE_DATE
-        );
+            'lpe_app_project_root'  => $this->applicationConfig->getProjectRoot(),
+            'lpe_dev_project_root'  =>
+                (null !== $appProfile->getProjectRoot())
+                    ? $appProfile->getProjectRoot() : '@default',
 
-        $this->lpEngine->addTwigGlobal(
-            'lpe_project_root',
-            $this->applicationConfig->getProjectRoot()
-        );
+            'lpe_app_web_root' => $this->applicationConfig->getWebRoot(),
+            'lpe_dev_web_root' =>
+                (null !== $appProfile->getWebRoot())
+                    ? $appProfile->getWebRoot() : '@default',
 
-        $this->lpEngine->addTwigGlobal(
-            'lpe_web_root',
-            $this->applicationConfig->getWebRoot()
-        );
+            'lpe_app_log_file_path' => $this->applicationConfig->getLogFilePath(),
+            'lpe_dev_log_file_path' =>
+                (null !== $appProfile->getLogFilePath())
+                    ? $appProfile->getLogFilePath() : '@default',
 
-        $this->lpEngine->addTwigGlobal(
-            'lpe_log_file_path',
-            $this->applicationConfig->getLogFilePath()
-        );
+            'lpe_app_log_level' =>
+                $this->logger->getLevelName($this->applicationConfig->getLogLevel()),
+            'lpe_dev_log_level' =>
+                (null !== $appProfile->getLogLevel())
+                    ? $this->logger->getLevelName($appProfile->getLogLevel()) : '@default',
 
-        $this->lpEngine->addTwigGlobal(
-            'lpe_log_level',
-            $this->logger->getLevelName($this->applicationConfig->getLogLevel())
-        );
+            'lpe_app_developer_mode' =>
+                (true === $this->applicationConfig->getDeveloperMode()) ? 'True' : 'False',
+            'lpe_app_skip_auto_var_dir_setup' =>
+                (true === $this->applicationConfig->getSkipAutoVarDirSetup()) ? 'True' : 'False',
+            'lpe_app_skip_auto_theme_activation' =>
+                (true === $this->applicationConfig->getSkipAutoThemeActivation()) ? 'True' : 'False',
+            'lpe_app_no_capture' =>
+                (true === $this->applicationConfig->getNoCapture()) ? 'True' : 'False'
+        ];
 
-        $this->lpEngine->addTwigGlobal(
-            'lpe_developer_mode',
-            (true === $this->applicationConfig->getDeveloperMode())
-                ? 'True' : 'False'
-        );
-
-        $this->lpEngine->addTwigGlobal(
-            'lpe_skip_auto_var_dir_setup',
-            (true === $this->applicationConfig->getSkipAutoVarDirSetup())
-                ? 'True' : 'False'
-        );
-
-        $this->lpEngine->addTwigGlobal(
-            'lpe_skip_auto_theme_activation',
-            (true === $this->applicationConfig->getSkipAutoThemeActivation())
-                ? 'True' : 'False'
-        );
-
-        $this->lpEngine->addTwigGlobal(
-            'lpe_no_capture',
-            (true === $this->applicationConfig->getNoCapture())
-                ? 'True' : 'False'
-        );
-
-
+        foreach ($lpeSettings as $name => $value) {
+            $this->lpEngine->addTwigGlobal($name, $value);
+        }
     }
 
     public function databaseSettings()

@@ -111,6 +111,7 @@ class LpEngine
      *   project_root/var/log           0777
      *   project_root/var/twig_cache    0777
      *
+     * @param $projectRoot  string the project root dir
      * @param $varDir       string the application var root dir
      * @param $twigCacheDir string the twig cache root dir
      * @param $logDir       string the log root dir
@@ -129,10 +130,11 @@ class LpEngine
         }
 
         if (!file_exists($twigCacheDir)) {
-            if ((false === @mkdir($twigCacheDir, 0777, true))
-                || (false === @chmod($twigCacheDir, 0777))) {
+            if ((false === @mkdir($twigCacheDir, 0777, true)) ||
+                (false === @chmod($twigCacheDir, 0777))) {
                 throw new \Exception(sprintf(
-                    'Your project root dir "%s" is not writeable by the web server. Change the permissions on this directory using "chmod g+w,o+w %s"',
+                    'Your project root dir "%s" is not writeable by the web server. \
+                    Change the permissions on this directory using "chmod g+w,o+w %s"',
                     $projectRoot,
                     $projectRoot
                 ));
@@ -140,17 +142,17 @@ class LpEngine
         }
 
         $logDir = $varDir . '/log';
-        if (!file_exists($logDir)) {
-            $logDirExists = false;
-            if (true === @mkdir($varDir . '/log', 0777, true)) {
-                chmod($varDir . '/log', 0777);
-                $logDirExists = true;
+        if (false === file_exists($logDir)) {
+            if (true === @mkdir($logDir, 0777, true)) {
+                @chmod($logDir, 0777);
             }
-        } else {
-            $logDirExists = true;
         }
 
-        return $logDirExists;
+        if (true === is_writable($logDir)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -162,8 +164,7 @@ class LpEngine
     public static function init($projectRoot)
     {
         $applicationConfig = new ApplicationConfig($projectRoot);
-        $developerConfig =
-            DeveloperConfig::loadXmlConfig($projectRoot . '/config/config.xml');
+        $developerConfig = DeveloperConfig::loadXmlConfig($projectRoot . '/config/config.xml');
         $applicationConfig->overrideConfig($developerConfig);
 
         if (true === $applicationConfig->getDeveloperMode()) {
