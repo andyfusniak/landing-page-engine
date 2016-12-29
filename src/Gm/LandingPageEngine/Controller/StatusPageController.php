@@ -34,10 +34,7 @@ class StatusPageController extends AbstractController
         ]);
 
         // load the twig globals
-        $this->statusService->systemSettings();
-        $this->statusService->landingPageEngine();
-        $this->statusService->databaseSettings();
-        $this->statusService->themeSettings();
+        $this->statusService->setupTwigGlobals();
 
         $template = $twigEnv->load('show.html.twig');
         return $template->render(

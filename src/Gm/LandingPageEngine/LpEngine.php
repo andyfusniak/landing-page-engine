@@ -31,9 +31,13 @@ use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Twig_Loader_Filesystem;
+use Twig_Environment;
 
 class LpEngine
 {
+    const STATUS_PAGE_URL = '/status-page';
+
     /**
      * @var Request
      */
@@ -55,7 +59,7 @@ class LpEngine
     protected $applicationConfig;
 
     /**
-     * @var DeveloperConfig
+     * @var DeveloperConfigf
      */
     protected $developerConfig;
 
@@ -214,9 +218,6 @@ class LpEngine
             $developerConfig
         );
 
-        // activate the themes
-        $themeConfigService = $engine->getThemeConfigService();
-        $themeConfigService->activateThemes($developerConfig);
         return $engine;
     }
 
@@ -228,10 +229,8 @@ class LpEngine
                                 ApplicationConfig $applicationConfig,
                                 DeveloperConfig $developerConfig)
     {
-        $logger->info(sprintf(
-            'LPE Version %s Running',
-            Version::VERSION
-        ));
+        $logger->info(sprintf('LPE Version %s Starting Setup', Version::VERSION));
+
         $this->request            = $request;
         $this->response           = $response;
         $this->logger             = $logger;
@@ -239,6 +238,11 @@ class LpEngine
         $this->pdoService         = $pdoService;
         $this->applicationConfig  = $applicationConfig;
         $this->developerConfig    = $developerConfig;
+
+
+        // activate the themes (creates the symlinks in the /public/assets dir)
+        $themeConfigService = $this->getThemeConfigService();
+        $themeConfigService->activateThemes($developerConfig);
 
         $host = $this->request->getHost();
         if (null !== ($hostProfile = $developerConfig->getHostByDomain($host))) {
@@ -257,9 +261,92 @@ class LpEngine
             ));
         }
 
-        $this->themeConfigService->loadThemeConfig($this->theme);
+        if (true === file_exists($twigTemplateDir)) {
+            $loader = new Twig_Loader_Filesystem($twigTemplateDir);
+            $logger->debug(sprintf(
+                'Setting the Twig Loader filesystem path to %s',
+                $twigTemplateDir
+            ));
+
+            if (true === $applicationConfig->getDeveloperMode()) {
+                $twigEnvOptions = [
+                    'debug'       => true,
+                    'cache'       => false,
+                    'auto_reload' => true,
+                ];
+            } else {
+                $twigEnvOptions = [
+                    'cache' => $this->getApplicationConfig()->getTwigCacheDir(),
+                ];
+            }
+            $this->twigEnv = new Twig_Environment($loader, $twigEnvOptions);
+
+            // @todo needs to be more modular to lazy-load and plug them in
+            // provide global for thai_date
+            $this->twigEnv->addGlobal('thai_date', new ThaiDate());
+        } else {
+            $logger->warning(sprintf(
+                '%s directory is missing.  Failed to setup Twig Template Dir.',
+                $twigTemplateDir
+            ));
+        }
+
+        // intialise the routes starting and add the /status-page route
+        $this->routes = new RouteCollection();
+        $this->routes->add('status-page', new Route(self::STATUS_PAGE_URL, [
+            '_controller' => 'Gm\LandingPageEngine\Controller\StatusPageController:showAction'
+        ], [], [], '', [], ['GET']));
+        $logger->info(sprintf(
+            'Route %s for HTTP GET added',
+            self::STATUS_PAGE_URL
+        ));
+
+        $logger->info(sprintf('LPE Version %s Completed Setup', Version::VERSION));
+    }
+
+    public function run()
+    {
+        $this->logger->info(sprintf('LPE Version %s Running', Version::VERSION));
+        $this->logger->debug(sprintf(
+            'path info = %s',
+            $this->request->getPathInfo()
+        ));
+
+        // special by-pass for status page route
+        if (self::STATUS_PAGE_URL === $this->request->getPathInfo()) {
+            try {
+                $context = new RequestContext();
+                $context->fromRequest($this->request);
+                $matcher = new UrlMatcher($this->routes, $context);
+                $parameters = $matcher->match($this->request->getPathInfo());
+
+                list($controller, $action) = preg_split('/:/', $parameters['_controller']);
+
+                // lazy load the controler instance
+                $controller = new $controller($this);
+                $controller->setMatch($parameters);
+
+                // dispatch the request and get the return string
+                $this->response->setContent(
+                    $controller->dispatch($this->request, $this->response)
+                );
+                $this->response->send();
+                $this->logger->info('LPE Terminating having shown status page');
+                return;
+            } catch (Routing\Exception\ResourceNotFoundException $e) {
+                $this->response->setContent('Not Found');
+                $this->response->setStatusCode(404);
+            } catch (Exception $e) {
+                $this->response->setContent('An error occurred');
+                $this->response->setStatusCode(500);
+
+                // rethrow the exception a quick and dirty bailout
+                throw $e;
+            }
+        }
 
         // Build the custom URL routes using the theme config file
+        $this->themeConfigService->loadThemeConfig($this->theme);
         $themeConfig = $this->themeConfigService->getThemeConfig();
 
         $themeConfigRoutes = $themeConfig->getRoutes();
@@ -271,77 +358,42 @@ class LpEngine
             throw new \Exception('No routes defined');
         }
 
-        $routes = new RouteCollection();
         foreach ($themeConfigRoutes as $url => $templateOrRedirectUrl) {
             // if the template has a leading / or starts with http
             // then we will treat it as a redirct
             if ((substr($templateOrRedirectUrl, 0, 1) === '/')
                 || (substr($templateOrRedirectUrl, 0, 4) === 'http')) {
-                $routes->add(uniqid('redirect_'), new Route($url, [
+                $this->routes->add(uniqid('redirect_'), new Route($url, [
                     '_controller'
                         => 'Gm\LandingPageEngine\Controller\RedirectController:redirectAction',
                     'redirect_url' => $templateOrRedirectUrl,
                     'title' => 'The Lost World'
                 ]));
-                $logger->info(sprintf(
+                $this->logger->info(sprintf(
                     'Configured redirect "%s" to map to url "%s"',
                     $url,
                     $templateOrRedirectUrl
                 ));
             } else {
-                $routes->add($url, new Route('/' . $url, [
+                $this->routes->add($url, new Route('/' . $url, [
                     '_controller' =>
                         'Gm\LandingPageEngine\Controller\FrontController:showAction',
                     'template' => $templateOrRedirectUrl
                 ], [], [], '', [], ['GET']));
 
-                $routes->add($url . '_post', new Route($url, [
+                $this->routes->add($url . '_post', new Route($url, [
                     '_controller' => 'Gm\LandingPageEngine\Controller\FormController:postAction',
                 ], [], [], '', [], ['POST']));
 
-                $logger->info(sprintf(
-                    'Configured both HTTP GET and POST routes "%s" and "%s" to map to twig template "%s"',
+                $this->logger->info(sprintf(
+                    'Configured both HTTP GET and POST routes "%s" and "%s" to \
+                    map to twig template "%s"',
                     $url,
                     $url . '-post',
                     $templateOrRedirectUrl
                 ));
             }
         }
-
-        $routes->add('status-page', new Route('/status-page', [
-            '_controller' => 'Gm\LandingPageEngine\Controller\StatusPageController:showAction'
-        ], [], [], '', [], ['GET']));
-
-        $this->setRoutes($routes);
-
-        $loader = new \Twig_Loader_Filesystem($twigTemplateDir);
-        $logger->debug(sprintf(
-            'Setting the Twig Loader filesystem path to %s',
-            $twigTemplateDir
-        ));
-
-
-        if (true === $applicationConfig->getDeveloperMode()) {
-            $twigEnvOptions = [
-                'debug'       => true,
-                'cache'       => false,
-                'auto_reload' => true,
-            ];
-        } else {
-            $twigEnvOptions = [
-                'cache' => $this->getApplicationConfig()->getTwigCacheDir(),
-            ];
-        }
-        $this->twigEnv = new \Twig_Environment($loader, $twigEnvOptions);
-
-        // @todo needs to be more modular to lazy-load and plug them in
-        // provide global for thai_date
-        $this->twigEnv->addGlobal('thai_date', new ThaiDate());
-    }
-
-    public function run()
-    {
-        $themeConfig = $this->getThemeConfigService()->loadThemeConfig($this->theme);
 
         $session = $this->getSession();
         if (null === $session->get('initial_query_params')) {
@@ -607,18 +659,6 @@ class LpEngine
             $this->session->start();
         }
         return $this->session;
-    }
-
-    /**
-     * Set the routes
-     *
-     * @param RouteCollection $routes the custom routes
-     * @return LpEngine
-     */
-    public function setRoutes(RouteCollection $routes)
-    {
-        $this->routes = $routes;
-        return $this;
     }
 
     /**
