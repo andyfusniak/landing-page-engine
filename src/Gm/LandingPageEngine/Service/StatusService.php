@@ -46,7 +46,17 @@ class StatusService
         $this->developerConfig   = $lpEngine->getDeveloperConfig();
     }
 
-    public function systemSettings()
+    public function setupTwigGlobals()
+    {
+        $this->systemSettings();
+        $this->landingPageEngine();
+        $this->databaseSettings();
+        $themeSummary = $this->themeSettings();
+        $hosts = $this->hostSettings($themeSummary);
+        $this->lastLeadsCaptured($hosts);
+    }
+
+    private function systemSettings()
     {
         // PHP Version
         $this->lpEngine->addTwigGlobal(
@@ -94,34 +104,17 @@ class StatusService
         );
     }
 
-    public function landingPageEngine()
+    private function landingPageEngine()
     {
         $appProfile = $this->developerConfig->getAppProfile();
         $lpeSettings = [
             'lpe_version'           => Version::VERSION,
             'lpe_release_date'      => Version::RELEASE_DATE,
-
             'lpe_app_project_root'  => $this->applicationConfig->getProjectRoot(),
-            'lpe_dev_project_root'  =>
-                (null !== $appProfile->getProjectRoot())
-                    ? $appProfile->getProjectRoot() : '@default',
-
             'lpe_app_web_root' => $this->applicationConfig->getWebRoot(),
-            'lpe_dev_web_root' =>
-                (null !== $appProfile->getWebRoot())
-                    ? $appProfile->getWebRoot() : '@default',
-
             'lpe_app_log_file_path' => $this->applicationConfig->getLogFilePath(),
-            'lpe_dev_log_file_path' =>
-                (null !== $appProfile->getLogFilePath())
-                    ? $appProfile->getLogFilePath() : '@default',
-
             'lpe_app_log_level' =>
                 $this->logger->getLevelName($this->applicationConfig->getLogLevel()),
-            'lpe_dev_log_level' =>
-                (null !== $appProfile->getLogLevel())
-                    ? $this->logger->getLevelName($appProfile->getLogLevel()) : '@default',
-
             'lpe_app_developer_mode' =>
                 (true === $this->applicationConfig->getDeveloperMode()) ? 'True' : 'False',
             'lpe_app_skip_auto_var_dir_setup' =>
@@ -137,7 +130,39 @@ class StatusService
         }
     }
 
-    public function databaseSettings()
+    private function hostSettings(array $themeSummary) : array
+    {
+        $hosts = $this->developerConfig->getHostProfiles();
+
+        $hostsSummary = [];
+        foreach ($hosts as $hostProfile) {
+            $themeName = $hostProfile->getThemeName();
+            $hostsSummary[] = [
+                'domain'     => $hostProfile->getDomain(),
+                'theme_dir'  => $themeName,
+                'name' =>
+                    isset($themeSummary[$themeName]['name'])
+                        ? $themeSummary[$themeName]['name'] : 'Error',
+                'version' =>
+                    isset($themeSummary[$themeName]['version'])
+                        ?  $themeSummary[$themeName]['version'] : 'Error'
+            ];
+        }
+
+        $this->lpEngine->addTwigGlobal(
+            'hosts_summary',
+            $hostsSummary
+        );
+
+        return $hosts;
+    }
+
+    private function lastLeadsCaptured($hosts)
+    {
+
+    }
+
+    private function databaseSettings()
     {
         // database host, user and name
         foreach (['dbhost', 'dbuser', 'dbname'] as $key) {
@@ -170,7 +195,7 @@ class StatusService
         }
     }
 
-    public function themeSettings()
+    private function themeSettings() : array
     {
         $availableThemeDirs = $this->listOfDirs(
             $this->applicationConfig->getThemesRoot()
@@ -215,6 +240,7 @@ class StatusService
             'theme_summary',
             $themeSummary
         );
+        return $themeSummary;
     }
 
     public function getTableMapper()
