@@ -301,12 +301,13 @@ class ApplicationConfig
      * @param bool $value true or false
      * @return ApplicationConfig
      */
-    public function setNoCapture(bool $value)
+    public function setNoCapture($value)
     {
         if (!is_bool($value)) {
             throw new \InvalidArgumentException(sprintf(
-                'Invalid value %s passed',
-                $value
+                'Invalid value "%s" passed to %s',
+                $value,
+                __METHOD__
             ));
         }
         $this->noCapture = $value;

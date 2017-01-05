@@ -18,6 +18,8 @@ use Gm\LandingPageEngine\Entity\FilterConfig;
 use Gm\LandingPageEngine\Entity\FilterConfigCollection;
 use Gm\LandingPageEngine\Entity\ValidatorConfig;
 use Gm\LandingPageEngine\Entity\ValidatorConfigCollection;
+use Gm\LandingPageEngine\Entity\Route;
+use Gm\LandingPageEngine\Config\Exception\ThemeConfigException;
 
 use Monolog\Logger;
 
@@ -46,7 +48,7 @@ class ThemeConfig
     /**
      * @var array
      */
-    protected $routes;
+    protected $routes = [];
 
     /**
      * @var FormConfigCollection
@@ -82,6 +84,9 @@ class ThemeConfig
 
         /* @var \DOMElement */
         $routesElement = $themeElement->getElementsByTagName('routes')->item(0);
+        if (null === $routesElement) {
+            throw new ThemeConfigException('config.xml is missing a <config> element');
+        }
 
         $routeNodeList = $routesElement->getElementsByTagName('route');
         if ($routeNodeList->length < 1) {
@@ -90,19 +95,34 @@ class ThemeConfig
             );
         }
 
-        foreach ($routeNodeList as $nlItem) {
-            $url    = $nlItem->getElementsByTagName('url')->item(0)->nodeValue;
-            $target = $nlItem->getElementsByTagName('target')->item(0)->nodeValue;
-            $this->routes[$url] = $target;
-        }
+        // the <routes> element contains one or more <route name="..."> elements
+        foreach ($routesElement->childNodes as $node) {
+            if (XML_ELEMENT_NODE === $node->nodeType) {
+                if ('route' === $node->nodeName) {
+                    // if no <route name=".."> attribute is not set
+                    // the use a unique reference
+                    if (false === $node->hasAttribute('name')) {
+                        $key = uniqid('route_');
+                    } else {
+                        $key = $node->getAttribute('name');
+                    }
 
-        // Check for missing routes section in theme config file
-        // if (isset($themeConfig) && (!isset($themeConfig['routes']))) {
-        //     $logger->error('Your theme config file is missing a routes section.  You must define at least one route.');
-        //     throw new \Exception(
-        //         'The theme config file is missing a routes section.  You must define at least one route.'
-        //     );
-        // }
+                    if (true === array_key_exists($key, $this->routes)) {
+                        throw new ThemeConfigException(sprintf(
+                            '<route name="%s"> is a duplicate route in config.xml line %s',
+                            $key,
+                            $node->getLineNo()
+                        ));
+                    }
+
+                    $this->routes[$key] = new Route(
+                        $key,
+                        $node->getElementsByTagName('url')->item(0)->nodeValue,
+                        $node->getElementsByTagName('target')->item(0)->nodeValue
+                    );
+                }
+            }
+        }
 
         // theme forms
         $formsNodeElement = $themeElement->getElementsByTagName('forms')->item(0);
@@ -202,9 +222,9 @@ class ThemeConfig
     }
 
     /**
-     * Returns an associative array of url => target pairs
+     * Returns an associative array of Route objects
      *
-     * @return array associative array of url/targets
+     * @return array associative array of Route objects
      */
     public function getRoutes()
     {

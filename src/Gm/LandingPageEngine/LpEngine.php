@@ -358,39 +358,48 @@ class LpEngine
             throw new \Exception('No routes defined');
         }
 
-        foreach ($themeConfigRoutes as $url => $templateOrRedirectUrl) {
+        foreach ($themeConfigRoutes as $url => $routeObj) {
             // if the template has a leading / or starts with http
             // then we will treat it as a redirct
-            if ((substr($templateOrRedirectUrl, 0, 1) === '/')
-                || (substr($templateOrRedirectUrl, 0, 4) === 'http')) {
-                $this->routes->add(uniqid('redirect_'), new Route($url, [
-                    '_controller'
-                        => 'Gm\LandingPageEngine\Controller\RedirectController:redirectAction',
-                    'redirect_url' => $templateOrRedirectUrl,
-                    'title' => 'The Lost World'
+            if (true === $routeObj->isTargetRedirect()) {
+                $this->routes->add(
+                    $routeObj->getRouteName(),
+                    new Route($routeObj->getUrl(), [
+                        '_controller' =>
+                            'Gm\LandingPageEngine\Controller\RedirectController:redirectAction',
+                        'redirect_url' => $routeObj->getTarget()
                 ]));
                 $this->logger->info(sprintf(
-                    'Configured redirect "%s" to map to url "%s"',
-                    $url,
-                    $templateOrRedirectUrl
+                    'Configured route "%s" to redirect "%s" to map to url "%s"',
+                    $routeObj->getRouteName(),
+                    $routeObj->getUrl(),
+                    $routeObj->getTarget()
                 ));
             } else {
-                $this->routes->add($url, new Route('/' . $url, [
-                    '_controller' =>
-                        'Gm\LandingPageEngine\Controller\FrontController:showAction',
-                    'template' => $templateOrRedirectUrl
-                ], [], [], '', [], ['GET']));
+                $url = $routeObj->getUrlWithPrefix();
+                $this->routes->add(
+                    $routeObj->getRouteName(),
+                    new Route($url, [
+                        '_controller' =>
+                            'Gm\LandingPageEngine\Controller\FrontController:showAction',
+                        'template' => $routeObj->getTarget()
+                    ], [], [], '', [], ['GET'])
+                );
 
-                $this->routes->add($url . '_post', new Route($url, [
-                    '_controller' => 'Gm\LandingPageEngine\Controller\FormController:postAction',
-                ], [], [], '', [], ['POST']));
+                $this->routes->add($url . '-post',
+                    new Route($url, [
+                        '_controller' =>
+                            'Gm\LandingPageEngine\Controller\FormController:postAction',
+                    ], [], [], '', [], ['POST'])
+                );
 
                 $this->logger->info(sprintf(
-                    'Configured both HTTP GET and POST routes "%s" and "%s" to \
+                    'Configured route "%s" both HTTP GET and POST routes "%s" and "%s" to \
                     map to twig template "%s"',
+                    $routeObj->getRouteName(),
                     $url,
                     $url . '-post',
-                    $templateOrRedirectUrl
+                    $routeObj->getTarget()
                 ));
             }
         }
