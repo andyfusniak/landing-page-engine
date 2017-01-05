@@ -232,6 +232,20 @@ class ThemeConfig
     }
 
     /**
+     * Get Route by name
+     *
+     * @param string $routeName
+     * @return Route|null returns a Route object or null if not found
+     */
+    public function getRouteByName(string $routeName)
+    {
+        if (array_key_exists($routeName, $this->routes)) {
+            return $this->routes[$routeName];
+        }
+        return null;
+    }
+
+    /**
      * Get the form config collection
      *
      * @return FormConfigCollection

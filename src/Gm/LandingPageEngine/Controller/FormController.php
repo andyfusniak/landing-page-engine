@@ -35,18 +35,18 @@ class FormController extends AbstractController
 
         $formName = $postParams['_form'];
 
-        // if the form has no _nexturl field, then there is
+        // if the form has no _next field, then there is
         // nowhere to go next and this is a problem
-        if (null === $this->request->get('_nexturl')) {
+        if (null === $this->request->get('_next')) {
             $this->logger->error(sprintf(
-                '%s +%s in %s : Form "%s" has failed to HTTP POST the _nexturl parameter to /process-post',
+                '%s +%s in %s : Form "%s" has failed to HTTP POST the _next parameter',
                 __FILE__,
                 __LINE__,
                 __METHOD__,
                 $formName
             ));
             throw new \Exception(sprintf(
-                'HTML Form "%s" has no <input type="hidden" name="_nexturl" value="..."> field set.  There is no URL to redirect to after the HTTP POST is successful.',
+                'HTML Form "%s" has no <input type="hidden" name="_next" value="..."> field set.  There is no route name to redirect to after the HTTP POST.',
                 $formName
             ));
         }
@@ -57,7 +57,7 @@ class FormController extends AbstractController
 
         if (null === ($formConfigCollection = $this->themeConfig->getFormConfigCollection())) {
             throw new \Exception(sprintf(
-                'Template attemtped HTTP POST but theme config is missing a forms section for form "%s"',
+                'Template attemtped HTTP POST but theme config is missing a <forms> section for form "%s"',
                 $formName
             ));
         }
@@ -88,8 +88,7 @@ class FormController extends AbstractController
                 }
             }
 
-            $nextUrl = $this->request->get('_nexturl');
-            $this->redirectToUrl($nextUrl);
+            $this->redirectRoute($this->request->get('_next'));
             return;
         }
 
@@ -178,14 +177,25 @@ class FormController extends AbstractController
             );
         }
 
-        $captureService = $this->lpEngine->getCaptureService();
+        $this->lpEngine->getCaptureService()->save($postParams, $this->themeConfig);
 
-        $captureService->save(
-            $postParams,
-            $this->themeConfig
-        );
+        $this->redirectRoute($this->request->get('_next'));
+    }
 
-        $nextUrl = $this->request->get('_nexturl');
-        $this->redirectToUrl($nextUrl);
+    private function redirectRoute($next)
+    {
+        // developer redirects start don't start with / or http
+        if (('/' === substr($next, 0, 1)) ||
+            ('http' === substr($next, 0, 4))) {
+            $this->redirectToUrl($next);
+        } else if (null !== ($nextRoute = $this->lpEngine->getThemeConfigService()->getThemeConfig()->getRouteByName($next))) {
+            $this->redirectToUrl($nextRoute->getUrlWithPrefix());
+        } else {
+            throw new \Exception(sprintf(
+                '%s cannot find route or url, _next="%s"',
+                __METHOD__,
+                $next
+            ));
+        }
     }
 }

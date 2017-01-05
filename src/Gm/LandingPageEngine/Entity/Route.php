@@ -78,8 +78,8 @@ class Route
      */
     public function isTargetRedirect()
     {
-        if ((substr($this->target, 0, 1) === '/')
-                || (substr($this->target, 0, 4) === 'http')) {
+        if (('/' === substr($this->target, 0, 1)) ||
+            ('http' === substr($this->target, 0, 4))) {
             return true;
         }
         return false;

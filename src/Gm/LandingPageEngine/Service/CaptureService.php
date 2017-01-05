@@ -185,19 +185,19 @@ class CaptureService
         // would silently be lost and never catpured to the database
         foreach (array_keys($params) as $formFieldName) {
             // skip system fields
-            if (in_array($formFieldName, ['_form', '_url', '_nexturl'])) {
+            if (in_array($formFieldName, ['_form', '_url', '_next'])) {
                 continue;
             }
 
             $this->logger->debug(sprintf(
-                'Checking that form field %s has a mapping entry in the theme config file for section _form=%s',
+                'Checking that form field %s has a mapping entry in the theme.xml config file for section _form=%s',
                 $formFieldName,
                 $params['_form']
             ));
 
             if (!in_array($formFieldName, $formFieldColumns)) {
                 $this->logger->warning(sprintf(
-                    'Form field "%s" is used in the template form "%s", but has no mapping entry in the theme config file',
+                    'Form field "%s" is used in the template form "%s", but has no mapping entry in the theme.xml config file',
                     $formFieldName,
                     $params['_form']
                 ));
