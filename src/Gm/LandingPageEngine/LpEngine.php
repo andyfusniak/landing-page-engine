@@ -59,7 +59,7 @@ class LpEngine
     protected $applicationConfig;
 
     /**
-     * @var DeveloperConfigf
+     * @var DeveloperConfig
      */
     protected $developerConfig;
 
@@ -419,9 +419,16 @@ class LpEngine
             $controller = new $controller($this);
             $controller->setMatch($parameters);
 
-            // return [
-            $this->addTwigGlobal('ip_address', $this->request->getClientIp());
-            $this->addTwigGlobal('q', $this->getSession()->get('initial_query_params'));
+            // Twig globals
+            $twigGlobals = [
+                'ip_address'   => $this->request->getClientIp(),
+                'q'            => $this->getSession()->get('initial_query_params'),
+                'theme'        => $this->theme,
+                'theme_assets' => 'assets/' . $this->theme
+            ];
+            foreach ($twigGlobals as $name => $value) {
+                $this->addTwigGlobal($name, $value);
+            }
 
             // dispatch the request and get the return string
             $this->response->setContent(
