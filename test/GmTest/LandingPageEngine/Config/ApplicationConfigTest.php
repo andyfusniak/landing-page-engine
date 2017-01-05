@@ -191,7 +191,7 @@ class ApplicationConfigTest extends TestCase
     public function testSetAndGetNoCaptureInvalidArugmentException()
     {
         $this->expectException(\InvalidArgumentException::class);
-        $result = $this->applicationConfig->setNoCapture(1);
+        $result = $this->applicationConfig->setNoCapture('test');
     }
 
     public function testGetLogLevelDefault()
