@@ -246,6 +246,22 @@ class ThemeConfig
     }
 
     /**
+     * Get Route by URL
+     *
+     * @param string $url
+     * @return Route|null Route object or null if not found
+     */
+    public function getRouteByUrl(string $url)
+    {
+        foreach ($this->routes as $route) {
+            if ($url === $route->getUrl()) {
+                return $route;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Get the form config collection
      *
      * @return FormConfigCollection

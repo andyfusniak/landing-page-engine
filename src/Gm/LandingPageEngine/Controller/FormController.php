@@ -165,9 +165,8 @@ class FormController extends AbstractController
 
             // HTTP POST routes have a '_post' postfix that needs removing
             $route = substr($this->match['_route'], 0, strlen($this->match['_route']) - strlen('_post'));
-
-            $template = $this->themeConfig->getRoutes()[$route];
-            $template = $twigEnv->load($template);
+            $routeObj = $this->themeConfig->getRouteByUrl($route);
+            $template = $twigEnv->load($routeObj->getTarget());
 
             // add {{ is_http_post }}
             $this->lpEngine->addTwigGlobal('is_http_post', true);
@@ -188,7 +187,7 @@ class FormController extends AbstractController
         if (('/' === substr($next, 0, 1)) ||
             ('http' === substr($next, 0, 4))) {
             $this->redirectToUrl($next);
-        } else if (null !== ($nextRoute = $this->lpEngine->getThemeConfigService()->getThemeConfig()->getRouteByName($next))) {
+        } else if (null !== ($nextRoute = $this->themeConfig->getRouteByName($next))) {
             $this->redirectToUrl($nextRoute->getUrlWithPrefix());
         } else {
             throw new \Exception(sprintf(
