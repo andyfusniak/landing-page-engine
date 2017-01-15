@@ -1,4 +1,11 @@
 # CHANGELOG
+## 2.8.0 (15 Jan 2017)
+- Bugfix to show status-page even if the theme.xml config is broken
+- Twig globals theme and theme_assets
+- Fixes broken phpunit test
+- Routes have names and form name uses route names
+- Fix bug with HTTP POST for error display of same twig template
+
 ## 2.7.0 (28 Dec 2016)
 - Application config has preset defaults (no need to developer to use a config.php file)
 - Developer config/config.xml file to override default application config and set hosts and database profiles
