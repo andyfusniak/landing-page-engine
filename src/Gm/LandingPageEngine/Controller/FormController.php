@@ -31,6 +31,7 @@ class FormController extends AbstractController
 
     public function postAction()
     {
+        $host = $this->request->getHost();
         $postParams = $this->request->request->all();
 
         $formName = $postParams['_form'];
@@ -55,16 +56,14 @@ class FormController extends AbstractController
             $formName
         );
 
-        if (null === ($formConfigCollection = $this->themeConfig->getFormConfigCollection())) {
+        if (null === $this->themeConfig->getFormConfigCollection()) {
             throw new \Exception(sprintf(
                 'Template attemtped HTTP POST but theme config is missing a <forms> section for form "%s"',
                 $formName
             ));
         }
 
-        $dbTable = $formConfigCollection->getFormConfigByName($formName)->getDbTable();
-
-        if (!isset($dbTable) && (null === $filterAndValidatorLookup)) {
+        if (null === $filterAndValidatorLookup) {
             $customParams = [];
             foreach ($postParams as $name => $value) {
                 if ('_' === substr($name, 0, 1)) {
@@ -176,7 +175,7 @@ class FormController extends AbstractController
             );
         }
 
-        $this->lpEngine->getCaptureService()->save($postParams, $this->themeConfig);
+        $this->lpEngine->getCaptureService()->save($host, $postParams, $this->themeConfig);
 
         $this->redirectRoute($this->request->get('_next'));
     }

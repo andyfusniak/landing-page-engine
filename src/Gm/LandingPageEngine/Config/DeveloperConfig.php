@@ -14,6 +14,7 @@ use Symfony\Component\Config\Util\XmlUtils;
 use Gm\LandingPageEngine\Config\Exception\DeveloperConfigXmlException;
 use Gm\LandingPageEngine\Entity\AppProfile;
 use Gm\LandingPageEngine\Entity\DeveloperDatabaseProfile;
+use Gm\LandingPageEngine\Entity\DeveloperProfile;
 use Gm\LandingPageEngine\Entity\HostProfile;
 
 use DOMElement;
@@ -59,9 +60,9 @@ class DeveloperConfig
     protected $appProfile;
 
     /**
-     * @var array associative array of DeveloperDatabaseProfile objects
+     * @var array associative array of DeveloperProfile objects
      */
-    protected $databases = [];
+    protected $profiles = [];
 
     /**
      * @var array associative array of HostProfile objects
@@ -97,8 +98,8 @@ class DeveloperConfig
                     case 'app':
                         $app = self::processAppDomNode($node);
                         break;
-                    case 'databases':
-                        $databases = self::processDatabasesDomNode($node);
+                    case 'profiles':
+                        $profiles = self::processProfilesDomNode($node);
                         break;
                     case 'hosts':
                         $hosts = self::processHostsDomNode($node);
@@ -112,7 +113,7 @@ class DeveloperConfig
                 }
             }
         }
-        return new DeveloperConfig($app, $databases, $hosts);
+        return new DeveloperConfig($app, $profiles, $hosts);
     }
 
     private static function processHostsDomNode(DOMElement $hostsNode) : array
@@ -227,9 +228,6 @@ class DeveloperConfig
             return;
         }
         switch ($node->nodeName) {
-            case self::NODE_APP_CONNECTION_PROFILE:
-                $appProfile->setConnectionProfile($value);
-                break;
             case self::NODE_APP_DEVELOPER_MODE:
                 $appProfile->setDeveloperMode($value);
                 break;
@@ -314,22 +312,21 @@ class DeveloperConfig
         return $appProfile;
     }
 
-    private static function processDatabasesDomNode(DOMElement $databasesNode) : array
+    private static function processProfilesDomNode(DOMElement $profilesNode) : array
     {
-        $databases = [];
-        // the <databases> element must contain one or more <database profile="xyz"> elements
+        $profiles = [];
+        // the <profiles> element must contain one or more <profile name="xyz"> elements
 
-        $numDatabaseElements = 0;
-        foreach ($databasesNode->childNodes as $node) {
+        $numProfileElements = 0;
+        foreach ($profilesNode->childNodes as $node) {
             if (XML_ELEMENT_NODE === $node->nodeType) {
-                if ('database' === $node->nodeName) {
-                    $developerDatabaseProfile = self::processDatabaseDomNode($node);
-                    $databases[$developerDatabaseProfile->getProfileName()]
-                        = self::processDatabaseDomNode($node);
-                    $numDatabaseElements++;
+                if ('profile' === $node->nodeName) {
+                    $developerProfile = self::processProfileDomNode($node);
+                    $profiles[$developerProfile->getName()] = $developerProfile;
+                    $numProfileElements++;
                 } else {
                     throw new DeveloperConfigXmlException(sprintf(
-                        'config.xml <databases> element contains an unknown element <%s> in config.xml line %s',
+                        'config.xml <profiles> element contains an unknown element <%s> in config.xml line %s',
                         $node->nodeName,
                         $node->getLineNo()
                     ));
@@ -337,22 +334,24 @@ class DeveloperConfig
             }
         }
 
-        if (0 === $numDatabaseElements) {
+        if (0 === $numProfileElements) {
             throw new DeveloperConfigXmlException(sprintf(
-                'config.xml <databases> element contains no <database> elements in config.xml line %s',
-                $databasesNode->getLineNo()
+                'config.xml <profiles> element contains no <profile> elements in config.xml line %s',
+                $profilesNode->getLineNo()
             ));
         }
-        return $databases;
+        return $profiles;
     }
 
     private static function processHostDomNode(DOMElement $hostNode) : HostProfile
     {
-        // the <host> element must contain a <domain> and <theme> element
+        // the <host> element must contain <domain>, <theme> and <dbprofile> elements
         $host = [
-            'domain' => null,
-            'theme'  => null
+            'domain'    => null,
+            'theme'     => null,
+            'profile' => null
         ];
+
         foreach ($hostNode->childNodes as $node) {
             if (XML_ELEMENT_NODE === $node->nodeType) {
                 switch ($node->nodeName) {
@@ -362,11 +361,14 @@ class DeveloperConfig
                     case 'theme':
                         $host['theme'] = $node->nodeValue;
                         break;
+                    case 'profile':
+                        $host['profile'] = $node->nodeValue;
+                        break;
                 }
             }
         }
 
-        // build a list of missing elements within the <database> element
+        // build a list of missing elements within the <host> element
         $missing = [];
         if (in_array(null, array_values($host))) {
             foreach ($host as $n => $v) {
@@ -377,30 +379,55 @@ class DeveloperConfig
         }
         if (!empty($missing)) {
             throw new DeveloperConfigXmlException(sprintf(
-                'config.xml <host> element contains is missing %s element%s in config.xml line %s',
+                'config.xml <host> element is missing %s element%s in config.xml line %s',
                 implode(', ', $missing),
                 (count($missing) > 1) ? 's' : '',
                 $hostNode->getLineNo()
             ));
         }
-        return new HostProfile($host['domain'], $host['theme']);
+        return new HostProfile($host['domain'], $host['theme'], $host['profile']);
+    }
+
+    private static function processProfileDomNode(DOMElement $profileNode) :
+        DeveloperProfile
+    {
+        if (false === $profileNode->hasAttribute('name')) {
+            throw new DeveloperConfigXmlException(sprintf(
+                'config.xml <profile> element has a missing name attribute in config.xml line %s',
+                $profileNode->getLineNo()
+            ));
+        }
+
+        // the <profile> element must contain only one <database> element
+        foreach ($profileNode->childNodes as $node) {
+            if (XML_ELEMENT_NODE === $node->nodeType) {
+                if ('database' === $node->nodeName) {
+                    $database = self::processDatabaseDomNode($node);
+                } else {
+                    throw new DeveloperConfigXmlException(sprintf(
+                        'config.xml <database> element contains an unknown element <%s> in config.xml line %s',
+                        $node->nodeName,
+                        $node->getLineNo()
+                    ));
+                }
+            }
+        }
+        return new DeveloperProfile(
+            $profileNode->getAttribute('name'),
+            $database
+        );
     }
 
     private static function processDatabaseDomNode(DOMElement $databaseNode) : DeveloperDatabaseProfile
     {
-        if (false === $databaseNode->hasAttribute('profilename')) {
-            throw new DeveloperConfigXmlException(sprintf(
-                'config.xml <database> has a missing profilename attribute in config.xml line %s',
-                $databaseNode->getLineNo()
-            ));
-        }
-
-        // the <database> element must contain <dbhost>, <dbuser>, <dbpass> and <dbuser> elements
+        // the <database> element must contain <dbhost>, <dbuser>, <dbpass>,
+        // <dbuser> and <dbtable> elements
         $db = [
-            'dbhost' => null,
-            'dbuser' => null,
-            'dbpass' => null,
-            'dbname' => null
+            'dbhost'  => null,
+            'dbuser'  => null,
+            'dbpass'  => null,
+            'dbname'  => null,
+            'dbtable' => null
         ];
         foreach ($databaseNode->childNodes as $node) {
             if (XML_ELEMENT_NODE === $node->nodeType) {
@@ -416,6 +443,9 @@ class DeveloperConfig
                         break;
                     case 'dbname':
                         $db['dbname'] = $node->nodeValue;
+                        break;
+                    case 'dbtable':
+                        $db['dbtable'] = $node->nodeValue;
                         break;
                     default:
                         throw new DeveloperConfigXmlException(sprintf(
@@ -450,19 +480,20 @@ class DeveloperConfig
             $db['dbhost'],
             $db['dbuser'],
             $db['dbpass'],
-            $db['dbname']
+            $db['dbname'],
+            $db['dbtable']
         );
     }
 
-    public function __construct(AppProfile $appProfile, array $databases, array $hosts)
+    public function __construct(AppProfile $appProfile, array $profiles, array $hosts)
     {
         // app
         $this->appProfile = $appProfile;
 
-        // databases
-        foreach ($databases as $developerDatabaseProfile) {
-            if ($developerDatabaseProfile instanceof DeveloperDatabaseProfile) {
-                $this->addDatabaseProfile($developerDatabaseProfile);
+        // profiles
+        foreach ($profiles as $developerProfile) {
+            if ($developerProfile instanceof DeveloperProfile) {
+                $this->addProfile($developerProfile);
             }
         }
 
@@ -475,27 +506,30 @@ class DeveloperConfig
     }
 
     /**
-     * Add a DatabaseProfile to the databases
+     * Add a DeveloperProfile to the profiles
      *
-     * @param DeveloperDatabaseProfile $profile the database profile object to be added
+     * @param DeveloperProfile $profile the profile object to be added
      * @return DeveloperConfig
      */
-    public function addDatabaseProfile(DeveloperDatabaseProfile $databaseProfile) : DeveloperConfig
+    public function addProfile(DeveloperProfile $developerProfile) : DeveloperConfig
     {
-        $this->databases[$databaseProfile->getProfileName()] = $databaseProfile;
+        $this->profiles[$developerProfile->getName()] = $developerProfile;
         return $this;
     }
 
-    public function getDatabaseProfiles() : array
+    public function getProfiles() : array
     {
-        return $this->databases;
+        return $this->profiles;
     }
 
-    public function getActiveDatabaseProfile() : DeveloperDatabaseProfile
+    public function getActiveProfileByDomain(string $domain) : DeveloperProfile
     {
-        foreach ($this->getDatabaseProfiles() as $databaseProfile) {
-            if ($databaseProfile->getProfileName() === $this->appProfile->getConnectionProfile()) {
-                return $databaseProfile;
+        $host = $this->getHostByDomain($domain);
+        $hostName = $host->getProfile();
+
+        foreach ($this->profiles as $profile) {
+            if ($hostName === $profile->getName()) {
+                return $profile;
             }
         }
         return null;
