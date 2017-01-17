@@ -42,10 +42,7 @@ class TableMapper
         }
 
         $statement->execute();
-        $this->logger->debug(sprintf(
-            'SQL Query executed %s',
-            $sql
-        ));
+        $this->logger->debug(sprintf('SQL Query executed %s', $sql));
         return $this->pdo->lastInsertId();
     }
 
@@ -97,10 +94,17 @@ class TableMapper
         // remove 'session_id' from the db columns as we do not
         // want to update this value.  instead we use it in the
         // SQL WHERE clause.
-        $columns = array_keys($sqlFieldMap);
-        if (($key = array_search('session_id', $columns)) !== false) {
-            unset($columns[$key]);
+        if (isset($sqlFieldMap['session_id'])) {
+            $sessionId = $sqlFieldMap['session_id'];
+            unset($sqlFieldMap['session_id']);
         }
+
+        if (isset($sqlFieldMap['stage'])) {
+            $stage = $sqlFieldMap['stage'];
+            unset($sqlFieldMap['stage']);
+        }
+
+        $columns = array_keys($sqlFieldMap);
 
         // after removing session_id, if there is nothing left then
         // there is nothing to update
@@ -129,13 +133,27 @@ class TableMapper
         foreach ($sqlFieldMap as $columnName => $value) {
             if (is_array($value)) {
                 $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            } else if (is_string($value)) {
+                $statement->bindValue(':' . $columnName, $value, \PDO::PARAM_STR);
+            } else if (is_int($value)) {
+                $statement->bindValue(':' . $columnName, $value, \PDO::PARAM_INT);
             }
-            $statement->bindValue(':' . $columnName, $value, \PDO::PARAM_STR);
         }
+        $statement->bindValue(':session_id', $sessionId, \PDO::PARAM_STR);
         $statement->execute();
-        $this->logger->debug(sprintf(
-            'SQL Query executed %s',
-            $sql
-        ));
+        $this->logger->debug(sprintf('SQL Query executed %s', $sql));
+    }
+
+    public function advanceStage($dbTable, $sessionId, $newStage)
+    {
+        $sql = 'UPDATE ' . $dbTable
+            . ' SET stage = :stage1'
+            . ' WHERE session_id = :session_id AND stage < :stage2';
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindValue(':session_id', $sessionId, \PDO::PARAM_STR);
+        $statement->bindValue(':stage1', $newStage, \PDO::PARAM_INT);
+        $statement->bindValue(':stage2', $newStage, \PDO::PARAM_INT);
+        $statement->execute();
+        $this->logger->debug(sprintf('SQL Query executed %s', $sql));
     }
 }

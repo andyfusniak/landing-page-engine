@@ -34,6 +34,9 @@ class FormController extends AbstractController
         $host = $this->request->getHost();
         $postParams = $this->request->request->all();
 
+
+        $stage = isset($this->match['stage']) ? $this->match['stage'] : 1;
+
         $formName = $postParams['_form'];
 
         // if the form has no _next field, then there is
@@ -87,6 +90,7 @@ class FormController extends AbstractController
                 }
             }
 
+            $this->lpEngine->getCaptureService()->advanceStage($host, $stage + 1);
             $this->redirectRoute($this->request->get('_next'));
             return;
         }
@@ -175,7 +179,13 @@ class FormController extends AbstractController
             );
         }
 
-        $this->lpEngine->getCaptureService()->save($host, $postParams, $this->themeConfig);
+        $this->lpEngine->getCaptureService()->save(
+            $host,
+            $stage,
+            $postParams,
+            $this->themeConfig
+        );
+
 
         $this->redirectRoute($this->request->get('_next'));
     }
