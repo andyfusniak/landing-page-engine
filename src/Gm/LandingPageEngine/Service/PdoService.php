@@ -27,13 +27,15 @@ class PdoService
         $this->developerConfig = $developerConfig;
     }
 
-    public function getPdoObject() {
+    public function getPdoObject(string $host) {
 
         if (null !== $this->pdo) {
             return $this-pdo;
         }
 
-        $databaseProfile = $this->developerConfig->getActiveDatabaseProfile();
+        $databaseProfile = $this->developerConfig
+                                ->getActiveProfileByDomain($host)
+                                ->getActiveDeveloperDatabaseProfile();
 
         try {
             $dsn = 'mysql:host=' . $databaseProfile->getDbHost() . ';dbname=' .

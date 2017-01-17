@@ -78,7 +78,7 @@ class CaptureService
         $this->request    = $lpEngine->getRequest();
     }
 
-    public function save(array $params, ThemeConfig $themeConfig)
+    public function save(string $host, array $params, ThemeConfig $themeConfig)
     {
         // check the HTTP POST contains a _form
         // otherwise there is no way to lookup the mappings
@@ -104,9 +104,6 @@ class CaptureService
             );
         }
 
-        // make sure the _form given exists in the theme JSON config
-        // The theme.json file must contain form field name to database field
-        // name mappings grouped by _form
         $formConfigCollection = $themeConfig->getFormConfigCollection();
         if (null === $formConfigCollection) {
             $this->logger->error(sprintf(
@@ -146,14 +143,6 @@ class CaptureService
             ));
         }
 
-        $tableName = $formConfig->getDbTable();
-        if (empty($tableName)) {
-            throw new \Exception(sprintf(
-                'Form "%s" is missing a "dbtable"',
-                $formName
-            ));
-        }
-
         $fields = $formConfig->getFieldsConfigCollection();
 
         // build a lookup table from database column name to form field value
@@ -164,7 +153,7 @@ class CaptureService
             $dbColumn = $fieldConfig->getDbColumn();
             if (empty($dbColumn)) {
                 throw new \Exception(sprintf(
-                    'Form field "%s" does not contain a "dbcolumn" entry in the theme file',
+                    'Form field "%s" does not contain a "dbcolumn" entry in the theme.xml file',
                     $formFieldName
                 ));
             }
@@ -227,13 +216,17 @@ class CaptureService
             return;
         }
 
-        $mapper = $this->getTableMapper();
+        $dbTable = $this->lpEngine->getDeveloperConfig()
+                        ->getActiveProfileByDomain($host)
+                        ->getActiveDeveloperDatabaseProfile()
+                        ->getDbTable();
+        $mapper = $this->getTableMapper($host);
 
         if (null === $lookup['session_id']) {
             $row = null;
         } else {
             $row = $mapper->findRowBySessionId(
-                $tableName,
+                $dbTable,
                 $lookup['session_id']
             );
             if (false === $row) {
@@ -274,16 +267,16 @@ class CaptureService
             $lookup[self::HTTP_REFERER]   = $this->session->get('ARRIVAL_HTTP_REFERER');
             $lookup[self::REMOTE_ADDR]    = $this->request->getClientIp();
 
-            $mapper->insert($tableName, $lookup);
+            $mapper->insert($dbTable, $lookup);
         } else {
-            $mapper->update($tableName, $lookup);
+            $mapper->update($dbTable, $lookup);
         }
     }
 
-    public function getTableMapper()
+    public function getTableMapper($host)
     {
         if (null === $this->tableMapper) {
-            $pdo = $this->pdoService->getPdoObject();
+            $pdo = $this->pdoService->getPdoObject($host);
             $this->tableMapper = new TableMapper($this->logger, $pdo);
         }
         return $this->tableMapper;

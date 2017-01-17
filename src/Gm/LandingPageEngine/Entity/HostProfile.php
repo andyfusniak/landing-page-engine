@@ -22,10 +22,16 @@ class HostProfile
      */
     protected $theme;
 
-    public function __construct(string $domain, string $theme)
+    /**
+     * @var string
+     */
+    protected $profile;
+
+    public function __construct(string $domain, string $theme, string $profile)
     {
-        $this->domain = $domain;
-        $this->theme  = $theme;
+        $this->domain  = $domain;
+        $this->theme   = $theme;
+        $this->profile = $profile;
     }
 
     /**
@@ -46,5 +52,15 @@ class HostProfile
     public function getThemeName() : string
     {
         return $this->theme;
+    }
+
+    /**
+     * Get the profile name
+     *
+     * @return string profile name
+     */
+    public function getProfile() : string
+    {
+        return $this->profile;
     }
 }

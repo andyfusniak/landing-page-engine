@@ -37,17 +37,24 @@ class DeveloperDatabaseProfile
      */
     protected $dbName;
 
+    /**
+     * @var string
+     */
+    protected $dbTable;
+
     public function __construct(string $profileName,
                                 string $dbHost,
                                 string $dbUser,
                                 string $dbPass,
-                                string $dbName)
+                                string $dbName,
+                                string $dbTable)
     {
         $this->profileName = $profileName;
-        $this->dbHost = $dbHost;
-        $this->dbUser = $dbUser;
-        $this->dbPass = $dbPass;
-        $this->dbName = $dbName;
+        $this->dbHost  = $dbHost;
+        $this->dbUser  = $dbUser;
+        $this->dbPass  = $dbPass;
+        $this->dbName  = $dbName;
+        $this->dbTable = $dbTable;
     }
 
     /**
@@ -88,5 +95,13 @@ class DeveloperDatabaseProfile
     public function getDbName() : string
     {
         return $this->dbName;
+    }
+
+    /**
+     * @return string table name
+     */
+    public function getDbTable() : string
+    {
+        return $this->dbTable;
     }
 }

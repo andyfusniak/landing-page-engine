@@ -15,11 +15,6 @@ class AppProfile
     const DEFAULT_VALUE = '@default';
 
     /**
-     * @var string
-     */
-    protected $connectionProfile;
-
-    /**
      * @var bool
      */
     protected $developerMode;
@@ -68,17 +63,6 @@ class AppProfile
      * @var int
      */
     protected $logLevel;
-
-    public function setConnectionProfile(string $value) : AppProfile
-    {
-        $this->connectionProfile = $value;
-        return $this;
-    }
-
-    public function getConnectionProfile()
-    {
-        return $this->connectionProfile;
-    }
 
     public function setDeveloperMode(bool $value) : AppProfile
     {

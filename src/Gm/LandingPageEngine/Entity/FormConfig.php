@@ -18,19 +18,13 @@ class FormConfig
     protected $name;
 
     /**
-     * @var string
-     */
-    protected $dbTable;
-
-    /**
      * @var FieldConfigCollection
      */
     protected $fieldConfigCollection;
 
-    public function __construct($name, $dbTable)
+    public function __construct($name)
     {
-        $this->name    = $name;
-        $this->dbTable = $dbTable;
+        $this->name = $name;
     }
 
     public function getName()
@@ -41,17 +35,6 @@ class FormConfig
     public function setName($name)
     {
         $this->name = $name;
-        return $this;
-    }
-
-    public function getDbTable()
-    {
-        return $this->dbTable;
-    }
-
-    public function setDbTable($dbTable)
-    {
-        $this->dbTable = $dbTable;
         return $this;
     }
 
