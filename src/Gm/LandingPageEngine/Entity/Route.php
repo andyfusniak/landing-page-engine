@@ -18,6 +18,11 @@ class Route
     protected $routeName;
 
     /**
+     * @var int
+     */
+    protected $stage;
+
+    /**
      * @var string
      */
     protected $url;
@@ -33,11 +38,13 @@ class Route
     protected $resourcePrefix;
 
     public function __construct(string $routeName,
+                                int $stage,
                                 string $url,
                                 string $target,
                                 string $resourcePrefix = '')
     {
         $this->routeName       = $routeName;
+        $this->stage           = $stage;
         $this->url             = $url;
         $this->target          = $target;
         $this->resourcePrefix  = $resourcePrefix;
@@ -51,6 +58,16 @@ class Route
     public function getRouteName() : string
     {
         return $this->routeName;
+    }
+
+    /**
+     * Get the stage of the route in the funnel
+     *
+     * @return int stage in funnel
+     */
+    public function getStage() : int
+    {
+        return $this->stage;
     }
 
     /**

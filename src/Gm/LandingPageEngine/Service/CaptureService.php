@@ -78,7 +78,7 @@ class CaptureService
         $this->request    = $lpEngine->getRequest();
     }
 
-    public function save(string $host, array $params, ThemeConfig $themeConfig)
+    public function save(string $host, int $stage, array $params, ThemeConfig $themeConfig)
     {
         // check the HTTP POST contains a _form
         // otherwise there is no way to lookup the mappings
@@ -256,7 +256,7 @@ class CaptureService
             // add the stage, request_scheme, http_host, theme, route_config
             // user_agent, referer and remote_addr fields.  These only need
             // to be inserted once and are not updated.
-            $lookup[self::STAGE]          = 1;
+            $lookup[self::STAGE]          = $stage + 1;
             $lookup[self::REQUEST_SCHEME] = $this->request->getScheme();
             $lookup[self::HTTP_HOST]      = $this->request->getHost();
             $lookup[self::THEME]          = $themeConfig->getThemeName()
@@ -269,7 +269,21 @@ class CaptureService
 
             $mapper->insert($dbTable, $lookup);
         } else {
+            $lookup[self::STAGE] = $stage + 1;
             $mapper->update($dbTable, $lookup);
+            $this->advanceStage($host, $stage + 1);
+        }
+    }
+
+    public function advanceStage($host, $stage)
+    {
+        $dbTable = $this->lpEngine->getDeveloperConfig()
+                        ->getActiveProfileByDomain($host)
+                        ->getActiveDeveloperDatabaseProfile()
+                        ->getDbTable();
+        $mapper = $this->getTableMapper($host);
+        if ((isset($this->session)) && ($this->session instanceof Session)) {
+            $mapper->advanceStage($dbTable, $this->session->getId(), $stage);
         }
     }
 

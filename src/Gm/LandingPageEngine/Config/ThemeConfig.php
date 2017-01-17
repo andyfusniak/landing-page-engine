@@ -91,11 +91,11 @@ class ThemeConfig
         $routeNodeList = $routesElement->getElementsByTagName('route');
         if ($routeNodeList->length < 1) {
             $this->logger->error(
-                'The theme config contains a <routes> section but defines no <route> sections.'
+                'The theme.xml contains a <routes> section but defines no <route> sections.'
             );
         }
 
-        // the <routes> element contains one or more <route name="..."> elements
+        // the <routes> section contains one or more <route name="..."> elements
         foreach ($routesElement->childNodes as $node) {
             if (XML_ELEMENT_NODE === $node->nodeType) {
                 if ('route' === $node->nodeName) {
@@ -105,6 +105,12 @@ class ThemeConfig
                         $key = uniqid('route_');
                     } else {
                         $key = $node->getAttribute('name');
+                    }
+
+                    if (false === $node->hasAttribute('stage')) {
+                        $stage = 1;
+                    } else {
+                        $stage = (int) $node->getAttribute('stage');
                     }
 
                     if (true === array_key_exists($key, $this->routes)) {
@@ -117,6 +123,7 @@ class ThemeConfig
 
                     $this->routes[$key] = new Route(
                         $key,
+                        $stage,
                         $node->getElementsByTagName('url')->item(0)->nodeValue,
                         $node->getElementsByTagName('target')->item(0)->nodeValue
                     );

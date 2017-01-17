@@ -382,7 +382,8 @@ class LpEngine
                     new Route($url, [
                         '_controller' =>
                             'Gm\LandingPageEngine\Controller\FrontController:showAction',
-                        'template' => $routeObj->getTarget()
+                        'template' => $routeObj->getTarget(),
+                        'stage' => $routeObj->getStage()
                     ], [], [], '', [], ['GET'])
                 );
 
@@ -390,6 +391,7 @@ class LpEngine
                     new Route($url, [
                         '_controller' =>
                             'Gm\LandingPageEngine\Controller\FormController:postAction',
+                        'stage' => $routeObj->getStage()
                     ], [], [], '', [], ['POST'])
                 );
 
@@ -421,7 +423,8 @@ class LpEngine
             $context->fromRequest($this->request);
             $matcher = new UrlMatcher($this->routes, $context);
             $parameters = $matcher->match($this->request->getPathInfo());
-
+// var_dump($this->routes->get($parameters['_route']));
+// var_dump($parameters['_route']);
             list($controller, $action) = preg_split('/:/', $parameters['_controller']);
 
             // lazy load the controler instance
