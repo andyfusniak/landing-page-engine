@@ -277,6 +277,20 @@ class CaptureService
 
     public function advanceStage($host, $stage)
     {
+        $applicationConfig = $this->lpEngine->getApplicationConfig();
+        $developerMode = $applicationConfig->getDeveloperMode();
+        $noCapture     = $applicationConfig->getNoCapture();
+
+        if ((true === $developerMode) &&
+            (true === $noCapture)) {
+            $this->logger->warning(sprintf(
+                'developer_mode=%s and no_capture=%s so data catpure is switch off',
+                (true === $developerMode) ? 'true' : 'false',
+                (true === $noCapture) ? 'true' : 'false'
+            ));
+            return;
+        }
+
         $dbTable = $this->lpEngine->getDeveloperConfig()
                         ->getActiveProfileByDomain($host)
                         ->getActiveDeveloperDatabaseProfile()
