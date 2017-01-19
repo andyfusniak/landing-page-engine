@@ -398,24 +398,126 @@ class DeveloperConfig
             ));
         }
 
+        $developerProfile = [
+            'database' => null,
+            'feeds'    => []
+        ];
+
         // the <profile> element must contain only one <database> element
         foreach ($profileNode->childNodes as $node) {
             if (XML_ELEMENT_NODE === $node->nodeType) {
-                if ('database' === $node->nodeName) {
-                    $database = self::processDatabaseDomNode($node);
-                } else {
+                switch ($node->nodeName) {
+                    case 'database':
+                        $developerProfile['database'] = self::processDatabaseDomNode($node);
+                        break;
+                    case 'feeds':
+                        $developerProfile['feeds'] = self::processFeedsDomNode($node);
+                        break;
+                    default:
+                        throw new DeveloperConfigXmlException(sprintf(
+                            'config.xml <database> element contains an unknown element <%s> in config.xml line %s',
+                            $node->nodeName,
+                            $node->getLineNo()
+                        ));
+                }
+            }
+        }
+
+        if (null === $developerProfile['database']) {
+            throw new DeveloperConfigXmlException(sprintf(
+                'config.xml <profiles> element is missing a <database> section in config.xml line %s',
+                $profileNode->getLineNo()
+            ));
+        }
+
+        return new DeveloperProfile(
+            $profileNode->getAttribute('name'),
+            $developerProfile['database'],
+            $developerProfile['feeds']
+        );
+    }
+
+    private static function processKlaviyoDomNode(DOMElement $klaviyoNode) : array
+    {
+        // the <klaviyo> section must contain an <api-key> and <list>
+        $klaviyo = [
+            'api-key' => null,
+            'list'    => null
+        ];
+
+        foreach ($klaviyoNode->childNodes as $node) {
+            if (XML_ELEMENT_NODE === $node->nodeType) {
+                switch ($node->nodeName) {
+                case 'api-key':
+                    $klaviyo['api-key'] = $node->nodeValue;
+                    break;
+                case 'list':
+                    $klaviyo['list'] = $node->nodeValue;
+                    break;
+                default:
                     throw new DeveloperConfigXmlException(sprintf(
-                        'config.xml <database> element contains an unknown element <%s> in config.xml line %s',
+                        'config.xml <klaviyo> element contains an unknown element <%s> in config.xml line %s',
                         $node->nodeName,
                         $node->getLineNo()
                     ));
                 }
             }
         }
-        return new DeveloperProfile(
-            $profileNode->getAttribute('name'),
-            $database
-        );
+
+        // build a list of missing elements within the <database> element
+        $missing = [];
+        if (in_array(null, array_values($klaviyo))) {
+            foreach ($klaviyo as $n => $v) {
+                if (null === $v) {
+                    $missing[] = '<' . $n . '>';
+                }
+            }
+        }
+
+        if (!empty($missing)) {
+            throw new DeveloperConfigXmlException(sprintf(
+                'config.xml <klaviyo> element contains is missing %s element%s in config.xml line %s',
+                implode(', ', $missing),
+                (count($missing) > 1) ? 's' : '',
+                $klaviyoNode->getLineNo()
+            ));
+        }
+
+        return $klaviyo;
+    }
+
+    private static function processFeedsDomNode(DOMElement $feedsNode) : array
+    {
+        // the <feeds> may contain one or more feeds <klaviyo>
+        // (and potentionally <mailchimp> in future)
+        $feeds = [
+            'klaviyo' => null
+        ];
+
+        foreach ($feedsNode->childNodes as $node) {
+            if (XML_ELEMENT_NODE === $node->nodeType) {
+                switch ($node->nodeName) {
+                case 'klaviyo':
+                    $feeds['klaviyo'] = self::processKlaviyoDomNode($node);
+                    break;
+                default:
+                    throw new DeveloperConfigXmlException(sprintf(
+                        'config.xml <feeds> element contains an unknown element <%s> in config.xml line %s',
+                        $node->nodeName,
+                        $node->getLineNo()
+                    ));
+                }
+            }
+        }
+
+        if (null === $feeds['klaviyo']) {
+            throw new DeveloperConfigXmlException(sprintf(
+                'config.xml <feeds> section is missing a <klaviyo> section config.xml line %s',
+                $feedsNode->getLineNo()
+            ));
+        }
+
+        return $feeds;
     }
 
     private static function processDatabaseDomNode(DOMElement $databaseNode) : DeveloperDatabaseProfile
