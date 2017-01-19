@@ -10,6 +10,8 @@ use Gm\LandingPageEngine\Version\Version;
 use Gm\LandingPageEngine\Service\Exception\ThemeConfigFileNotFound;
 
 use Monolog\Logger;
+use PDO;
+use PDOException;
 
 class StatusService
 {
@@ -53,7 +55,8 @@ class StatusService
         $this->databaseSettings();
         $themeSummary = $this->themeSettings();
         $hosts = $this->hostSettings($themeSummary);
-        $this->lastLeadsCaptured($hosts);
+        $this->profiles();
+        $this->lastLeadsCaptured();
     }
 
     private function systemSettings()
@@ -143,6 +146,7 @@ class StatusService
                 'name' =>
                     isset($themeSummary[$themeName]['name'])
                         ? $themeSummary[$themeName]['name'] : 'Error',
+                'profile' => $hostProfile->getProfile(),
                 'version' =>
                     isset($themeSummary[$themeName]['version'])
                         ?  $themeSummary[$themeName]['version'] : 'Error'
@@ -157,9 +161,64 @@ class StatusService
         return $hosts;
     }
 
-    private function lastLeadsCaptured($hosts)
+    private function profiles()
     {
+        $profiles = $this->developerConfig->getProfiles();
 
+        $twig = [];
+        foreach ($profiles as $key => $developerProfile) {
+            $developerDatabaseProfile = $developerProfile->getActiveDeveloperDatabaseProfile();
+            $twig[$key]['db'] = [
+                'dbhost'  => $developerDatabaseProfile->getDbHost(),
+                'dbuser'  => $developerDatabaseProfile->getDbUser(),
+                'dbname'  => $developerDatabaseProfile->getDbName(),
+                'dbtable' => $developerDatabaseProfile->getDbTable()
+            ];
+        }
+
+        $this->lpEngine->addTwigGlobal('profiles', $twig);
+        return $twig;
+    }
+
+    private function lastLeadsCaptured()
+    {
+        $profiles = $this->developerConfig->getProfiles();
+
+        foreach ($profiles as $key => $developerProfile) {
+            $databaseProfile = $developerProfile->getActiveDeveloperDatabaseProfile();
+
+            $dsn = 'mysql:host=' . $databaseProfile->getDbHost() . ';dbname=' .
+                    $databaseProfile->getDbName();
+            $user = $databaseProfile->getDbUser();
+
+            try {
+                $pdo = new PDO(
+                    $dsn,
+                    $user,
+                    $databaseProfile->getDbPass(),
+                    [
+                        PDO::ATTR_TIMEOUT => 4,
+                        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
+                    ]
+                );
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                $twig[$key]['connection_status'] = 'connected';
+
+                $tableMapper = new TableMapper($this->logger, $pdo);
+
+                //var_dump($tableMapper);
+
+                $twig[$key]['leads'] = $tableMapper->fetchLastNRowsAssocArray(
+                    $databaseProfile->getDbTable()
+                );
+                var_dump($twig[$key]['leads']);
+            } catch (PDOException $e) {
+                $twig[$key]['connection_status'] = 'failed';
+            }
+        }
+
+        $this->lpEngine->addTwigGlobal('databases', $twig);
+        return $twig;
     }
 
     private function databaseSettings()

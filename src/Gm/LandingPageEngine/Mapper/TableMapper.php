@@ -73,7 +73,7 @@ class TableMapper
 
     public function fetchLastNRowsAssocArray($tableName, $number = 5)
     {
-        $sql = 'SELECT * FROM ' . $tableName . ' LIMIT ' . strval($number);
+        $sql = 'SELECT * FROM ' . $tableName . ' ORDER BY id DESC LIMIT ' . strval($number);
         $statement = $this->pdo->prepare($sql);
         $statement->execute();
         $this->logger->debug(sprintf(
