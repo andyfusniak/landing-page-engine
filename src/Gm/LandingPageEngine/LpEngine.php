@@ -109,6 +109,11 @@ class LpEngine
     protected $session;
 
     /**
+     * @var string
+     */
+    protected $host;
+
+    /**
      * Create the following directories with file permissions
      *
      *   project_root/var               0777
@@ -244,12 +249,12 @@ class LpEngine
         $themeConfigService = $this->getThemeConfigService();
         $themeConfigService->activateThemes($developerConfig);
 
-        $host = $this->request->getHost();
-        if (null !== ($hostProfile = $developerConfig->getHostByDomain($host))) {
+        $this->host = $this->request->getHost();
+        if (null !== ($hostProfile = $developerConfig->getHostByDomain($this->host))) {
             $this->theme = $hostProfile->getThemeName();
             $logger->debug(sprintf(
                 'Host "%s" is configure to use theme "%s".  Checking theme exists',
-                $host,
+                $this->host,
                 $this->theme
             ));
             \Twig_Autoloader::register();
@@ -257,7 +262,7 @@ class LpEngine
         } else {
             throw new \Exception(sprintf(
                 'No host-to-template mapping configured for the host "%s".  Check the config.xml file.',
-                $host
+                $this->host
             ));
         }
 
@@ -604,6 +609,11 @@ class LpEngine
     {
         $name = 'Gm\\LandingPageEngine\\Form\\Filter\\' . $name;
         return new $name();
+    }
+
+    public function getHost()
+    {
+        return $this->host;
     }
 
     /**

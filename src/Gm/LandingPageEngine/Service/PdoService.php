@@ -1,6 +1,8 @@
 <?php
 namespace Gm\LandingPageEngine\Service;
 
+use PDO;
+use PDOException;
 use Monolog\Logger;
 use Gm\LandingPageEngine\Config\DeveloperConfig;
 
@@ -48,17 +50,18 @@ class PdoService
                 $user
             ));
 
-            $this->pdo = new \PDO(
+            $this->pdo = new PDO(
                 $dsn,
                 $user,
                 $databaseProfile->getDbPass(),
                 [
-                    \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
+                    PDO::ATTR_TIMEOUT => 4,
+                    PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8'
                 ]
             );
 
-            $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-        } catch (\PDOException $e) {
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
             throw $e;
         } catch (\Exception $e) {
             throw $e;

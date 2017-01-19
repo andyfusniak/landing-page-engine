@@ -183,7 +183,9 @@ class StatusService
         }
 
         try {
-            $pdo = $this->lpEngine->getPdoService()->getPdoObject();
+            $pdo = $this->lpEngine->getPdoService()->getPdoObject(
+                $this->lpEngine->getHost()
+            );
             if ($pdo instanceof \PDO) {
                 $this->lpEngine->addTwigGlobal('has_database_connection', 1);
             } else {
