@@ -211,7 +211,6 @@ class StatusService
                 $twig[$key]['leads'] = $tableMapper->fetchLastNRowsAssocArray(
                     $databaseProfile->getDbTable()
                 );
-                var_dump($twig[$key]['leads']);
             } catch (PDOException $e) {
                 $twig[$key]['connection_status'] = 'failed';
             }

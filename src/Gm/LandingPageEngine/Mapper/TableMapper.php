@@ -97,6 +97,19 @@ class TableMapper
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    public function updateSyncedKlaviyo(string $tableName, int $id, int $state = 1)
+    {
+        $sql = 'UPDATE ' . $tableName . ' SET klaviyo_sync = :klaviyo_sync';
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindValue(':klaviyo_sync', $state, PDO::PARAM_INT);
+        $statement->execute();
+        $this->logger->debug(sprintf(
+            'SQL Query executed %s',
+            $sql
+        ));
+
+    }
+
     /**
      * Update a data capture table with the given column map
      *

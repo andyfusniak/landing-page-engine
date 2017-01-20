@@ -312,6 +312,12 @@ class DeveloperConfig
         return $appProfile;
     }
 
+    /**
+     * <profiles>
+     *     <profile name="...">
+     *     </profile>
+     * </profile>
+     */
     private static function processProfilesDomNode(DOMElement $profilesNode) : array
     {
         $profiles = [];
@@ -388,8 +394,17 @@ class DeveloperConfig
         return new HostProfile($host['domain'], $host['theme'], $host['profile']);
     }
 
-    private static function processProfileDomNode(DOMElement $profileNode) :
-        DeveloperProfile
+    /**
+     * <profiles>
+     *     <profile name="...">
+     *         <database>
+     *         ...
+     *         <feeds>
+     *         ...
+     *     </profile>
+     * </profile>
+     */
+    private static function processProfileDomNode(DOMElement $profileNode) : DeveloperProfile
     {
         if (false === $profileNode->hasAttribute('name')) {
             throw new DeveloperConfigXmlException(sprintf(
@@ -437,12 +452,107 @@ class DeveloperConfig
         );
     }
 
+    private static function processKlaviyoMapDbcolumnDomNode(DOMElement $fieldNode) : string
+    {
+        // the <dbcolumn name="..."> section must contain one and only one <field> element
+        $field = null;
+        foreach ($fieldNode->childNodes as $node) {
+            if (XML_ELEMENT_NODE === $node->nodeType) {
+                switch ($node->nodeName) {
+                case 'field':
+                    if (false === empty($field)) {
+                        throw new DeveloperConfigXmlException(sprintf(
+                            'config.xml <dbcolumn> section contains more than one <field> element in config.xml line %s',
+                            $node->nodeName,
+                            $node->getLineNo()
+                        ));
+                    }
+
+                    $field = $node->nodeValue;
+                    break;
+                default:
+                    throw new DeveloperConfigXmlException(sprintf(
+                        'config.xml <dbcolumn> section contains an unknown element <%s> in config.xml line %s',
+                        $node->nodeName,
+                        $node->getLineNo()
+                    ));
+                }
+            }
+        }
+
+        if (null === $field) {
+            throw new DeveloperConfigXmlException(sprintf(
+                'config.xml <dbcolumn name="%s"> section must contain a <field> element in config.xml line %s',
+                $fieldNode->getAttribute('name'),
+                $fieldNode->getLineNo()
+            ));
+        }
+        return $field;
+    }
+
+    /**
+     * ...
+     *     <map>
+     *
+     *     </map>
+     */
+    private static function processKlaviyoMapDomNode(DOMElement $mapNode) : array
+    {
+        // the <map> section can contain zero or more <dbcolumn name="..."> sections
+        $dbcolumns = [];
+        foreach ($mapNode->childNodes as $node) {
+            if (XML_ELEMENT_NODE === $node->nodeType) {
+                switch ($node->nodeName) {
+                case 'dbcolumn':
+                    if (false === $node->hasAttribute('name')) {
+                        throw new DeveloperConfigXmlException(sprintf(
+                            'config.xml <dbcolumn> element has a missing name attribute in config.xml line %s',
+                            $node->getLineNo()
+                        ));
+                    }
+
+                    $name = $node->getAttribute('name');
+                    if (true === array_key_exists($name, $dbcolumns)) {
+                        throw new DeveloperConfigXmlException(sprintf(
+                            'Duplicate <dbcolumn name="%"> element in config.xml line %s',
+                            $name,
+                            $node->getLineNo()
+                        ));
+                    }
+
+                    $dbcolumns[$name]['field'] = self::processKlaviyoMapDbcolumnDomNode($node);
+                    break;
+                default:
+                    throw new DeveloperConfigXmlException(sprintf(
+                        'config.xml <map> section contains an unknown element <%s> in config.xml line %s',
+                        $node->nodeName,
+                        $node->getLineNo()
+                    ));
+                }
+            }
+        }
+
+        return $dbcolumns;
+    }
+
+    /**
+     * ...
+     *     <feeds>
+     *         <api-key>...</api-key>
+     *         <list>...</list>
+     *         <map>
+     *         ...
+     *         </map>
+     *     </feeds>
+     */
     private static function processKlaviyoDomNode(DOMElement $klaviyoNode) : array
     {
-        // the <klaviyo> section must contain an <api-key> and <list>
+        // the <klaviyo> section must contain an <api-key> and <list> element
+        // the <map> section is optional
         $klaviyo = [
             'api-key' => null,
-            'list'    => null
+            'list'    => null,
+            'map'     => []
         ];
 
         foreach ($klaviyoNode->childNodes as $node) {
@@ -453,6 +563,9 @@ class DeveloperConfig
                     break;
                 case 'list':
                     $klaviyo['list'] = $node->nodeValue;
+                    break;
+                case 'map':
+                    $klaviyo['map'] = self::processKlaviyoMapDomNode($node);
                     break;
                 default:
                     throw new DeveloperConfigXmlException(sprintf(

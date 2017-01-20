@@ -266,10 +266,11 @@ class CaptureService
             $lookup[self::USER_AGENT]     = $this->request->server->get('HTTP_USER_AGENT');
             $lookup[self::HTTP_REFERER]   = $this->session->get('ARRIVAL_HTTP_REFERER');
             $lookup[self::REMOTE_ADDR]    = $this->request->getClientIp();
-
+            $lookup['klaviyo_sync'] = 0;
             $mapper->insert($dbTable, $lookup);
         } else {
             $lookup[self::STAGE] = $stage + 1;
+            $lookup['klaviyo_sync'] = 0;
             $mapper->update($dbTable, $lookup);
             $this->advanceStage($host, $stage + 1);
         }

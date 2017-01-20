@@ -53,12 +53,17 @@ class CronService
             $this->setTableMapper(new TableMapper($this->logger, $pdo));
 
             $rows = $this->tableMapper->fetchUnsyncedRows(
-                $databaseProfile->getDbTable()
+                $dbTable = $databaseProfile->getDbTable()
             );
 
-            $feeds = $developerProfile->getFeeds()['klaviyo'];
-            var_dump($feeds);
-            $this->feedKlaviyo($feeds['api-key'], $feeds['list'], $rows);
+            $feedsKlaviyo = $developerProfile->getFeeds()['klaviyo'];
+            $this->feedKlaviyo(
+                $feedsKlaviyo['api-key'],
+                $feedsKlaviyo['list'],
+                $feedsKlaviyo['map'],
+                $dbTable,
+                $rows
+            );
         } catch (PDOException $e) {
             switch (strval($e->getCode())) {
             case '2002':
@@ -103,7 +108,8 @@ class CronService
      * @param string $list list ID
      * @param array $row associative array of contacts to push
      */
-    private function feedKlaviyo(string $apiKey, string $list, $rows)
+    private function feedKlaviyo(string $apiKey, string $list,
+                                 array $map, string $dbTable, array $rows)
     {
         $client = new Client([
             // Base URI is used with relative requests
@@ -112,11 +118,10 @@ class CronService
             'timeout'  => 3.0,
         ]);
 
-
-
-        //$row['email'] = 'andy+209@greycatmedia.co.uk';
-        $row['first_name'] = 'Andrew';
-        $row['last_name'] = 'Fusniak';
+        foreach ($rows as $row) {
+            $email = $row['email'];
+            unset($row['email']);
+            $klaviyoData = $this->mapDataFields($map, $row);
 
             $response = $client->post(
                 '' . $list . '/members',
@@ -124,34 +129,47 @@ class CronService
                     'headers' => [
                         'Accept' => 'application/json'
                     ],
-
                     'form_params' => [
                         'api_key' => $apiKey,
                         'confirm_optin' => 'false',
-                        'email' => 'andy+209@greycatmedia.co.uk',
-                        //'properties' => '{
-                        //    "first_name" : "carrots"
-                        //}',
-                        'properties' => json_encode($row)
+                        'email' => $email,
+                        'properties' => json_encode($klaviyoData)
                     ]
                 ]
             );
 
-        echo json_encode($row) . '<br>';
+            switch ($response->getStatusCode()) {
+            case 200:
+                $this->syncKlaviyo($dbTable, (int) $klaviyoData['id'], 1);
+                break;
+            default:
+                break;
+            }
+        }
+    }
 
-        //         'form_params' => [
-        //
-        //         ]
-        //     ]
-        // ]);
+    /**
+     * Build a new associative array with new mappings
+     */
+    private function mapDataFields($map, $row) : array
+    {
+        $klaviyoData = [];
+        foreach ($row as $key => $value) {
+            if (array_key_exists($key, $map)) {
+                $klaviyoKey = $map[$key]['field'];
+                $klaviyoData[$klaviyoKey] = $value;
+            } else if ('email' === $key) {
+                continue;
+            } else {
+                $klaviyoData[$key] = $value;
+            }
+        }
 
-        $body = $response->getBody();
-// Implicitly cast the body to a string and echo it
-echo $body;
+        return $klaviyoData;
+    }
 
-        // Get all of the response headers.
-foreach ($response->getHeaders() as $name => $values) {
-    echo $name . ': ' . implode(', ', $values) . "\r\n";
-}
+    public function syncKlaviyo(string $dbTable, int $id, int $state)
+    {
+        $this->tableMapper->updateSyncedKlaviyo($dbTable, $id, $state);
     }
 }
