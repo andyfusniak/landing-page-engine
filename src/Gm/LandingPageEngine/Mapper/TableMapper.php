@@ -2,6 +2,7 @@
 namespace Gm\LandingPageEngine\Mapper;
 
 use Monolog\Logger;
+use PDO;
 
 class TableMapper
 {
@@ -81,6 +82,32 @@ class TableMapper
             $sql
         ));
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function fetchUnsyncedRows($tableName)
+    {
+        $sql = 'SELECT * FROM ' . $tableName . ' WHERE klaviyo_sync = 0';
+
+        $statement = $this->pdo->prepare($sql);
+        $statement->execute();
+        $this->logger->debug(sprintf(
+            'SQL Query executed %s',
+            $sql
+        ));
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateSyncedKlaviyo(string $tableName, int $id, int $state = 1)
+    {
+        $sql = 'UPDATE ' . $tableName . ' SET klaviyo_sync = :klaviyo_sync';
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindValue(':klaviyo_sync', $state, PDO::PARAM_INT);
+        $statement->execute();
+        $this->logger->debug(sprintf(
+            'SQL Query executed %s',
+            $sql
+        ));
+
     }
 
     /**

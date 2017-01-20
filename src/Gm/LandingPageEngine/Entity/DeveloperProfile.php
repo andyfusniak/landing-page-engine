@@ -22,11 +22,18 @@ class DeveloperProfile
      */
     protected $developerDatabaseProfile;
 
+    /**
+     * @var array
+     */
+    protected $feeds;
+
     public function __construct(string $name,
-                                DeveloperDatabaseProfile $developerDatabaseProfile)
+                                DeveloperDatabaseProfile $developerDatabaseProfile,
+                                array $feeds)
     {
         $this->name = $name;
         $this->developerDatabaseProfile = $developerDatabaseProfile;
+        $this->feeds = $feeds;
     }
 
     /**
@@ -42,5 +49,10 @@ class DeveloperProfile
     public function getActiveDeveloperDatabaseProfile() : DeveloperDatabaseProfile
     {
         return $this->developerDatabaseProfile;
+    }
+
+    public function getFeeds()
+    {
+        return $this->feeds;
     }
 }
