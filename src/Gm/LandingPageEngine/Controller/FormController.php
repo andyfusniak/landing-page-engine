@@ -200,8 +200,6 @@ class FormController extends AbstractController
             );
         }
 
-var_dump($stage);
-sleep(5);
         $this->lpEngine->getCaptureService()->save(
             $host,
             $stage,
