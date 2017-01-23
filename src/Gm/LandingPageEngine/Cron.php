@@ -75,7 +75,6 @@ class Cron
 
         foreach ($this->developerConfig->getProfiles() as $developerProfile) {
             if (false === empty($feeds = $developerProfile->getFeeds())) {
-
                 if (isset($feeds['klaviyo']) && is_array($klaviyo = $feeds['klaviyo'])) {
                     $this->logger->info(sprintf(
                         'Profile %s has a klaviyo feed api-key=%s and list=%s',
@@ -85,6 +84,11 @@ class Cron
                     ));
                     $this->process($developerProfile);
                 }
+            } else {
+                $this->logger->info(sprintf(
+                    '<profile name="%s"> contains no feeds',
+                    $developerProfile->getName()
+                ));
             }
         }
 

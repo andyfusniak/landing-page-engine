@@ -55,8 +55,15 @@ class CronService
             $rows = $this->tableMapper->fetchUnsyncedRows(
                 $dbTable = $databaseProfile->getDbTable()
             );
+            $this->logger->info(sprintf(
+                'Fetched %s row(s) from %s',
+                count($rows),
+                $databaseProfile->getDbTable()
+            ));
+
 
             $feedsKlaviyo = $developerProfile->getFeeds()['klaviyo'];
+
             $this->feedKlaviyo(
                 $feedsKlaviyo['api-key'],
                 $feedsKlaviyo['list'],
@@ -122,6 +129,7 @@ class CronService
             $email = $row['email'];
             unset($row['email']);
             $klaviyoData = $this->mapDataFields($map, $row);
+            $klaviyoJson = json_encode($klaviyoData);
 
             $response = $client->post(
                 '' . $list . '/members',
@@ -133,16 +141,26 @@ class CronService
                         'api_key' => $apiKey,
                         'confirm_optin' => 'false',
                         'email' => $email,
-                        'properties' => json_encode($klaviyoData)
+                        'properties' => $klaviyoJson
                     ]
                 ]
             );
+            $this->logger->debug(sprintf(
+                'HTTP POST to Klaviyo API with email=%s and properties=%s',
+                $email,
+                $klaviyoJson
+            ));
 
-            switch ($response->getStatusCode()) {
+            $statusCode = $response->getStatusCode();
+            switch ($statusCode) {
             case 200:
                 $this->syncKlaviyo($dbTable, (int) $klaviyoData['id'], 1);
                 break;
             default:
+                $this->logger->debug(sprintf(
+                    'Klaviyo API response status code is %s',
+                    $statusCode
+                ));
                 break;
             }
         }
