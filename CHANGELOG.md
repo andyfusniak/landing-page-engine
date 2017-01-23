@@ -1,4 +1,12 @@
 # CHANGELOG
+## 2.9.0 (23 Jan 2017)
+- <host> section has its own <profile>name</profile element and <databases> is repalced by <profiles> section
+- Fixes bug for HTTP POST trying to update stage in DB even when no-capture is true
+- Fixes bug for PDO timeout and connection based on host context
+- Status page to show last inserted rows
+- Klaviyo API feed and config.xml <feeds> <klaviyo> sections
+- New ThaiPhone validator handling support for mobile and
+
 ## 2.8.0 (15 Jan 2017)
 - Bugfix to show status-page even if the theme.xml config is broken
 - Twig globals theme and theme_assets
