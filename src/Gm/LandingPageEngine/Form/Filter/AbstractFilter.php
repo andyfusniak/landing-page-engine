@@ -12,4 +12,12 @@ namespace Gm\LandingPageEngine\Form\Filter;
 
 abstract class AbstractFilter implements FilterInterface
 {
+    /**
+     * @return string name of the filter
+     */
+    public function __toString()
+    {
+        $parts = explode('\\', get_class($this));
+        return $parts[count($parts) - 1];
+    }
 }

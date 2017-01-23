@@ -357,9 +357,7 @@ class LpEngine
         $themeConfigRoutes = $themeConfig->getRoutes();
 
         if (null === $themeConfigRoutes) {
-            $logger->critical(
-                'No routes defined'
-            );
+            $logger->critical('No routes defined');
             throw new \Exception('No routes defined');
         }
 
