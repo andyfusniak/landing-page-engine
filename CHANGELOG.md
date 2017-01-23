@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.9.2 (23 Jan 2017)
+- Removes artificial delay and breadcrumb (var_dump)
+
 ## 2.9.1 (23 Jan 2017)
 - Fix filters applied to HTTP POST params. Special case for phone number strip leading 0
 - [7: Fix filters applied to HTTP POST params. Special case for phone number strip leading 0](https://bitbucket.org/sudtanadevteam/landing-page-engine/issues/7/filter-chain-not-evaluated-in-the-form)
