@@ -12,6 +12,8 @@ namespace Gm\LandingPageEngine\Form\Filter;
 
 class FilterChain
 {
+    const CHAIN_STRING_DELIMITER = ' -> ';
+
     /**
      * @var array of Filter objects
      */
@@ -48,5 +50,21 @@ class FilterChain
             $value = $filter->filter($value);
         }
         return $value;
+    }
+
+    public function __toString()
+    {
+        $filterChainString = '{ ';
+        foreach ($this->filters as $filter) {
+            $filterChainString .= $filter;
+            $filterChainString .= self::CHAIN_STRING_DELIMITER;
+        }
+
+        // cut off the trailing comma ', ' (last 2 characters)
+        return substr(
+            $filterChainString,
+            0,
+            strlen($filterChainString) - strlen(self::CHAIN_STRING_DELIMITER)
+        ) . ' }';
     }
 }

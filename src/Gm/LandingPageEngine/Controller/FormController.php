@@ -34,7 +34,10 @@ class FormController extends AbstractController
         $host = $this->request->getHost();
         $postParams = $this->request->request->all();
 
-
+        $this->logger->debug(sprintf(
+            'HTTP POST parameters %s',
+            var_export($postParams, true)
+        ));
         $stage = isset($this->match['stage']) ? $this->match['stage'] : 1;
 
         $formName = $postParams['_form'];
@@ -50,7 +53,8 @@ class FormController extends AbstractController
                 $formName
             ));
             throw new \Exception(sprintf(
-                'HTML Form "%s" has no <input type="hidden" name="_next" value="..."> field set.  There is no route name to redirect to after the HTTP POST.',
+                'HTML Form "%s" has no <input type="hidden" name="_next" value="..."> field set.  '
+                . 'There is no route name to redirect to after the HTTP POST.',
                 $formName
             ));
         }
@@ -61,28 +65,29 @@ class FormController extends AbstractController
 
         if (null === $this->themeConfig->getFormConfigCollection()) {
             throw new \Exception(sprintf(
-                'Template attemtped HTTP POST but theme config is missing a <forms> section for form "%s"',
+                'Template attemtped HTTP POST but theme config is missing a '
+                . '<forms> section for form "%s"',
                 $formName
             ));
         }
 
-        if (null === $filterAndValidatorLookup) {
-            $customParams = [];
-            foreach ($postParams as $name => $value) {
-                if ('_' === substr($name, 0, 1)) {
-                    continue;
-                }
-                $customParams[$name] = $value;
+        $customParams = [];
+        foreach ($postParams as $name => $value) {
+            if ('_' === substr($name, 0, 1)) {
+                continue;
             }
+            $customParams[$name] = $value;
+        }
 
-            $logger = $this->lpEngine->getLogger();
+        if (null === $filterAndValidatorLookup) {
             if (($count = count($customParams)) > 0) {
-                $logger->warning(sprintf(
-                    '%s custom params sent via HTTP POST but theme config indicates this should be an empty form.  See fields sent below:',
+                $this->logger->warning(sprintf(
+                    '%s custom params sent via HTTP POST but theme config indicates this should '
+                    . ' be an empty form.  See fields sent below:',
                     $count
                 ));
                 foreach ($customParams as $name => $value) {
-                    $logger->warning(sprintf(
+                    $this->logger->warning(sprintf(
                         'HTTP POST name="%s" value="%s" but no map for this field',
                         $name,
                         $value
@@ -104,62 +109,74 @@ class FormController extends AbstractController
             __METHOD__
         ));
 
-        foreach ($postParams as $name => $value) {
-            //$this->logger->debug(sprintf(
-            //    'HTTP POST parameters %s=%s',
-            //    $name,
-            //    $value
-            //));
-
+        foreach ($customParams as $name => $value) {
             $originalValue = $value;
 
-            if ('_' !== substr($name, 0, 1)) {
-                if (isset($filterAndValidatorLookup[$name])) {
-                    // check this form element has a filter chain
-                    // and if it does, then run through the filters
-                    if (isset($filterAndValidatorLookup[$name]['filters'])) {
-                        $filterChain = $filterAndValidatorLookup[$name]['filters'];
+            if (isset($filterAndValidatorLookup[$name])) {
+                // check this form element has a filter chain
+                // and if it does, then run through the filters
+                if (isset($filterAndValidatorLookup[$name]['filters'])) {
+                    $filterChain = $filterAndValidatorLookup[$name]['filters'];
 
-                        // checkbox and radio boxes use arrays
-                        // if the value is not a string it's likely a checkbox
-                        // so we will not run the filters on it
-                        if (is_string($value)) {
-                            $value = $filterChain->filter($value);
-                        }
-                    }
+                    // checkbox and radio boxes use arrays
+                    // if the value is not a string it's likely a checkbox
+                    // so we will not run the filters on it
+                    if (is_string($value)) {
+                        $value = $filterChain->filter($value);
 
-                    if (isset($filterAndValidatorLookup[$name]['validators'])) {
-                        $validatorChain = $filterAndValidatorLookup[$name]['validators'];
-
-                        $validatorChainResult = $validatorChain->isValid($value);
                         $this->logger->debug(sprintf(
-                            'Validation chain %s returned %s for value="%s"',
-                            (string) $validatorChain,
-                            (true === $validatorChainResult) ? 'VALID' : 'INVALID',
+                            'Filter chain %s on field %s returned "%s"',
+                            (string) $filterChain,
+                            $name,
                             $value
                         ));
 
-                        if (false === $validatorChainResult) {
-                            $formErrors = true;
-                            $errors[$name] = $validatorChain->getMessages();
-
-                            foreach ($errors[$name] as $msg) {
-                                $this->logger->debug(sprintf(
-                                    'Adding error message "%s" for form field "%s" on form "%s"',
-                                    $msg,
-                                    $name,
-                                    $formName
-                                ));
-                            }
-
-                            $this->lpEngine->addTwigGlobal($name . '_err', true);
-                            $this->lpEngine->addTwigGlobal($name . '_errors', array_values($errors[$name]));
-                        }
+                        $postParams[$name] = $value;
                     }
                 }
 
-                $this->lpEngine->addTwigGlobal($name, $originalValue);
+                if (isset($filterAndValidatorLookup[$name]['validators'])) {
+                    $validatorChain = $filterAndValidatorLookup[$name]['validators'];
+
+                    $validatorChainResult = $validatorChain->isValid($value);
+                    $this->logger->debug(sprintf(
+                        'Validation chain %s on field %s returned %s for value="%s"',
+                        (string) $validatorChain,
+                        $name,
+                        (true === $validatorChainResult) ? 'VALID' : 'INVALID',
+                        $value
+                    ));
+
+                    if (false === $validatorChainResult) {
+                        $formErrors = true;
+                        $errors[$name] = $validatorChain->getMessages();
+
+                        foreach ($errors[$name] as $msg) {
+                            $this->logger->debug(sprintf(
+                                'Adding error message "%s" for form field "%s" on form "%s"',
+                                $msg,
+                                $name,
+                                $formName
+                            ));
+                        }
+
+                        $this->lpEngine->addTwigGlobal(
+                            $name . '_err',
+                            true
+                        );
+                        $this->lpEngine->addTwigGlobal(
+                            $name . '_errors', array_values($errors[$name])
+                        );
+                    } else {
+                        if ('phone' === $name) {
+                            // special case to remove leading 0 from a phone number
+                            $postParams['phone'] = ltrim($postParams['phone'], '0');
+                        }
+                    }
+                }
             }
+
+            $this->lpEngine->addTwigGlobal($name, $originalValue);
         }
 
         // if the form is invalid
@@ -167,7 +184,11 @@ class FormController extends AbstractController
             $twigEnv = $this->lpEngine->getTwigEnv();
 
             // HTTP POST routes have a '_post' postfix that needs removing
-            $route = substr($this->match['_route'], 0, strlen($this->match['_route']) - strlen('_post'));
+            $route = substr(
+                $this->match['_route'],
+                0,
+                strlen($this->match['_route']) - strlen('_post')
+            );
             $routeObj = $this->themeConfig->getRouteByUrl($route);
             $template = $twigEnv->load($routeObj->getTarget());
 
@@ -179,6 +200,8 @@ class FormController extends AbstractController
             );
         }
 
+var_dump($stage);
+sleep(5);
         $this->lpEngine->getCaptureService()->save(
             $host,
             $stage,
