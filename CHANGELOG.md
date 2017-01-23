@@ -1,4 +1,8 @@
 # CHANGELOG
+## 2.9.1 (23 Jan 2017)
+- Fix filters applied to HTTP POST params. Special case for phone number strip leading 0
+- [7: Fix filters applied to HTTP POST params. Special case for phone number strip leading 0](https://bitbucket.org/sudtanadevteam/landing-page-engine/issues/7/filter-chain-not-evaluated-in-the-form)
+
 ## 2.9.0 (23 Jan 2017)
 - <host> section has its own <profile>name</profile element and <databases> is repalced by <profiles> section
 - Fixes bug for HTTP POST trying to update stage in DB even when no-capture is true
