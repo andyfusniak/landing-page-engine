@@ -27,13 +27,20 @@ class DeveloperProfile
      */
     protected $feeds;
 
+    /**
+     * @var array
+     */
+    protected $themeSettings;
+
     public function __construct(string $name,
                                 DeveloperDatabaseProfile $developerDatabaseProfile,
-                                array $feeds)
+                                array $feeds,
+                                array $themeSettings)
     {
         $this->name = $name;
         $this->developerDatabaseProfile = $developerDatabaseProfile;
         $this->feeds = $feeds;
+        $this->themeSettings = $themeSettings;
     }
 
     /**
@@ -54,5 +61,10 @@ class DeveloperProfile
     public function getFeeds()
     {
         return $this->feeds;
+    }
+
+    public function getThemeSettings()
+    {
+        return $this->themeSettings;
     }
 }

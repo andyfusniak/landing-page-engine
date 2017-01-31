@@ -113,6 +113,7 @@ class DeveloperConfig
                 }
             }
         }
+
         return new DeveloperConfig($app, $profiles, $hosts);
     }
 
@@ -355,7 +356,7 @@ class DeveloperConfig
         $host = [
             'domain'    => null,
             'theme'     => null,
-            'profile' => null
+            'profile'   => null
         ];
 
         foreach ($hostNode->childNodes as $node) {
@@ -401,6 +402,8 @@ class DeveloperConfig
      *         ...
      *         <feeds>
      *         ...
+     *         <theme>
+     *         ...
      *     </profile>
      * </profile>
      */
@@ -415,7 +418,8 @@ class DeveloperConfig
 
         $developerProfile = [
             'database' => null,
-            'feeds'    => []
+            'feeds'    => [],
+            'theme'    => null,
         ];
 
         // the <profile> element must contain only one <database> element
@@ -427,6 +431,9 @@ class DeveloperConfig
                         break;
                     case 'feeds':
                         $developerProfile['feeds'] = self::processFeedsDomNode($node);
+                        break;
+                    case 'theme':
+                        $developerProfile['theme'] = self::processThemeDomNode($node);
                         break;
                     default:
                         throw new DeveloperConfigXmlException(sprintf(
@@ -448,7 +455,8 @@ class DeveloperConfig
         return new DeveloperProfile(
             $profileNode->getAttribute('name'),
             $developerProfile['database'],
-            $developerProfile['feeds']
+            $developerProfile['feeds'],
+            $developerProfile['theme']
         );
     }
 
@@ -597,6 +605,38 @@ class DeveloperConfig
         }
 
         return $klaviyo;
+    }
+
+    private static function processThemeDomNode(DOMElement $themeNode) : array
+    {
+        $themeSettings = [
+            'ga-tracking-id' => null
+        ];
+
+        foreach ($themeNode->childNodes as $node) {
+            if (XML_ELEMENT_NODE === $node->nodeType) {
+                switch ($node->nodeName) {
+                case 'ga-tracking-id':
+                    $themeSettings['ga-tracking-id'] = $node->nodeValue;
+                    break;
+                default:
+                    throw new DeveloperConfigXmlException(sprintf(
+                        'config.xml <theme> element contains an unknown element <%s> in config.xml line %s',
+                        $node->nodeName,
+                        $node->getLineNo()
+                    ));
+                }
+            }
+        }
+
+        if (null === $themeSettings['ga-tracking-id']) {
+            throw new DeveloperConfigXmlException(sprintf(
+                'config.xml <theme> section is missing a <ga-tracking-id> element in config.xml line %s',
+                $feedsNode->getLineNo()
+            ));
+        }
+
+        return $themeSettings;
     }
 
     private static function processFeedsDomNode(DOMElement $feedsNode) : array
