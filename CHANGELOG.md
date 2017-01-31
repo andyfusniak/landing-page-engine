@@ -1,4 +1,8 @@
 # CHANGELOG
+## 2.10.0 (31 Jan 2017)
+- UTM tracking via session and Google Analytics analytics.js JavaScript
+- <ga-tracking-id> element for config.xml
+
 ## 2.9.2 (23 Jan 2017)
 - Removes artificial delay and breadcrumb (var_dump)
 
