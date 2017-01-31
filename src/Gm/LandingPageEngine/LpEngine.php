@@ -16,6 +16,7 @@ use Gm\LandingPageEngine\Service\PdoService;
 use Gm\LandingPageEngine\Service\StatusService;
 use Gm\LandingPageEngine\Service\ThemeConfigService;
 use Gm\LandingPageEngine\Version\Version;
+use Gm\LandingPageEngine\TwigGlobals\GaTrackingCode;
 use Gm\LandingPageEngine\TwigGlobals\ThaiDate;
 use Gm\LandingPageEngine\TwigGlobals\UtmQueryParams;
 
@@ -288,7 +289,17 @@ class LpEngine
 
             // @todo needs to be more modular to lazy-load and plug them in
             // provide global for thai_date
-            $this->twigEnv->addGlobal('thai_date', new ThaiDate());
+            $this->twigEnv->addGlobal(
+                'thai_date',
+                new ThaiDate()
+            );
+            $this->twigEnv->addGlobal(
+                'ga_tracking_code',
+                new GaTrackingCode(
+                    $this->developerConfig->getActiveProfileByDomain($this->host),
+                    $this->getSession()
+                )
+            );
         } else {
             $logger->warning(sprintf(
                 '%s directory is missing.  Failed to setup Twig Template Dir.',
