@@ -419,7 +419,7 @@ class DeveloperConfig
         $developerProfile = [
             'database' => null,
             'feeds'    => [],
-            'theme'    => null,
+            'theme'    => [],
         ];
 
         // the <profile> element must contain only one <database> element
