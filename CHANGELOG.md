@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.10.1 (1 Feb 2017)
+- Bugfix error for missing <theme> element config.xml
+
 ## 2.10.0 (31 Jan 2017)
 - UTM tracking via session and Google Analytics analytics.js JavaScript
 - <ga-tracking-id> element for config.xml
