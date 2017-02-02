@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.10.2 (2 Feb 2017)
+- Bugfix for skip auto theme activation loggin
+
 ## 2.10.1 (1 Feb 2017)
 - Bugfix error for missing <theme> element config.xml
 
