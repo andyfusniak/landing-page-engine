@@ -70,7 +70,7 @@ class ThemeConfigService
     public function activateThemes(DeveloperConfig $developerConfig)
     {
         if (true === $this->applicationConfig->getSkipAutoThemeActivation()) {
-            $logger->info('Skipping theme activation checks as skip_auto_theme_activation=true');
+            $this->logger->info('Skipping theme activation checks as skip_auto_theme_activation=true');
             return;
         }
 
