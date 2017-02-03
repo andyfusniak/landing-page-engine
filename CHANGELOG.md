@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.10.3 (3 Feb 2017)
+- Bugfix SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
+
 ## 2.10.2 (2 Feb 2017)
 - Bugfix for skip auto theme activation loggin
 
