@@ -155,18 +155,44 @@ class TableMapper
             $sql .= $colName . ' = :' . $colName;
         }
         $sql .= ' WHERE session_id = :session_id';
+        $this->logger->debug(sprintf(
+            'SQL Query Prior to execution: %s',
+            $sql
+        ));
         $statement = $this->pdo->prepare($sql);
 
         foreach ($sqlFieldMap as $columnName => $value) {
             if (is_array($value)) {
                 $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                $statement->bindValue(':' . $columnName, $value, \PDO::PARAM_STR);
+                $this->logger->debug(sprintf(
+                    'Bind array (as json string) value for :%s as %s',
+                    $columnName,
+                    $value
+                ));
             } else if (is_string($value)) {
                 $statement->bindValue(':' . $columnName, $value, \PDO::PARAM_STR);
+                $this->logger->debug(sprintf(
+                    'Bind string value for :%s as %s',
+                    $columnName,
+                    $value
+                ));
             } else if (is_int($value)) {
                 $statement->bindValue(':' . $columnName, $value, \PDO::PARAM_INT);
+                $this->logger->debug(sprintf(
+                    'Bind int value for :%s as %s',
+                    $columnName,
+                    $value
+                ));
             }
         }
+
         $statement->bindValue(':session_id', $sessionId, \PDO::PARAM_STR);
+        $this->logger->debug(sprintf(
+            'Bind string value for :session_id as %s',
+            $sessionId
+        ));
+
         $statement->execute();
         $this->logger->debug(sprintf('SQL Query executed %s', $sql));
     }
