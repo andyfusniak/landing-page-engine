@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.11.0 (6 Feb 2017)
+- {{ version_string }} for use with resource caching
+
 ## 2.10.3 (3 Feb 2017)
 - Bugfix SQLSTATE[HY093]: Invalid parameter number: number of bound variables does not match number of tokens
 
