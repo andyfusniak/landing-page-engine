@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.12.0 (8 Feb 2017)
+- <field optional="true"> attribute added to skip validator chains for empty fields
+
 ## 2.11.0 (6 Feb 2017)
 - {{ version_string }} for use with resource caching
 
