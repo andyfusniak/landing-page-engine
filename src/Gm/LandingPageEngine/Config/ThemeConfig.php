@@ -20,8 +20,9 @@ use Gm\LandingPageEngine\Entity\ValidatorConfig;
 use Gm\LandingPageEngine\Entity\ValidatorConfigCollection;
 use Gm\LandingPageEngine\Entity\Route;
 use Gm\LandingPageEngine\Config\Exception\ThemeConfigException;
-
 use Monolog\Logger;
+use DOMDocument;
+use DOMElement;
 
 class ThemeConfig
 {
@@ -65,12 +66,12 @@ class ThemeConfig
     {
         $this->logger = $logger;
         if ((self::CONFIG_TYPE_XML === $type)
-            && ($themeObj instanceof \DOMDocument)) {
+            && ($themeObj instanceof DOMDocument)) {
             $this->themeConfigFromDomDocument($themeObj);
         }
     }
 
-    private function themeConfigFromDomDocument($domDoc)
+    private function themeConfigFromDomDocument(DOMDocument $domDoc)
     {
         // get the root theme node
         /* @var \DOMElement */
@@ -158,13 +159,21 @@ class ThemeConfig
 
             foreach ($fieldNodeList as $fieldNodeElement) {
                 // <field name="..." dbcolumn="..."
+                if ($fieldNodeElement->hasAttribute('optional')) {
+                    if ('true' === $fieldNodeElement->getAttribute('optional')) {
+                        $optional = true;
+                    } else {
+                        $optional = false;
+                    }
+                } else {
+                    $optional = false;
+                }
                 $fieldConfig = new FieldConfig(
                     $fieldNodeElement->getAttribute('name'),
-                    $fieldNodeElement->getAttribute('dbcolumn')
+                    $fieldNodeElement->getAttribute('dbcolumn'),
+                    $optional
                 );
                 $fieldConfigCollection->addFieldConfig($fieldConfig);
-
-
 
                 // filters are optional
                 $filtersElement = $fieldNodeElement->getElementsByTagName('filters')->item(0);

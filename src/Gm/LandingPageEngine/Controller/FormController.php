@@ -138,41 +138,49 @@ class FormController extends AbstractController
                 if (isset($filterAndValidatorLookup[$name]['validators'])) {
                     $validatorChain = $filterAndValidatorLookup[$name]['validators'];
 
-                    $validatorChainResult = $validatorChain->isValid($value);
-                    $this->logger->debug(sprintf(
-                        'Validation chain %s on field %s returned %s for value="%s"',
-                        (string) $validatorChain,
-                        $name,
-                        (true === $validatorChainResult) ? 'VALID' : 'INVALID',
-                        $value
-                    ));
-
-                    if (false === $validatorChainResult) {
-                        $formErrors = true;
-                        $errors[$name] = $validatorChain->getMessages();
-
-                        foreach ($errors[$name] as $msg) {
-                            $this->logger->debug(sprintf(
-                                'Adding error message "%s" for form field "%s" on form "%s"',
-                                $msg,
-                                $name,
-                                $formName
-                            ));
-                        }
-
-                        $this->lpEngine->addTwigGlobal(
-                            $name . '_err',
-                            true
-                        );
-                        $this->lpEngine->addTwigGlobal(
-                            $name . '_errors', array_values($errors[$name])
-                        );
+                    if ((strlen($value) < 1) && (true === $filterAndValidatorLookup[$name]['optional'])) {
+                        $this->logger->info(sprintf(
+                            'Form "%s" field "%s" is optional and has empty field value so skipping validator chain',
+                            $formName,
+                            $name
+                        ));
                     } else {
-                        if ('phone' === $name) {
-                            // special case to remove leading 0 from a phone number
-                            $postParams['phone'] = ltrim($postParams['phone'], '0');
+                        $validatorChainResult = $validatorChain->isValid($value);
+                        $this->logger->debug(sprintf(
+                            'Validation chain %s on field %s returned %s for value="%s"',
+                            (string) $validatorChain,
+                            $name,
+                            (true === $validatorChainResult) ? 'VALID' : 'INVALID',
+                            $value
+                        ));
+
+                        if (false === $validatorChainResult) {
+                            $formErrors = true;
+                            $errors[$name] = $validatorChain->getMessages();
+
+                            foreach ($errors[$name] as $msg) {
+                                $this->logger->debug(sprintf(
+                                    'Adding error message "%s" for form field "%s" on form "%s"',
+                                    $msg,
+                                    $name,
+                                    $formName
+                                ));
+                            }
+                            $this->lpEngine->addTwigGlobal(
+                                $name . '_err',
+                                true
+                            );
+                            $this->lpEngine->addTwigGlobal(
+                                $name . '_errors', array_values($errors[$name])
+                            );
+                        } else {
+                            if ('phone' === $name) {
+                                // special case to remove leading 0 from a phone number
+                                $postParams['phone'] = ltrim($postParams['phone'], '0');
+                            }
                         }
                     }
+
                 }
             }
 
