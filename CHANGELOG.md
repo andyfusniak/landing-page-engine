@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.13.0 (10 Feb 2017)
+- {{ theme_name }} Twig global
+
 ## 2.12.0 (8 Feb 2017)
 - <field optional="true"> attribute added to skip validator chains for empty fields
 
