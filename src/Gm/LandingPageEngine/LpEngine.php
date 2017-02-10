@@ -357,6 +357,11 @@ class LpEngine
             )
         );
 
+        $this->twigEnv->addGlobal(
+            'theme_name',
+            $themeConfig->getThemeName()
+        );
+
         $themeConfigRoutes = $themeConfig->getRoutes();
 
         if (null === $themeConfigRoutes) {
