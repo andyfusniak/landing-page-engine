@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.13.1 (13 Feb 2017)
+- Fix hard coding of GA tracking code in Twig GaTrackingCode global
+
 ## 2.13.0 (10 Feb 2017)
 - {{ theme_name }} Twig global
 
