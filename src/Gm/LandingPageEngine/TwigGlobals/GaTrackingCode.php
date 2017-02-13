@@ -25,6 +25,13 @@ class GaTrackingCode
     public function  __toString()
     {
         // http://localhost/?utm_source=google&utm_medium=test+medium&utm_term=test_term&utm_content=content&utm_campaign=test_campaign
+        $themeSettings = $this->developerProfile->getThemeSettings();
+        $gaTrackingId = isset($themeSettings['ga-tracking-id'])
+            ? $themeSettings['ga-tracking-id'] : null;
+        if (null === $gaTrackingId) {
+            return '';
+        }
+
 
         $gaHeader = "
         <!-- Google Analytics -->
@@ -34,7 +41,7 @@ class GaTrackingCode
         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
         })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-        ga('create', 'UA-42600642-1', 'auto');
+        ga('create', '" . $gaTrackingId . "', 'auto');
         ";
 
         //ga('set', 'campaignName', 'campaign_a');
@@ -46,13 +53,6 @@ class GaTrackingCode
         </script>
         <!-- End Google Analytics -->
         ";
-
-        $themeSettings = $this->developerProfile->getThemeSettings();
-        $gaTrackingId = isset($themeSettings['ga-tracking-id'])
-            ? $themeSettings['ga-tracking-id'] : null;
-        if (null === $gaTrackingId) {
-            return '';
-        }
 
         // the query parameters at the time the prospect first arrived to the site
         $initialQueryParams = $this->session->get('initial_query_params');
