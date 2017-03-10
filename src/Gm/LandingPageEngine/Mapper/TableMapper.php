@@ -72,6 +72,19 @@ class TableMapper
         return $statement->fetch(\PDO::FETCH_ASSOC);
     }
 
+    public function fetchRowByPhone(string $tableName, string $phone)
+    {
+        $sql = 'SELECT * FROM ' . $tableName . ' WHERE phone = :phone';
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindValue(':phone', $phone, \PDO::PARAM_STR);
+        $statement->execute();
+        $this->logger->debug(sprintf(
+            'SQL Query executed %s',
+            $sql
+        ));
+        return $statement->fetch(\PDO::FETCH_ASSOC);
+    }
+
     public function fetchLastNRowsAssocArray($tableName, $number = 5)
     {
         $sql = 'SELECT * FROM ' . $tableName . ' ORDER BY id DESC LIMIT ' . strval($number);

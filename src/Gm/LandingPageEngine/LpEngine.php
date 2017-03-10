@@ -7,6 +7,8 @@ use Gm\LandingPageEngine\Config\{ApplicationConfig, DeveloperConfig};
 use Gm\LandingPageEngine\Entity\{FilterConfigCollection, ValidatorConfigCollection};
 use Gm\LandingPageEngine\Form\Filter\FilterChain;
 use Gm\LandingPageEngine\Form\Validator\ValidatorChain;
+use Gm\LandingPageEngine\Form\Validator\ThaiPhoneDuplicate;
+use Gm\LandingPageEngine\Form\Validator\ThaiPhoneMysqlDuplicateChecker;
 use Gm\LandingPageEngine\Service\{CaptureService, PdoService, StatusService, ThemeConfigService};
 use Gm\LandingPageEngine\Version\Version;
 use Gm\LandingPageEngine\TwigGlobals\{GaTrackingCode, ThaiDate, UtmQueryParams, VersionString};
@@ -230,7 +232,6 @@ class LpEngine
         $this->applicationConfig  = $applicationConfig;
         $this->developerConfig    = $developerConfig;
 
-
         // activate the themes (creates the symlinks in the /public/assets dir)
         $themeConfigService = $this->getThemeConfigService();
         $themeConfigService->activateThemes($developerConfig);
@@ -244,10 +245,12 @@ class LpEngine
                 $this->theme
             ));
             \Twig_Autoloader::register();
-            $twigTemplateDir = $applicationConfig->getThemesRoot() . '/' . $this->theme . '/templates';
+            $twigTemplateDir = $applicationConfig->getThemesRoot()
+                             . '/' . $this->theme . '/templates';
         } else {
             throw new \Exception(sprintf(
-                'No host-to-template mapping configured for the host "%s".  Check the config.xml file.',
+                'No host-to-template mapping configured for the host "%s".'
+                . '  Check the config.xml file.',
                 $this->host
             ));
         }
@@ -590,6 +593,15 @@ class LpEngine
 
     private function loadValidator($name)
     {
+        // @todo implement dependecy injection container
+        if ('ThaiPhoneDuplicate' === $name) {
+            return new ThaiPhoneDuplicate(
+                new ThaiPhoneMysqlDuplicateChecker(
+                    $this->getCaptureService(),
+                    $this->getHost()
+                )
+            );
+        }
         $name = 'Gm\\LandingPageEngine\\Form\\Validator\\' . $name;
         return new $name();
     }
