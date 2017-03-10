@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.14.0 (10 Mar 2017)
+- Prevent duplicate phone numbers being captured
+
 ## 2.13.1 (13 Feb 2017)
 - Fix hard coding of GA tracking code in Twig GaTrackingCode global
 
