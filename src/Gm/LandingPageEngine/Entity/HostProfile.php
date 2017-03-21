@@ -27,7 +27,7 @@ class HostProfile
      */
     protected $profile;
 
-    public function __construct(string $domain, string $theme, string $profile)
+    public function __construct($domain, $theme, $profile)
     {
         $this->domain  = $domain;
         $this->theme   = $theme;

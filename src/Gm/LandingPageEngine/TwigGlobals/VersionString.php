@@ -8,7 +8,7 @@ class VersionString
      */
     protected $versionString;
 
-    public function __construct(string $versionString)
+    public function __construct($versionString)
     {
         $this->versionString = $versionString;
     }

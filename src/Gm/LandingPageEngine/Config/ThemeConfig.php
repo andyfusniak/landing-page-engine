@@ -253,7 +253,7 @@ class ThemeConfig
      * @param string $routeName
      * @return Route|null returns a Route object or null if not found
      */
-    public function getRouteByName(string $routeName)
+    public function getRouteByName($routeName)
     {
         if (array_key_exists($routeName, $this->routes)) {
             return $this->routes[$routeName];
@@ -267,7 +267,7 @@ class ThemeConfig
      * @param string $url
      * @return Route|null Route object or null if not found
      */
-    public function getRouteByUrl(string $url)
+    public function getRouteByUrl($url)
     {
         foreach ($this->routes as $route) {
             if ($url === $route->getUrl()) {

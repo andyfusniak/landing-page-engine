@@ -114,7 +114,7 @@ class AppProfile
         return $this->noCapture;
     }
 
-    public function setProjectRoot(string $value)
+    public function setProjectRoot($value)
     {
         $this->projectRoot = $value;
         return $this;
@@ -125,7 +125,7 @@ class AppProfile
         return $this->projectRoot;
     }
 
-    public function setWebRoot(string $value)
+    public function setWebRoot($value)
     {
         $this->webRoot = $value;
         return $this;
@@ -136,7 +136,7 @@ class AppProfile
         return $this->webRoot;
     }
 
-    public function setThemesRoot(string $value)
+    public function setThemesRoot($value)
     {
         $this->themesRoot = $value;
         return $this;
@@ -147,7 +147,7 @@ class AppProfile
         return $this->themesRoot;
     }
 
-    public function setTwigCacheDir(string $value)
+    public function setTwigCacheDir($value)
     {
         $this->twigCacheDir = $value;
         return $this;
@@ -158,7 +158,7 @@ class AppProfile
         return $this->twigCacheDir;
     }
 
-    public function setLogFilePath(string $value)
+    public function setLogFilePath($value)
     {
         $this->logFilePath = $value;
         return $this;
@@ -169,9 +169,9 @@ class AppProfile
         return $this->logFilePath;
     }
 
-    public function setLogLevel(int $value)
+    public function setLogLevel($value)
     {
-        $this->logLevel = $value;
+        $this->logLevel = (int) $value;
         return $this;
     }
 

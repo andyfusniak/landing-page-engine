@@ -37,11 +37,11 @@ class FieldConfig
      */
     protected $validatorConfigCollection;
 
-    public function __construct(string $name, string $dbColumn, bool $optional = false)
+    public function __construct($name, $dbColumn, $optional = false)
     {
-        $this->name     = $name;
+        $this->name = $name;
         $this->dbColumn = $dbColumn;
-        $this->optional = $optional;
+        $this->optional = (bool) $optional;
     }
 
     public function getName()
@@ -49,7 +49,7 @@ class FieldConfig
         return $this->name;
     }
 
-    public function setName(string $name)
+    public function setName($name)
     {
         $this->name = $name;
         return $this;
@@ -60,7 +60,7 @@ class FieldConfig
         return $this->dbColumn;
     }
 
-    public function setDbColumn(string $dbColumn)
+    public function setDbColumn($dbColumn)
     {
         $this->dbColumn = $dbColumn;
         return $this;

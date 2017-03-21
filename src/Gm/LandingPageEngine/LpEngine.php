@@ -126,10 +126,7 @@ class LpEngine
      * @return bool true if the /var/log was successfully created
      * @throws \Exception if the project_root/var dir cannot be written to
      */
-    public static function setupVarDirectoryAndPermissions(string $projectRoot,
-                                                           string $varDir,
-                                                           string $twigCacheDir,
-                                                           string $logDir)
+    public static function setupVarDirectoryAndPermissions($projectRoot, $varDir, $twigCacheDir, $logDir)
     {
         // Check the var directory structure is in place
         if (!file_exists($varDir)) {

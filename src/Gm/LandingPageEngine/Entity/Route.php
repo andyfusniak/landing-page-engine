@@ -37,17 +37,13 @@ class Route
      */
     protected $resourcePrefix;
 
-    public function __construct(string $routeName,
-                                int $stage,
-                                string $url,
-                                string $target,
-                                string $resourcePrefix = '')
+    public function __construct($routeName, $stage, $url, $target, $resourcePrefix = '')
     {
-        $this->routeName       = $routeName;
-        $this->stage           = $stage;
-        $this->url             = $url;
-        $this->target          = $target;
-        $this->resourcePrefix  = $resourcePrefix;
+        $this->routeName = $routeName;
+        $this->stage = (int) $stage;
+        $this->url = $url;
+        $this->target = $target;
+        $this->resourcePrefix = $resourcePrefix;
     }
 
     /**

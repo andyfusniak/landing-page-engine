@@ -29,7 +29,7 @@ class PdoService
         $this->developerConfig = $developerConfig;
     }
 
-    public function getPdoObject(string $host) {
+    public function getPdoObject($host) {
 
         if (null !== $this->pdo) {
             return $this-pdo;

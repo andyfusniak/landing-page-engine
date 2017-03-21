@@ -75,7 +75,7 @@ class DeveloperConfig
      * @param string $configFilepath full path to the config.xml file
      * @return DeveloperConfig
      */
-    public static function loadXmlConfig(string $configFilepath)
+    public static function loadXmlConfig($configFilepath)
     {
         try {
             $domDoc = XmlUtils::loadFile($configFilepath);
@@ -147,7 +147,7 @@ class DeveloperConfig
         return $hosts;
     }
 
-    private static function xmlValue(DOMElement $node, string $type)
+    private static function xmlValue(DOMElement $node, $type)
     {
         /** @var array */
         static $logLevels = null;
@@ -777,7 +777,7 @@ class DeveloperConfig
         return $this->profiles;
     }
 
-    public function getActiveProfileByDomain(string $domain)
+    public function getActiveProfileByDomain($domain)
     {
         $host = $this->getHostByDomain($domain);
         $hostName = $host->getProfile();
@@ -816,7 +816,7 @@ class DeveloperConfig
      * @param string $domain domain name to match
      * @return HostProfile|null
      */
-    public function getHostByDomain(string $domain)
+    public function getHostByDomain($domain)
     {
         foreach ($this->hosts as $host) {
             if ($domain === $host->getDomain()) {

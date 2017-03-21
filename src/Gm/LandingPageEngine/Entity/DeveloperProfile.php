@@ -32,7 +32,7 @@ class DeveloperProfile
      */
     protected $themeSettings;
 
-    public function __construct(string $name,
+    public function __construct($name,
                                 DeveloperDatabaseProfile $developerDatabaseProfile,
                                 array $feeds,
                                 array $themeSettings)

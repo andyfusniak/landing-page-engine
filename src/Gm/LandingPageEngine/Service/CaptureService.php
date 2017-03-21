@@ -78,7 +78,7 @@ class CaptureService
         $this->request    = $lpEngine->getRequest();
     }
 
-    public function save(string $host, int $stage, array $params, ThemeConfig $themeConfig)
+    public function save($host, $stage, array $params, ThemeConfig $themeConfig)
     {
         // check the HTTP POST contains a _form
         // otherwise there is no way to lookup the mappings

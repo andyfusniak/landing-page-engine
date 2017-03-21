@@ -42,12 +42,7 @@ class DeveloperDatabaseProfile
      */
     protected $dbTable;
 
-    public function __construct(string $profileName,
-                                string $dbHost,
-                                string $dbUser,
-                                string $dbPass,
-                                string $dbName,
-                                string $dbTable)
+    public function __construct($profileName, $dbHost, $dbUser, $dbPass, $dbName, $dbTable)
     {
         $this->profileName = $profileName;
         $this->dbHost  = $dbHost;

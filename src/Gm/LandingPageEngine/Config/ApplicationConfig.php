@@ -330,7 +330,7 @@ class ApplicationConfig
      * @param string
      * @return ApplicationConfig
      */
-    public function setProjectRoot(string $projectRoot)
+    public function setProjectRoot($projectRoot)
     {
         $this->projectRoot = $projectRoot;
         return $this;
@@ -372,7 +372,7 @@ class ApplicationConfig
      * @param string $webRoot web root
      * @return ApplicationConfig
      */
-    public function setWebRoot(string $webRoot)
+    public function setWebRoot($webRoot)
     {
         $this->webRoot = $webRoot;
         return $this;
@@ -464,9 +464,9 @@ class ApplicationConfig
      * Informational     Logger::INFO
      * Debug             Logger::DEBUG
      */
-    public function setLogLevel(int $logLevel)
+    public function setLogLevel($logLevel)
     {
-        $this->logLevel = $logLevel;
+        $this->logLevel = (int) $logLevel;
         return $this;
     }
 
