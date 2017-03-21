@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Landing Page Engine
  *
@@ -124,7 +124,7 @@ class ApplicationConfig
      * @param DeveloperConfig $developerConfig
      * @return ApplicationConfig
      */
-    public function overrideConfig($developerConfig) : ApplicationConfig
+    public function overrideConfig($developerConfig)
     {
         $appProfile = $developerConfig->getAppProfile();
 
@@ -330,7 +330,7 @@ class ApplicationConfig
      * @param string
      * @return ApplicationConfig
      */
-    public function setProjectRoot(string $projectRoot) : ApplicationConfig
+    public function setProjectRoot(string $projectRoot)
     {
         $this->projectRoot = $projectRoot;
         return $this;
@@ -372,7 +372,7 @@ class ApplicationConfig
      * @param string $webRoot web root
      * @return ApplicationConfig
      */
-    public function setWebRoot(string $webRoot) : ApplicationConfig
+    public function setWebRoot(string $webRoot)
     {
         $this->webRoot = $webRoot;
         return $this;
@@ -394,7 +394,7 @@ class ApplicationConfig
      * @param string $themesRoot themes root
      * @return ApplicationConfig
      */
-    public function setThemesRoot($themesRoot) : ApplicationConfig
+    public function setThemesRoot($themesRoot)
     {
         $this->themesRoot = $themesRoot;
         return $this;
@@ -480,4 +480,3 @@ class ApplicationConfig
         return $this->logLevel;
     }
 }
-

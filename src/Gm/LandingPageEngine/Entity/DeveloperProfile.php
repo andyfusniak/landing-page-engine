@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Landing Page Engine
  *
@@ -48,12 +48,12 @@ class DeveloperProfile
      *
      * @return string the profile name
      */
-    public function getName() : string
+    public function getName()
     {
         return $this->name;
     }
 
-    public function getActiveDeveloperDatabaseProfile() : DeveloperDatabaseProfile
+    public function getActiveDeveloperDatabaseProfile()
     {
         return $this->developerDatabaseProfile;
     }

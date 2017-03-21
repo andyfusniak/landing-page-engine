@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 namespace Gm\LandingPageEngine\Service;
 
 use Symfony\Component\Config\FileLocator;

@@ -169,7 +169,7 @@ class CronService
     /**
      * Build a new associative array with new mappings
      */
-    private function mapDataFields($map, $row) : array
+    private function mapDataFields($map, $row)
     {
         $klaviyoData = [];
         foreach ($row as $key => $value) {

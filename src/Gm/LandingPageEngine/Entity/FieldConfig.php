@@ -44,35 +44,38 @@ class FieldConfig
         $this->optional = $optional;
     }
 
-    public function getName() : string
+    public function getName()
     {
         return $this->name;
     }
 
-    public function setName(string $name) : FieldConfig
+    public function setName(string $name)
     {
         $this->name = $name;
         return $this;
     }
 
-    public function getDbColumn() : string
+    public function getDbColumn()
     {
         return $this->dbColumn;
     }
 
-    public function setDbColumn(string $dbColumn) : FieldConfig
+    public function setDbColumn(string $dbColumn)
     {
         $this->dbColumn = $dbColumn;
         return $this;
     }
 
-    public function setOptional(bool $optional) : FieldConfig
+    public function setOptional(bool $optional)
     {
         $this->optional = $optional;
         return $this;
     }
 
-    public function getOptional() : bool
+    /**
+     * @return bool
+     */
+    public function getOptional()
     {
         return $this->optional;
     }

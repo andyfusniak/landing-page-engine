@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Landing Page Engine
  *
@@ -60,7 +60,7 @@ class DeveloperDatabaseProfile
     /**
      * @return string profile name
      */
-    public function getProfileName() : string
+    public function getProfileName()
     {
         return $this->profileName;
     }
@@ -68,7 +68,7 @@ class DeveloperDatabaseProfile
     /**
      * @return string database host
      */
-    public function getDbHost() : string
+    public function getDbHost()
     {
         return $this->dbHost;
     }
@@ -76,7 +76,7 @@ class DeveloperDatabaseProfile
     /**
      * @return string database user
      */
-    public function getDbUser() : string
+    public function getDbUser()
     {
         return $this->dbUser;
     }
@@ -84,7 +84,7 @@ class DeveloperDatabaseProfile
     /**
      * @return string database password
      */
-    public function getDbPass() : string
+    public function getDbPass()
     {
         return $this->dbPass;
     }
@@ -92,7 +92,7 @@ class DeveloperDatabaseProfile
     /**
      * @return string database name
      */
-    public function getDbName() : string
+    public function getDbName()
     {
         return $this->dbName;
     }
@@ -100,7 +100,7 @@ class DeveloperDatabaseProfile
     /**
      * @return string table name
      */
-    public function getDbTable() : string
+    public function getDbTable()
     {
         return $this->dbTable;
     }
