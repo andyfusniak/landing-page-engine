@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.15.0 (21 Mar 2017)
+- Make LPE compatible with PHP5.4 or above
+
 ## 2.14.0 (10 Mar 2017)
 - Prevent duplicate phone numbers being captured
 
