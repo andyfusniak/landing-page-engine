@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Landing Page Engine
  *
@@ -64,7 +64,7 @@ class AppProfile
      */
     protected $logLevel;
 
-    public function setDeveloperMode(bool $value) : AppProfile
+    public function setDeveloperMode(bool $value)
     {
         $this->developerMode = $value;
         return $this;
@@ -75,7 +75,7 @@ class AppProfile
         return $this->developerMode;
     }
 
-    public function setSkipAutoVarDirSetup(bool $value) : AppProfile
+    public function setSkipAutoVarDirSetup(bool $value)
     {
         $this->skipAutoVarDirSetup = $value;;
         return $this;
@@ -86,7 +86,7 @@ class AppProfile
         return $this->skipAutoVarDirSetup;
     }
 
-    public function setSkipAutoThemeActivation(bool $value) : AppProfile
+    public function setSkipAutoThemeActivation(bool $value)
     {
         $this->skipAutoThemeActivation = $value;
         return $this;
@@ -100,7 +100,7 @@ class AppProfile
     /**
      * @param bool|null $value
      */
-    public function setNoCapture($value) : AppProfile
+    public function setNoCapture($value)
     {
         $this->noCapture = $value;
         return $this;
@@ -114,7 +114,7 @@ class AppProfile
         return $this->noCapture;
     }
 
-    public function setProjectRoot(string $value) : AppProfile
+    public function setProjectRoot($value)
     {
         $this->projectRoot = $value;
         return $this;
@@ -125,7 +125,7 @@ class AppProfile
         return $this->projectRoot;
     }
 
-    public function setWebRoot(string $value) : AppProfile
+    public function setWebRoot($value)
     {
         $this->webRoot = $value;
         return $this;
@@ -136,7 +136,7 @@ class AppProfile
         return $this->webRoot;
     }
 
-    public function setThemesRoot(string $value) : AppProfile
+    public function setThemesRoot($value)
     {
         $this->themesRoot = $value;
         return $this;
@@ -147,7 +147,7 @@ class AppProfile
         return $this->themesRoot;
     }
 
-    public function setTwigCacheDir(string $value) : AppProfile
+    public function setTwigCacheDir($value)
     {
         $this->twigCacheDir = $value;
         return $this;
@@ -158,7 +158,7 @@ class AppProfile
         return $this->twigCacheDir;
     }
 
-    public function setLogFilePath(string $value) : AppProfile
+    public function setLogFilePath($value)
     {
         $this->logFilePath = $value;
         return $this;
@@ -169,9 +169,9 @@ class AppProfile
         return $this->logFilePath;
     }
 
-    public function setLogLevel(int $value) : AppProfile
+    public function setLogLevel($value)
     {
-        $this->logLevel = $value;
+        $this->logLevel = (int) $value;
         return $this;
     }
 

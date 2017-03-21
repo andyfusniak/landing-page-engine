@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Landing Page Engine
  *
@@ -27,7 +27,7 @@ class HostProfile
      */
     protected $profile;
 
-    public function __construct(string $domain, string $theme, string $profile)
+    public function __construct($domain, $theme, $profile)
     {
         $this->domain  = $domain;
         $this->theme   = $theme;
@@ -39,7 +39,7 @@ class HostProfile
      *
      * @return string domain
      */
-    public function getDomain() : string
+    public function getDomain()
     {
         return $this->domain;
     }
@@ -49,7 +49,7 @@ class HostProfile
      *
      * @return string theme name
      */
-    public function getThemeName() : string
+    public function getThemeName()
     {
         return $this->theme;
     }
@@ -59,7 +59,7 @@ class HostProfile
      *
      * @return string profile name
      */
-    public function getProfile() : string
+    public function getProfile()
     {
         return $this->profile;
     }

@@ -115,8 +115,7 @@ class CronService
      * @param string $list list ID
      * @param array $row associative array of contacts to push
      */
-    private function feedKlaviyo(string $apiKey, string $list,
-                                 array $map, string $dbTable, array $rows)
+    private function feedKlaviyo($apiKey, $list, array $map, $dbTable, array $rows)
     {
         $client = new Client([
             // Base URI is used with relative requests
@@ -169,7 +168,7 @@ class CronService
     /**
      * Build a new associative array with new mappings
      */
-    private function mapDataFields($map, $row) : array
+    private function mapDataFields($map, $row)
     {
         $klaviyoData = [];
         foreach ($row as $key => $value) {
@@ -186,7 +185,12 @@ class CronService
         return $klaviyoData;
     }
 
-    public function syncKlaviyo(string $dbTable, int $id, int $state)
+    /**
+     *
+     * @param int $id
+     * @param int $state
+     */
+    public function syncKlaviyo($dbTable, $id, $state)
     {
         $this->tableMapper->updateSyncedKlaviyo($dbTable, $id, $state);
     }

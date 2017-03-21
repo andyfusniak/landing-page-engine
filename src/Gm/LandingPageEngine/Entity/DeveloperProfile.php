@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Landing Page Engine
  *
@@ -32,7 +32,7 @@ class DeveloperProfile
      */
     protected $themeSettings;
 
-    public function __construct(string $name,
+    public function __construct($name,
                                 DeveloperDatabaseProfile $developerDatabaseProfile,
                                 array $feeds,
                                 array $themeSettings)
@@ -48,12 +48,12 @@ class DeveloperProfile
      *
      * @return string the profile name
      */
-    public function getName() : string
+    public function getName()
     {
         return $this->name;
     }
 
-    public function getActiveDeveloperDatabaseProfile() : DeveloperDatabaseProfile
+    public function getActiveDeveloperDatabaseProfile()
     {
         return $this->developerDatabaseProfile;
     }

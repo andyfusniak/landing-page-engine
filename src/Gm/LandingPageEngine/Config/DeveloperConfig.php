@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Landing Page Engine
  *
@@ -75,7 +75,7 @@ class DeveloperConfig
      * @param string $configFilepath full path to the config.xml file
      * @return DeveloperConfig
      */
-    public static function loadXmlConfig(string $configFilepath) : DeveloperConfig
+    public static function loadXmlConfig($configFilepath)
     {
         try {
             $domDoc = XmlUtils::loadFile($configFilepath);
@@ -117,7 +117,7 @@ class DeveloperConfig
         return new DeveloperConfig($app, $profiles, $hosts);
     }
 
-    private static function processHostsDomNode(DOMElement $hostsNode) : array
+    private static function processHostsDomNode(DOMElement $hostsNode)
     {
         $hosts = [];
 
@@ -147,7 +147,7 @@ class DeveloperConfig
         return $hosts;
     }
 
-    private static function xmlValue(DOMElement $node, string $type)
+    private static function xmlValue(DOMElement $node, $type)
     {
         /** @var array */
         static $logLevels = null;
@@ -262,7 +262,7 @@ class DeveloperConfig
         }
     }
 
-    private static function processAppDomNode(DOMElement $appNode) : AppProfile
+    private static function processAppDomNode(DOMElement $appNode)
     {
         static $appProfile;
 
@@ -319,7 +319,7 @@ class DeveloperConfig
      *     </profile>
      * </profile>
      */
-    private static function processProfilesDomNode(DOMElement $profilesNode) : array
+    private static function processProfilesDomNode(DOMElement $profilesNode)
     {
         $profiles = [];
         // the <profiles> element must contain one or more <profile name="xyz"> elements
@@ -350,7 +350,7 @@ class DeveloperConfig
         return $profiles;
     }
 
-    private static function processHostDomNode(DOMElement $hostNode) : HostProfile
+    private static function processHostDomNode(DOMElement $hostNode)
     {
         // the <host> element must contain <domain>, <theme> and <dbprofile> elements
         $host = [
@@ -407,7 +407,7 @@ class DeveloperConfig
      *     </profile>
      * </profile>
      */
-    private static function processProfileDomNode(DOMElement $profileNode) : DeveloperProfile
+    private static function processProfileDomNode(DOMElement $profileNode)
     {
         if (false === $profileNode->hasAttribute('name')) {
             throw new DeveloperConfigXmlException(sprintf(
@@ -460,7 +460,7 @@ class DeveloperConfig
         );
     }
 
-    private static function processKlaviyoMapDbcolumnDomNode(DOMElement $fieldNode) : string
+    private static function processKlaviyoMapDbcolumnDomNode(DOMElement $fieldNode)
     {
         // the <dbcolumn name="..."> section must contain one and only one <field> element
         $field = null;
@@ -504,7 +504,7 @@ class DeveloperConfig
      *
      *     </map>
      */
-    private static function processKlaviyoMapDomNode(DOMElement $mapNode) : array
+    private static function processKlaviyoMapDomNode(DOMElement $mapNode)
     {
         // the <map> section can contain zero or more <dbcolumn name="..."> sections
         $dbcolumns = [];
@@ -553,7 +553,7 @@ class DeveloperConfig
      *         </map>
      *     </feeds>
      */
-    private static function processKlaviyoDomNode(DOMElement $klaviyoNode) : array
+    private static function processKlaviyoDomNode(DOMElement $klaviyoNode)
     {
         // the <klaviyo> section must contain an <api-key> and <list> element
         // the <map> section is optional
@@ -607,7 +607,7 @@ class DeveloperConfig
         return $klaviyo;
     }
 
-    private static function processThemeDomNode(DOMElement $themeNode) : array
+    private static function processThemeDomNode(DOMElement $themeNode)
     {
         $themeSettings = [
             'ga-tracking-id' => null
@@ -639,7 +639,7 @@ class DeveloperConfig
         return $themeSettings;
     }
 
-    private static function processFeedsDomNode(DOMElement $feedsNode) : array
+    private static function processFeedsDomNode(DOMElement $feedsNode)
     {
         // the <feeds> may contain one or more feeds <klaviyo>
         // (and potentionally <mailchimp> in future)
@@ -673,7 +673,7 @@ class DeveloperConfig
         return $feeds;
     }
 
-    private static function processDatabaseDomNode(DOMElement $databaseNode) : DeveloperDatabaseProfile
+    private static function processDatabaseDomNode(DOMElement $databaseNode)
     {
         // the <database> element must contain <dbhost>, <dbuser>, <dbpass>,
         // <dbuser> and <dbtable> elements
@@ -766,18 +766,18 @@ class DeveloperConfig
      * @param DeveloperProfile $profile the profile object to be added
      * @return DeveloperConfig
      */
-    public function addProfile(DeveloperProfile $developerProfile) : DeveloperConfig
+    public function addProfile(DeveloperProfile $developerProfile)
     {
         $this->profiles[$developerProfile->getName()] = $developerProfile;
         return $this;
     }
 
-    public function getProfiles() : array
+    public function getProfiles()
     {
         return $this->profiles;
     }
 
-    public function getActiveProfileByDomain(string $domain) : DeveloperProfile
+    public function getActiveProfileByDomain($domain)
     {
         $host = $this->getHostByDomain($domain);
         $hostName = $host->getProfile();
@@ -796,18 +796,18 @@ class DeveloperConfig
      * @param HostProfile $profile the database profile object to be added
      * @return DeveloperConfig
      */
-    public function addHostProfile(HostProfile $hostProfile) : DeveloperConfig
+    public function addHostProfile(HostProfile $hostProfile)
     {
         $this->hosts[$hostProfile->getDomain()] = $hostProfile;
         return $this;
     }
 
-    public function getHostProfiles() : array
+    public function getHostProfiles()
     {
         return $this->hosts;
     }
 
-    public function getAppProfile() : AppProfile
+    public function getAppProfile()
     {
         return $this->appProfile;
     }
@@ -816,7 +816,7 @@ class DeveloperConfig
      * @param string $domain domain name to match
      * @return HostProfile|null
      */
-    public function getHostByDomain(string $domain)
+    public function getHostByDomain($domain)
     {
         foreach ($this->hosts as $host) {
             if ($domain === $host->getDomain()) {

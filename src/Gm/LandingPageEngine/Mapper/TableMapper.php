@@ -72,7 +72,7 @@ class TableMapper
         return $statement->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function fetchRowByPhone(string $tableName, string $phone)
+    public function fetchRowByPhone($tableName, $phone)
     {
         $sql = 'SELECT * FROM ' . $tableName . ' WHERE phone = :phone';
         $statement = $this->pdo->prepare($sql);
@@ -110,7 +110,12 @@ class TableMapper
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function updateSyncedKlaviyo(string $tableName, int $id, int $state = 1)
+    /**
+     *
+     * @param int $id
+     * @param int $state
+     */
+    public function updateSyncedKlaviyo($tableName, $id, $state = 1)
     {
         $sql = 'UPDATE ' . $tableName . ' SET klaviyo_sync = :klaviyo_sync';
         $statement = $this->pdo->prepare($sql);

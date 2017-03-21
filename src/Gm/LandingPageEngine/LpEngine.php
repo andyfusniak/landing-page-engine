@@ -3,20 +3,31 @@ namespace Gm\LandingPageEngine;
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
-use Gm\LandingPageEngine\Config\{ApplicationConfig, DeveloperConfig};
-use Gm\LandingPageEngine\Entity\{FilterConfigCollection, ValidatorConfigCollection};
+use Gm\LandingPageEngine\Config\ApplicationConfig;
+use Gm\LandingPageEngine\Config\DeveloperConfig;
+use Gm\LandingPageEngine\Entity\FilterConfigCollection;
+use Gm\LandingPageEngine\Entity\ValidatorConfigCollection;
 use Gm\LandingPageEngine\Form\Filter\FilterChain;
 use Gm\LandingPageEngine\Form\Validator\ValidatorChain;
 use Gm\LandingPageEngine\Form\Validator\ThaiPhoneDuplicate;
 use Gm\LandingPageEngine\Form\Validator\ThaiPhoneMysqlDuplicateChecker;
-use Gm\LandingPageEngine\Service\{CaptureService, PdoService, StatusService, ThemeConfigService};
+use Gm\LandingPageEngine\Service\CaptureService;
+use Gm\LandingPageEngine\Service\PdoService;
+use Gm\LandingPageEngine\Service\StatusService;
+use Gm\LandingPageEngine\Service\ThemeConfigService;
 use Gm\LandingPageEngine\Version\Version;
-use Gm\LandingPageEngine\TwigGlobals\{GaTrackingCode, ThaiDate, UtmQueryParams, VersionString};
+use Gm\LandingPageEngine\TwigGlobals\GaTrackingCode;
+use Gm\LandingPageEngine\TwigGlobals\ThaiDate;
+use Gm\LandingPageEngine\TwigGlobals\UtmQueryParams;
+use Gm\LandingPageEngine\TwigGlobals\VersionString;
 use Symfony\Component\Debug\Debug;
 use Symfony\Component\HttpFoundation\Session\Session;
-use Symfony\Component\HttpFoundation\{Request, Response};
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Matcher\UrlMatcher;
-use Symfony\Component\Routing\{RequestContext, Route, RouteCollection};
+use Symfony\Component\Routing\RequestContext;
+use Symfony\Component\Routing\Route;
+use Symfony\Component\Routing\RouteCollection;
 use Symfony\Component\Routing;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Twig_Loader_Filesystem;
@@ -115,10 +126,7 @@ class LpEngine
      * @return bool true if the /var/log was successfully created
      * @throws \Exception if the project_root/var dir cannot be written to
      */
-    public static function setupVarDirectoryAndPermissions(string $projectRoot,
-                                                           string $varDir,
-                                                           string $twigCacheDir,
-                                                           string $logDir)
+    public static function setupVarDirectoryAndPermissions($projectRoot, $varDir, $twigCacheDir, $logDir)
     {
         // Check the var directory structure is in place
         if (!file_exists($varDir)) {
@@ -667,9 +675,10 @@ class LpEngine
 
     /**
      * Get the developer config
+     *
      * @return DeveloperConfig instance
      */
-    public function getDeveloperConfig() : DeveloperConfig
+    public function getDeveloperConfig()
     {
         return $this->developerConfig;
     }

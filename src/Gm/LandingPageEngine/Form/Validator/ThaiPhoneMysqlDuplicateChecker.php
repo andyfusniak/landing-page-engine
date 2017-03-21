@@ -23,7 +23,7 @@ class ThaiPhoneMysqlDuplicateChecker implements DuplicateCheckerInterface
      */
     protected $host;
 
-    public function __construct(CaptureService $captureService, string $host)
+    public function __construct(CaptureService $captureService, $host)
     {
         $this->captureService = $captureService;
         $this->host = $host;

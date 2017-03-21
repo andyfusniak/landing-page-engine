@@ -133,7 +133,7 @@ class StatusService
         }
     }
 
-    private function hostSettings(array $themeSummary) : array
+    private function hostSettings(array $themeSummary)
     {
         $hosts = $this->developerConfig->getHostProfiles();
 
@@ -255,7 +255,7 @@ class StatusService
         }
     }
 
-    private function themeSettings() : array
+    private function themeSettings()
     {
         $availableThemeDirs = $this->listOfDirs(
             $this->applicationConfig->getThemesRoot()

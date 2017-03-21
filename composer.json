@@ -15,7 +15,7 @@
         "disable-tls": true
     },
     "require": {
-        "php": ">=5.5.0",
+        "php": ">=5.4.0",
         "twig/twig": "~1.0",
         "monolog/monolog": "^1.22",
         "symfony/symfony": "^3.2",

@@ -1,4 +1,4 @@
-<?php declare(strict_types=1);
+<?php
 /**
  * Landing Page Engine
  *
@@ -37,17 +37,13 @@ class Route
      */
     protected $resourcePrefix;
 
-    public function __construct(string $routeName,
-                                int $stage,
-                                string $url,
-                                string $target,
-                                string $resourcePrefix = '')
+    public function __construct($routeName, $stage, $url, $target, $resourcePrefix = '')
     {
-        $this->routeName       = $routeName;
-        $this->stage           = $stage;
-        $this->url             = $url;
-        $this->target          = $target;
-        $this->resourcePrefix  = $resourcePrefix;
+        $this->routeName = $routeName;
+        $this->stage = (int) $stage;
+        $this->url = $url;
+        $this->target = $target;
+        $this->resourcePrefix = $resourcePrefix;
     }
 
     /**
@@ -55,7 +51,7 @@ class Route
      *
      * @return string route name
      */
-    public function getRouteName() : string
+    public function getRouteName()
     {
         return $this->routeName;
     }
@@ -65,7 +61,7 @@ class Route
      *
      * @return int stage in funnel
      */
-    public function getStage() : int
+    public function getStage()
     {
         return $this->stage;
     }
@@ -75,7 +71,7 @@ class Route
      *
      * @return string the URL
      */
-    public function getUrl() : string
+    public function getUrl()
     {
         return $this->url;
     }
@@ -83,7 +79,7 @@ class Route
     /**
      * Get the target
      */
-    public function getTarget() : string
+    public function getTarget()
     {
         return $this->target;
     }
@@ -105,7 +101,7 @@ class Route
     /**
      * Get the resource prefix
      */
-    public function getResourcePrefix() : string
+    public function getResourcePrefix()
     {
         return $this->resourcePrefix;
     }
@@ -115,7 +111,7 @@ class Route
      *
      * @return string the URL complete with prefix
      */
-    public function getUrlWithPrefix() : string
+    public function getUrlWithPrefix()
     {
         if (substr($this->url, 0, 1) === '/') {
             return '/' . $this->resourcePrefix . ltrim($this->url, '/');
