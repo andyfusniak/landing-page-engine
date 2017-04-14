@@ -1,4 +1,8 @@
 # CHANGELOG
+## 2.16.0 (14 Apr 2017)
+- Optional redirect for form _next=no-redirect
+- Returns a "201 Created" response for no-redirect successful requests
+
 ## 2.15.0 (21 Mar 2017)
 - Make LPE compatible with PHP5.4 or above
 
