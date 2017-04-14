@@ -215,8 +215,8 @@ class FormController extends AbstractController
             $this->themeConfig
         );
 
-
         if (($next = $this->request->get('_next')) === 'no-redirect') {
+            $this->response->setStatusCode(201);
             return;
         }
 
