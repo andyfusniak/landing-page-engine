@@ -216,7 +216,11 @@ class FormController extends AbstractController
         );
 
 
-        $this->redirectRoute($this->request->get('_next'));
+        if (($next = $this->request->get('_next')) === 'no-redirect') {
+            return;
+        }
+
+        $this->redirectRoute($next);
     }
 
     private function redirectRoute($next)
