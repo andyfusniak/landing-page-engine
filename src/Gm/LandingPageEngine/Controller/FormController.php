@@ -7,6 +7,8 @@ use Monolog\Logger;
 
 class FormController extends AbstractController
 {
+    const AJAX_VALIDATION_ERROR = 9000;
+
     /**
      * @var LpEngine
      */
@@ -204,11 +206,23 @@ class FormController extends AbstractController
             $this->lpEngine->addTwigGlobal('is_http_post', true);
 
             if (($next = $this->request->get('_next')) === 'no-redirect') {
-                $this->logger->debug(sprintf(
-                    'AJAX mode returning JSON string'
-                ));
-                $this->response->setStatusCode(200);
-                return json_encode($errors, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                $this->logger->debug(
+                    'AJAX mode returning JSON string in jsonapi.org format'
+                );
+                $this->response->headers->set('Content-Type', 'application/vnd.api+json');
+                $this->response->setStatusCode(422);
+
+                $payload = [
+                    'data' => [
+                        'errors' => [
+                            'status' => 422,
+                            'code'   => self::AJAX_VALIDATION_ERROR,
+                            'detail' => $errors
+                        ],
+                        'attributes' => $postParams
+                    ]
+                ];
+                return json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             } else {
                 return $template->render(
                     $this->lpEngine->getTwigTags()
@@ -216,7 +230,7 @@ class FormController extends AbstractController
             }
         }
 
-        $this->lpEngine->getCaptureService()->save(
+        $lastInsertId = $this->lpEngine->getCaptureService()->save(
             $host,
             $stage,
             $postParams,
@@ -224,8 +238,16 @@ class FormController extends AbstractController
         );
 
         if (($next = $this->request->get('_next')) === 'no-redirect') {
+            $this->response->headers->set('Content-Type', 'application/vnd.api+json');
             $this->response->setStatusCode(201);
-            return;
+            $payload = [
+                'data' => [
+                    'type' => 'leads',
+                    'id'   => $lastInsertId,
+                    'attributes' => $postParams
+                ]
+            ];
+            return json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
 
         $this->redirectRoute($next);
