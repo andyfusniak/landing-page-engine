@@ -203,9 +203,17 @@ class FormController extends AbstractController
             // add {{ is_http_post }}
             $this->lpEngine->addTwigGlobal('is_http_post', true);
 
-            return $template->render(
-                $this->lpEngine->getTwigTags()
-            );
+            if (($next = $this->request->get('_next')) === 'no-redirect') {
+                $this->logger->debug(sprintf(
+                    'AJAX mode returning JSON string'
+                ));
+                $this->response->setStatusCode(200);
+                return json_encode($errors, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            } else {
+                return $template->render(
+                    $this->lpEngine->getTwigTags()
+                );
+            }
         }
 
         $this->lpEngine->getCaptureService()->save(
