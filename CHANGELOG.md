@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.18.0 (23 Apr 2017)
+- AJAX HTTP POST implements jsonapi.org standard response format
+
 ## 2.17.0 (23 Apr 2017)
 - AJAX HTTP POST with JSON response
 
