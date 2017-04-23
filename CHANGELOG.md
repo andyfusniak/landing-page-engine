@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.17.0 (23 Apr 2017)
+- AJAX HTTP POST with JSON response
+
 ## 2.16.0 (14 Apr 2017)
 - Optional redirect for form _next=no-redirect
 - Returns a "201 Created" response for no-redirect successful requests
