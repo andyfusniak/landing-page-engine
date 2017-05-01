@@ -10,7 +10,9 @@ use Gm\LandingPageEngine\Entity\ValidatorConfigCollection;
 use Gm\LandingPageEngine\Form\Filter\FilterChain;
 use Gm\LandingPageEngine\Form\Validator\ValidatorChain;
 use Gm\LandingPageEngine\Form\Validator\ThaiPhoneDuplicate;
+use Gm\LandingPageEngine\Form\Validator\EmailDuplicate;
 use Gm\LandingPageEngine\Form\Validator\ThaiPhoneMysqlDuplicateChecker;
+use Gm\LandingPageEngine\Form\Validator\EmailMysqlDuplicateChecker;
 use Gm\LandingPageEngine\Service\CaptureService;
 use Gm\LandingPageEngine\Service\PdoService;
 use Gm\LandingPageEngine\Service\StatusService;
@@ -605,6 +607,13 @@ class LpEngine
         if ('ThaiPhoneDuplicate' === $name) {
             return new ThaiPhoneDuplicate(
                 new ThaiPhoneMysqlDuplicateChecker(
+                    $this->getCaptureService(),
+                    $this->getHost()
+                )
+            );
+        } else if ('EmailDuplicate' === $name) {
+            return new EmailDuplicate(
+                new EmailMysqlDuplicateChecker(
                     $this->getCaptureService(),
                     $this->getHost()
                 )

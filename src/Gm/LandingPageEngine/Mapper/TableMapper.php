@@ -85,6 +85,25 @@ class TableMapper
         return $statement->fetch(\PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Fetch a row by email
+     *
+     * @param $tableName string database table name
+     * @param $email     string email address
+     */
+    public function fetchRowByEmail($tableName, $email)
+    {
+        $sql = 'SELECT * FROM ' . $tableName . ' WHERE email = :email';
+        $statement = $this->pdo->prepare($sql);
+        $statement->bindValue(':email', $email, \PDO::PARAM_STR);
+        $statement->execute();
+        $this->logger->debug(sprintf(
+            'SQL Query executed %s',
+            $sql
+        ));
+        return $statement->fetch(\PDO::FETCH_ASSOC);
+    }
+
     public function fetchLastNRowsAssocArray($tableName, $number = 5)
     {
         $sql = 'SELECT * FROM ' . $tableName . ' ORDER BY id DESC LIMIT ' . strval($number);
