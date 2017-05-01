@@ -11,7 +11,7 @@
 namespace Gm\LandingPageEngine\Form\Validator;
 use Gm\LandingPageEngine\Service\CaptureService;
 
-class ThaiPhoneMysqlDuplicateChecker implements DuplicateCheckerInterface
+class EmailMysqlDuplicateChecker implements DuplicateCheckerInterface
 {
     /**
      * @var CaptureService
@@ -30,14 +30,14 @@ class ThaiPhoneMysqlDuplicateChecker implements DuplicateCheckerInterface
     }
 
     /**
-     * Check for duplicate thai phone number
+     * Check for duplicate email
      *
-     * @param string $value the phone number to check
+     * @param string $value the email to check
      * @return bool true if the phone number has been used before
      */
     public function isDuplicate($value)
     {
-        return $this->captureService->isPhoneDuplicate(
+        return $this->captureService->isEmailDuplicate(
             ltrim($value, '0'), $this->host
         );
     }

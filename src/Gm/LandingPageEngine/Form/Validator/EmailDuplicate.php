@@ -10,9 +10,9 @@
  */
 namespace Gm\LandingPageEngine\Form\Validator;
 
-class ThaiPhoneDuplicate extends AbstractValidator
+class EmailDuplicate extends AbstractValidator
 {
-    const INVALID_THAI_MOBILE_DUPLICATE = 'invalid-thai-mobile-duplicate';
+    const INVALID_EMAIL_DUPLICATE = 'invalid-thai-mobile-duplicate';
 
     /**
      * @var DuplicateCheckerInterface
@@ -23,7 +23,7 @@ class ThaiPhoneDuplicate extends AbstractValidator
      * @var array
      */
     public static $messageTemplates = [
-        self::INVALID_THAI_MOBILE_DUPLICATE   => 'เบอร์โทรศัพท์ซ้ำ กรุณากดเบอร์ใหม่'
+        self::INVALID_EMAIL_DUPLICATE   => 'อีเมล่ซ้ำ กรุณากดอีเมลใหม่'
     ];
 
     public function __construct(DuplicateCheckerInterface $duplicateChecker)
@@ -43,8 +43,8 @@ class ThaiPhoneDuplicate extends AbstractValidator
         $this->setValue($value);
 
         if (true === $this->duplicateChecker->isDuplicate($value)) {
-            $this->messages[self::INVALID_THAI_MOBILE_DUPLICATE]
-                    = self::$messageTemplates[self::INVALID_THAI_MOBILE_DUPLICATE];
+            $this->messages[self::INVALID_EMAIL_DUPLICATE]
+                    = self::$messageTemplates[self::INVALID_EMAIL_DUPLICATE];
             return false;
         }
 

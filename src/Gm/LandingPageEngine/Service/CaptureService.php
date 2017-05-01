@@ -315,6 +315,19 @@ class CaptureService
         return true;
     }
 
+    public function isEmailDuplicate($email, $host)
+    {
+        $mapper = $this->getTableMapper($host);
+        $dbTable = $this->lpEngine->getDeveloperConfig()
+                                  ->getActiveProfileByDomain($host)
+                                  ->getActiveDeveloperDatabaseProfile()
+                                  ->getDbTable();
+        if (false === $mapper->fetchRowByEmail($dbTable, $email)) {
+            return false;
+        }
+        return true;
+    }
+
     public function getTableMapper($host)
     {
         if (null === $this->tableMapper) {
