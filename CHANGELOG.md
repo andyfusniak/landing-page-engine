@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.19.0 (1 May 2017)
+- Email duplicate validator
+
 ## 2.18.1 (1 May 2017)
 - Upgrade LPE to use Twig 2.0
 
