@@ -16,9 +16,12 @@
     },
     "require": {
         "php": ">=5.4.0",
-        "twig/twig": "~1.0",
+        "twig/twig": "~2.0",
         "monolog/monolog": "^1.22",
-        "symfony/symfony": "^3.2",
+        "symfony/config": "^3.2",
+        "symfony/debug": "^3.2",
+        "symfony/http-kernel": "^3.2",
+        "symfony/routing": "^3.2",
         "guzzlehttp/guzzle": "~6.0"
     },
     "require-dev": {
