@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.18.1 (1 May 2017)
+- Upgrade LPE to use Twig 2.0
+
 ## 2.18.0 (23 Apr 2017)
 - AJAX HTTP POST implements jsonapi.org standard response format
 
