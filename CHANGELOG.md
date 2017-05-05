@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.18.1 (5 May 2017)
+- Downgrade from Twig 2.x to Twig 1.x to continue to support PHP 5
+
 ## 2.19.0 (1 May 2017)
 - Email duplicate validator
 
