@@ -254,7 +254,7 @@ class LpEngine
                 $this->host,
                 $this->theme
             ));
-            //\Twig_Autoloader::register();
+            \Twig_Autoloader::register();
             $twigTemplateDir = $applicationConfig->getThemesRoot()
                              . '/' . $this->theme . '/templates';
         } else {

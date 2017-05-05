@@ -16,7 +16,7 @@
     },
     "require": {
         "php": ">=5.4.0",
-        "twig/twig": "~2.0",
+        "twig/twig": "~1.0",
         "monolog/monolog": "^1.22",
         "symfony/config": "^3.2",
         "symfony/debug": "^3.2",
