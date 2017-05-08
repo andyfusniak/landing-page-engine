@@ -128,6 +128,13 @@ class CronService
         foreach ($rows as $row) {
             $email = $row['email'];
             unset($row['email']);
+            if ((null === $email) || empty($email)) {
+                $this->logger->info(sprintf(
+                    'Skipping row %d because the email is NULL or empty',
+                    $row['id']
+                ));
+                continue;
+            }
             $klaviyoData = $this->mapDataFields($map, $row);
             $klaviyoJson = json_encode($klaviyoData);
 
