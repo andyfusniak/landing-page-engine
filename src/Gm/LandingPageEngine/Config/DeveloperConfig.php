@@ -546,11 +546,13 @@ class DeveloperConfig
     /**
      * ...
      *     <feeds>
-     *         <api-key>...</api-key>
-     *         <list>...</list>
-     *         <map>
-     *         ...
-     *         </map>
+     *         <klaviyo>
+     *             <api-key>...</api-key>
+     *             <list>...</list>
+     *             <map>
+     *             ...
+     *             </map>
+     *         </klaviyo>
      *     </feeds>
      */
     private static function processKlaviyoDomNode(DOMElement $klaviyoNode)
