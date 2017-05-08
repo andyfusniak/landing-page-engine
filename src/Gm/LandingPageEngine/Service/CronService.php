@@ -4,6 +4,7 @@ namespace Gm\LandingPageEngine\Service;
 use PDO;
 use PDOException;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 
 use Monolog\Logger;
 use Gm\LandingPageEngine\Entity\DeveloperProfile;
@@ -130,25 +131,37 @@ class CronService
             $klaviyoData = $this->mapDataFields($map, $row);
             $klaviyoJson = json_encode($klaviyoData);
 
-            $response = $client->post(
-                '' . $list . '/members',
-                [
-                    'headers' => [
-                        'Accept' => 'application/json'
-                    ],
-                    'form_params' => [
-                        'api_key' => $apiKey,
-                        'confirm_optin' => 'false',
-                        'email' => $email,
-                        'properties' => $klaviyoJson
+            try {
+                $response = $client->post(
+                    '' . $list . '/members',
+                    [
+                        'headers' => [
+                            'Accept' => 'application/json'
+                        ],
+                        'form_params' => [
+                            'api_key' => $apiKey,
+                            'confirm_optin' => 'false',
+                            'email' => $email,
+                            'properties' => $klaviyoJson
+                        ]
                     ]
-                ]
-            );
-            $this->logger->debug(sprintf(
-                'HTTP POST to Klaviyo API with email=%s and properties=%s',
-                $email,
-                $klaviyoJson
-            ));
+                );
+                $this->logger->debug(sprintf(
+                    'HTTP POST to Klaviyo API with email=%s and properties=%s',
+                    $email,
+                    $klaviyoJson
+                ));
+            } catch (ClientException $e) {
+                if ($e->hasResponse()) {
+                    $response = $e->getResponse();
+                    $this->logger->debug(sprintf(
+                        'HTTP POST to Klaviyo API return status code %s with reason phrase "%s", body = %s',
+                        $response->getStatusCode(),
+                        $response->getReasonPhrase(),
+                        $response->getBody()->getContents()
+                    ));
+                }
+            }
 
             $statusCode = $response->getStatusCode();
             switch ($statusCode) {

@@ -136,9 +136,10 @@ class TableMapper
      */
     public function updateSyncedKlaviyo($tableName, $id, $state = 1)
     {
-        $sql = 'UPDATE ' . $tableName . ' SET klaviyo_sync = :klaviyo_sync';
+        $sql = 'UPDATE ' . $tableName . ' SET klaviyo_sync = :klaviyo_sync WHERE id = :id';
         $statement = $this->pdo->prepare($sql);
         $statement->bindValue(':klaviyo_sync', $state, PDO::PARAM_INT);
+        $statement->bindValue(':id', $id, PDO::PARAM_INT);
         $statement->execute();
         $this->logger->debug(sprintf(
             'SQL Query executed %s',
