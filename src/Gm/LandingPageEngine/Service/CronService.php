@@ -122,7 +122,7 @@ class CronService
             // Base URI is used with relative requests
             'base_uri' => 'https://a.klaviyo.com/api/v1/list/',
             // You can set any number of default request options.
-            'timeout'  => 3.0,
+            'timeout'  => 20.0,
         ]);
 
         foreach ($rows as $row) {

@@ -15,6 +15,6 @@ final class Version
     /**
       * Landing Page Engine version identification
       */
-    const VERSION = '2.20.0';
+    const VERSION = '2.20.1';
     const RELEASE_DATE = '8 May 2017';
 }

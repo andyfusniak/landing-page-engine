@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.20.1 (8 May 2017)
+- Change API timeout from 3 seconds to 20 seconds
+
 ## 2.20.0 (8 May 2017)
 - Bugfix updating klaviyo_sync setting only the current row id
 - Handling 400 BAD_RESPONSE responses from the Klaviyo API
