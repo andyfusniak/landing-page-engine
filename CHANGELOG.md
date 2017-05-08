@@ -1,5 +1,10 @@
 # CHANGELOG
-## 2.18.1 (5 May 2017)
+## 2.20.0 (8 May 2017)
+- Bugfix updating klaviyo_sync setting only the current row id
+- Handling 400 BAD_RESPONSE responses from the Klaviyo API
+- Skip API calls to Klaviyo when the email is null or empty
+
+## 2.19.1 (5 May 2017)
 - Downgrade from Twig 2.x to Twig 1.x to continue to support PHP 5
 
 ## 2.19.0 (1 May 2017)
