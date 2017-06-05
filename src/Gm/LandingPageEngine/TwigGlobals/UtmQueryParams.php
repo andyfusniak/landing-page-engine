@@ -15,7 +15,8 @@ class UtmQueryParams
         'utm_medium',
         'utm_term',
         'utm_content',
-        'utm_campagn'
+        'utm_campagn',
+        'gclid'
     ];
 
     public function __construct($session)
@@ -23,7 +24,7 @@ class UtmQueryParams
         $this->session = $session;
     }
 
-    public function  __toString()
+    public function __toString()
     {
         $queryString = '';
         $first = true;
