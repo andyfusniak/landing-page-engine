@@ -25,13 +25,15 @@ class CaptureService
     const UTM_TERM     = 'utm_term';
     const UTM_CONTENT  = 'utm_content';
     const UTM_CAMPAIGN = 'utm_campaign';
+    const GCLID        = 'gclid';
 
     protected static $utmTrackingTags = [
         self::UTM_SOURCE,
         self::UTM_MEDIUM,
         self::UTM_TERM,
         self::UTM_CONTENT,
-        self::UTM_CAMPAIGN
+        self::UTM_CAMPAIGN,
+        self::GCLID
     ];
 
     /**
@@ -239,7 +241,7 @@ class CaptureService
         // otherwise we are in the same web session and the end-user is
         // reposting the capture data, or on a multi-page landing site
         if (null === $row) {
-            // automatically save the UTM tracking in the datbase
+            // automatically save the UTM tracking and GCLID to the database
             if ((null !== $this->session)
                 && ($this->session instanceof Session)
                 && (null !== $this->session->get('initial_query_params'))) {
