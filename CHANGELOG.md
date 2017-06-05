@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.21.0 (5 June 2017)
+- Google Click Identifier captured and stored
+
 ## 2.20.1 (8 May 2017)
 - Change API timeout from 3 seconds to 20 seconds
 
