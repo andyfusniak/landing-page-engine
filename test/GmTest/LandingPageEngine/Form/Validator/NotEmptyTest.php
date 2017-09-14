@@ -6,7 +6,6 @@
  * @subpackage Form\Validator
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace GmTest\LandingPageEngine\Form\Validator;
 
@@ -17,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 class NotEmptyTest extends TestCase
 {
     /**
-     * @var NotEmpty 
+     * @var NotEmpty
      */
     protected $notEmpty;
 
@@ -46,7 +45,7 @@ class NotEmptyTest extends TestCase
     {
         $result = $this->notEmpty->isValid('');
         $messages = $this->notEmpty->getMessages();
-        
+
         $this->assertInternalType('bool', $result);
         $this->assertInternalType('array', $messages);
 

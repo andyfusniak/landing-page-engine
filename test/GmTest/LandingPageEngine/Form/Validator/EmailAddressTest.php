@@ -6,7 +6,6 @@
  * @subpackage Form\Validator
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace GmTest\LandingPageEngine\Form\Validator;
 
@@ -17,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 class EmailAddressTest extends TestCase
 {
     /**
-     * @var EmailAddress 
+     * @var EmailAddress
      */
     protected $emailAddress;
 
@@ -28,10 +27,10 @@ class EmailAddressTest extends TestCase
 
     public function testValidInput()
     {
-        $result = $this->emailAddress->isValid('andy@greycatmedia.co.uk');
+        $result = $this->emailAddress->isValid('john@gmail.com');
 
         // ensure setValue() is implemented
-        $this->assertEquals($this->emailAddress->getValue(), 'andy@greycatmedia.co.uk');
+        $this->assertEquals($this->emailAddress->getValue(), 'john@gmail.com');
 
         $messages = $this->emailAddress->getMessages();
 
@@ -44,9 +43,9 @@ class EmailAddressTest extends TestCase
 
     public function testInvalidInput()
     {
-        $result = $this->emailAddress->isValid('andy@greycatmedia');
+        $result = $this->emailAddress->isValid('john@gmail');
         $messages = $this->emailAddress->getMessages();
-        
+
         $this->assertInternalType('bool', $result);
         $this->assertInternalType('array', $messages);
 

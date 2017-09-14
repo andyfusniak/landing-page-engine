@@ -6,7 +6,6 @@
  * @subpackage Form\Filter
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace GmTest\LandingPageEngine\Form\Filter;
 
@@ -27,8 +26,8 @@ class LcfirstTest extends TestCase
 
     public function testFilterLcfirstString()
     {
-        $result = $this->lcfirst->filter('Andy');
-        $this->assertEquals('andy', $result);
+        $result = $this->lcfirst->filter('John');
+        $this->assertEquals('john', $result);
         $this->assertInternalType('string', $result);
     }
 }

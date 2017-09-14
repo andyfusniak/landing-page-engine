@@ -6,7 +6,6 @@
  * @subpackage Form\Validator
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace GmTest\LandingPageEngine\Form\Validator;
 
@@ -17,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 class ThaiMobilePhoneNumberTest extends TestCase
 {
     /**
-     * @var ThaiMobilePhoneNumber 
+     * @var ThaiMobilePhoneNumber
      */
     protected $thaiMobilePhoneNumberValidator;
 
@@ -46,7 +45,7 @@ class ThaiMobilePhoneNumberTest extends TestCase
     {
         $result = $this->thaiMobilePhoneNumberValidator->isValid('084320607');
         $messages = $this->thaiMobilePhoneNumberValidator->getMessages();
-        
+
         $this->assertInternalType('bool', $result);
         $this->assertInternalType('array', $messages);
 
@@ -58,12 +57,12 @@ class ThaiMobilePhoneNumberTest extends TestCase
         ];
         $this->assertEquals($expected, $messages);
     }
-    
+
     public function testInvalidDoubleZeroPrefixThaiMobile()
     {
         $result = $this->thaiMobilePhoneNumberValidator->isValid('0043206078');
         $messages = $this->thaiMobilePhoneNumberValidator->getMessages();
-        
+
         $this->assertInternalType('bool', $result);
         $this->assertInternalType('array', $messages);
 
@@ -75,12 +74,12 @@ class ThaiMobilePhoneNumberTest extends TestCase
         ];
         $this->assertEquals($expected, $messages);
     }
-    
+
     public function testInvalidLongThaiMobile()
     {
         $result = $this->thaiMobilePhoneNumberValidator->isValid('08432060781');
         $messages = $this->thaiMobilePhoneNumberValidator->getMessages();
-        
+
         $this->assertInternalType('bool', $result);
         $this->assertInternalType('array', $messages);
 
@@ -92,12 +91,12 @@ class ThaiMobilePhoneNumberTest extends TestCase
         ];
         $this->assertEquals($expected, $messages);
     }
-    
+
     public function testInvalidThaiMobileWithCharacters()
     {
         $result = $this->thaiMobilePhoneNumberValidator->isValid('08432x06078');
         $messages = $this->thaiMobilePhoneNumberValidator->getMessages();
-        
+
         $this->assertInternalType('bool', $result);
         $this->assertInternalType('array', $messages);
 
@@ -113,6 +112,6 @@ class ThaiMobilePhoneNumberTest extends TestCase
     public function testInvalidParameterType()
     {
         $this->expectException(InvalidArgumentException::class);
-        $result = $this->thaiMobilePhoneNumberValidator->isValid((int) 1234);        
+        $result = $this->thaiMobilePhoneNumberValidator->isValid((int) 1234);
     }
 }

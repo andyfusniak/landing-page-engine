@@ -6,7 +6,6 @@
  * @subpackage Version
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2017
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace Gm\LandingPageEngine\Version;
 

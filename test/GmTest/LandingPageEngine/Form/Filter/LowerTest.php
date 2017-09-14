@@ -6,7 +6,6 @@
  * @subpackage Form\Filter
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace GmTest\LandingPageEngine\Form\Filter;
 
@@ -27,8 +26,8 @@ class LowerTest extends TestCase
 
     public function testFilterLowerString()
     {
-        $result = $this->lower->filter('ANDY');
-        $this->assertEquals('andy', $result);
+        $result = $this->lower->filter('JOHN');
+        $this->assertEquals('john', $result);
         $this->assertInternalType('string', $result);
     }
 }

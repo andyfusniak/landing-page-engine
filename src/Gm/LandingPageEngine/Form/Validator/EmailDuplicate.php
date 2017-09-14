@@ -5,8 +5,7 @@
  * @package Gm\LandingPageEngine
  * @subpackage Form\Validator
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
- * @copyright Copyright (c) 2017
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
+ * @copyright Copyright (c) 2017ß
  */
 namespace Gm\LandingPageEngine\Form\Validator;
 

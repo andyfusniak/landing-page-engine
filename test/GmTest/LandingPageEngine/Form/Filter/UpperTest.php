@@ -6,7 +6,6 @@
  * @subpackage Form\Filter
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace GmTest\LandingPageEngine\Form\Filter;
 
@@ -27,8 +26,8 @@ class UpperTest extends TestCase
 
     public function testFilterUpperString()
     {
-        $result = $this->upper->filter('andy');
-        $this->assertEquals('ANDY', $result);
+        $result = $this->upper->filter('john');
+        $this->assertEquals('JOHN', $result);
         $this->assertInternalType('string', $result);
     }
 }

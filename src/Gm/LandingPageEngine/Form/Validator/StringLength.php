@@ -6,7 +6,6 @@
  * @subpackage Form\Validator
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace Gm\LandingPageEngine\Form\Validator;
 
@@ -14,17 +13,17 @@ class StringLength extends AbstractValidator
 {
     const STRING_LENGTH_MIN = 'string-length-min';
     const STRING_LENGTH_MAX = 'string-length-max';
-   
+
     /**
      * @var int
      */
     protected $min = 5;
-    
+
     /**
      * @var int
      */
     protected $max = 10;
-     
+
     /**
      * @var array
      */
@@ -91,7 +90,7 @@ class StringLength extends AbstractValidator
         }
 
         $this->setValue($value);
-       
+
         if (mb_strlen($value) < $this->min) {
             $this->messages[self::STRING_LENGTH_MIN] = sprintf(
                 self::$messageTemplates[self::STRING_LENGTH_MIN],
@@ -106,7 +105,7 @@ class StringLength extends AbstractValidator
                 $this->max
             );
             return false;
-        
+
         }
 
         return true;
