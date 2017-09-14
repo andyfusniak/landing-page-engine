@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.21.1 (14 Sep 2017)
+- Tidy doctype headers
+
 ## 2.21.0 (5 June 2017)
 - Google Click Identifier captured and stored
 
