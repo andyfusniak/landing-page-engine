@@ -1,11 +1,5 @@
 {
     "name": "gm/landing-page-engine",
-    "authors": [
-        {
-            "name": "Andy Fusniak",
-            "email": "andy@greycatmedia.co.uk"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "Gm\\": "src/Gm/"

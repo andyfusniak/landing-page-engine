@@ -6,7 +6,6 @@
  * @subpackage Form\Validator
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace Gm\LandingPageEngine\Form\Validator;
 
@@ -20,7 +19,7 @@ class NotEmpty extends AbstractValidator
     public static $messageTemplates = [
         self::IS_EMPTY => 'This field is required'
     ];
-    
+
     public function isValid($value, $context = null)
     {
         if (!is_string($value)) {

@@ -6,14 +6,13 @@
  * @subpackage Form\Validator
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace Gm\LandingPageEngine\Form\Validator;
 
 class ThaiMobilePhoneNumber extends AbstractValidator
 {
     const INVALID_THAI_MOBILE = 'invalid-thai-mobile';
-    
+
     /**
      * @var array
      */
@@ -31,7 +30,7 @@ class ThaiMobilePhoneNumber extends AbstractValidator
         }
 
         $this->setValue($value);
-        
+
         // a valid phone number starts with 0
         // and has 9 more digits
         if (preg_match('/^0[1-9][0-9]{8}$/', $value)) {

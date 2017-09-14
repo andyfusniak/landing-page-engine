@@ -6,7 +6,6 @@
  * @subpackage Form\Validator
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace GmTest\LandingPageEngine\Form\Validator;
 
@@ -68,7 +67,7 @@ class ValidatorChainTest extends TestCase
             EmailAddress::INVALID_EMAIL => EmailAddress::$messageTemplates[EmailAddress::INVALID_EMAIL],
         ];
         $this->assertEquals($expectedResult, $messages);
-        
+
         $this->assertInternalType('bool', $result);
     }
 

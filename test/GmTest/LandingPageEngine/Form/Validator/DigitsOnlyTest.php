@@ -6,7 +6,6 @@
  * @subpackage Form\Validator
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace GmTest\LandingPageEngine\Form\Validator;
 
@@ -17,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 class DigitsTest extends TestCase
 {
     /**
-     * @var DigitsOnlyTest 
+     * @var DigitsOnlyTest
      */
     protected $digitsOnlyTest;
 
@@ -46,7 +45,7 @@ class DigitsTest extends TestCase
     {
         $result = $this->digitsOnlyTest->isValid('123x45');
         $messages = $this->digitsOnlyTest->getMessages();
-        
+
         $this->assertInternalType('bool', $result);
         $this->assertInternalType('array', $messages);
 

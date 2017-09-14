@@ -6,7 +6,6 @@
  * @subpackage Form\Filter
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace GmTest\LandingPageEngine\Form\Filter;
 
@@ -62,7 +61,7 @@ class FilterChainTest extends TestCase
         $this->assertEquals('0843206078', $result);
         $this->assertInternalType('string', $result);
     }
-    
+
     /**
      * @depends testAttachOne
      * @depends testAttachTwo

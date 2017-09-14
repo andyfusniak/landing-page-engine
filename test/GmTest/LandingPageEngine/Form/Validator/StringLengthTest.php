@@ -6,7 +6,6 @@
  * @subpackage Form\Validator
  * @link https://bitbucket.org/sudtanadevteam/landing-page-engine
  * @copyright Copyright (c) 2016
- * @author Andy Fusniak <andy@greycatmedia.co.uk>
  */
 namespace GmTest\LandingPageEngine\Form\Validator;
 
@@ -17,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 class StringLengthTest extends TestCase
 {
     /**
-     * @var StringLength 
+     * @var StringLength
      */
     protected $stringLengthTest;
 
@@ -48,7 +47,7 @@ class StringLengthTest extends TestCase
         // 4 is too short as the default minimal is 5
         $result = $this->stringLengthTest->isValid('1234');
         $messages = $this->stringLengthTest->getMessages();
-        
+
         $this->assertInternalType('bool', $result);
         $this->assertInternalType('array', $messages);
 
@@ -62,7 +61,7 @@ class StringLengthTest extends TestCase
         ];
         $this->assertEquals($expected, $messages);
     }
-    
+
     public function testInvalidSetMinInput()
     {
         $this->stringLengthTest->setMin(3);
@@ -70,7 +69,7 @@ class StringLengthTest extends TestCase
 
         $result = $this->stringLengthTest->isValid('12');
         $messages = $this->stringLengthTest->getMessages();
-        
+
         $this->assertInternalType('bool', $result);
         $this->assertInternalType('array', $messages);
 
@@ -91,7 +90,7 @@ class StringLengthTest extends TestCase
         // 11 is too long as the default maximum is 10
         $result = $this->stringLengthTest->isValid('12345678901');
         $messages = $this->stringLengthTest->getMessages();
-        
+
         $this->assertInternalType('bool', $result);
         $this->assertInternalType('array', $messages);
 
@@ -105,7 +104,7 @@ class StringLengthTest extends TestCase
         ];
         $this->assertEquals($expected, $messages);
     }
-    
+
     public function testInvalidParameterTypeAttachMethod()
     {
         $this->expectException(InvalidArgumentException::class);
