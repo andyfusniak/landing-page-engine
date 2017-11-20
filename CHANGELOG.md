@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.22.0 (20 Nov 2017)
+- Configurable template message strings for validators and multi out-the-box en and th validators
+
 ## 2.21.1 (14 Sep 2017)
 - Tidy doctype headers
 
