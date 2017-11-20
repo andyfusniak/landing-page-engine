@@ -17,6 +17,8 @@ use PHPUnit\Framework\TestCase;
 
 class ValidatorChainTest extends TestCase
 {
+    const LANG = 'th';
+
     /**
      * @var ValidatorChain
      */
@@ -36,7 +38,9 @@ class ValidatorChainTest extends TestCase
     {
         self::$validatorChain = new ValidatorChain();
         self::$v1 = new NotEmpty();
+        self::$v1->setLanguage(self::LANG);
         self::$v2 = new EmailAddress();
+        self::$v2->setLanguage(self::LANG);
     }
 
     public function testAttachV1()
@@ -63,8 +67,8 @@ class ValidatorChainTest extends TestCase
         $this->assertEquals(2, count($messages));
 
         $expectedResult = [
-            NotEmpty::IS_EMPTY => NotEmpty::$messageTemplates[NotEmpty::IS_EMPTY],
-            EmailAddress::INVALID_EMAIL => EmailAddress::$messageTemplates[EmailAddress::INVALID_EMAIL],
+            NotEmpty::IS_EMPTY => NotEmpty::$messageTemplates[self::LANG][NotEmpty::IS_EMPTY],
+            EmailAddress::INVALID_EMAIL => EmailAddress::$messageTemplates[self::LANG][EmailAddress::INVALID_EMAIL],
         ];
         $this->assertEquals($expectedResult, $messages);
 

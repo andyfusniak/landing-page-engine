@@ -15,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 class StringLengthTest extends TestCase
 {
+    const LANG = 'th';
+
     /**
      * @var StringLength
      */
@@ -23,6 +25,7 @@ class StringLengthTest extends TestCase
     protected function setUp()
     {
         $this->stringLengthTest = new StringLength();
+        $this->stringLengthTest->setLanguage(self::LANG);
     }
 
     public function testValidInput()
@@ -55,7 +58,7 @@ class StringLengthTest extends TestCase
 
         $expected = [
             StringLength::STRING_LENGTH_MIN => sprintf(
-                StringLength::$messageTemplates[StringLength::STRING_LENGTH_MIN],
+                StringLength::$messageTemplates[self::LANG][StringLength::STRING_LENGTH_MIN],
                 $this->stringLengthTest->getMin()
             )
         ];
@@ -77,7 +80,7 @@ class StringLengthTest extends TestCase
 
         $expected = [
             StringLength::STRING_LENGTH_MIN => sprintf(
-                StringLength::$messageTemplates[StringLength::STRING_LENGTH_MIN],
+                StringLength::$messageTemplates[self::LANG][StringLength::STRING_LENGTH_MIN],
                 $this->stringLengthTest->getMin()
             )
         ];
@@ -98,7 +101,7 @@ class StringLengthTest extends TestCase
 
         $expected = [
             StringLength::STRING_LENGTH_MAX => sprintf(
-                StringLength::$messageTemplates[StringLength::STRING_LENGTH_MAX],
+                StringLength::$messageTemplates[self::LANG][StringLength::STRING_LENGTH_MAX],
                 $this->stringLengthTest->getMax()
             )
         ];
@@ -109,5 +112,51 @@ class StringLengthTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->stringLengthTest->isValid((int) 12345);
+    }
+
+    public function testConfigurableMessageTemplate()
+    {
+        $stringLengthMin = 'ต้องกรอกข้อความอย่างน้อย %s ตัวอักษร';
+        $stringLengthMax = 'ข้อความต้องน้อยกว่า %s ตัวอักษร';
+
+        $stringLengthValidator = new StringLength();
+        $stringLengthValidator->setLanguage('th');
+
+        StringLength::setMessageTemplate(
+            'th',
+            StringLength::STRING_LENGTH_MIN,
+            $stringLengthMin
+        );
+
+        StringLength::setMessageTemplate(
+            'th',
+            StringLength::STRING_LENGTH_MAX,
+            $stringLengthMax
+        );
+
+        $this->assertEquals(
+            $stringLengthMin,
+            StringLength::getMessageTemplate('th', StringLength::STRING_LENGTH_MIN)
+        );
+
+        $this->assertEquals(
+            $stringLengthMax,
+            StringLength::getMessageTemplate('th', StringLength::STRING_LENGTH_MAX)
+        );
+
+        // too short
+        $stringLengthValidator->setMin(3);
+        $stringLengthValidator->setMax(5);
+
+        $result = $stringLengthValidator->isValid('12');
+        $messages = $stringLengthValidator->getMessages();
+
+        $expected = [
+            StringLength::STRING_LENGTH_MIN => sprintf(
+                $stringLengthMin,
+                $stringLengthValidator->getMin()
+            )
+        ];
+        $this->assertEquals($expected, $messages);
     }
 }

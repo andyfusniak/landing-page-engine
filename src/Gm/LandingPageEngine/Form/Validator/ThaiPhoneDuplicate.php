@@ -22,7 +22,12 @@ class ThaiPhoneDuplicate extends AbstractValidator
      * @var array
      */
     public static $messageTemplates = [
-        self::INVALID_THAI_MOBILE_DUPLICATE   => 'เบอร์โทรศัพท์ซ้ำ กรุณากดเบอร์ใหม่'
+        'th' => [
+            self::INVALID_THAI_MOBILE_DUPLICATE  => 'เบอร์โทรศัพท์ซ้ำ กรุณากดเบอร์ใหม่'
+        ],
+        'en' => [
+            self::INVALID_THAI_MOBILE_DUPLICATE  => 'We have this number already. Please choose another.'
+        ]
     ];
 
     public function __construct(DuplicateCheckerInterface $duplicateChecker)
@@ -43,7 +48,7 @@ class ThaiPhoneDuplicate extends AbstractValidator
 
         if (true === $this->duplicateChecker->isDuplicate($value)) {
             $this->messages[self::INVALID_THAI_MOBILE_DUPLICATE]
-                    = self::$messageTemplates[self::INVALID_THAI_MOBILE_DUPLICATE];
+                    = self::$messageTemplates[$this->lang][self::INVALID_THAI_MOBILE_DUPLICATE];
             return false;
         }
 

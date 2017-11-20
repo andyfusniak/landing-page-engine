@@ -190,6 +190,7 @@ class ThemeConfig
                 }
 
                 // validators are optional
+                // <validators>
                 $validatorsElement = $fieldNodeElement->getElementsByTagName('validators')->item(0);
                 if (null !== $validatorsElement) {
                     $validatorNodeList = $validatorsElement->getElementsByTagName('validator');
@@ -197,9 +198,22 @@ class ThemeConfig
                     $validatorConfigCollection = new ValidatorConfigCollection();
                     foreach ($validatorNodeList as $validatorElement) {
                         $validatorName = $validatorElement->getAttribute('name');
-                        $validatorConfigCollection->addValidatorConfig(
-                            new ValidatorConfig($validatorName)
-                        );
+
+                        $validatorConfig = new ValidatorConfig($validatorName);
+
+                        $lang = $validatorElement->getAttribute('lang');
+                        if (empty($lang)) {
+                            $lang = 'th';
+                        }
+                        $validatorConfig->setLang($lang);
+
+                        // <messages> element (optional)
+                        $messagesElement = $validatorElement->getElementsByTagName('messages')->item(0);
+                        if ($messagesElement) {
+                            self::processMessagesDomNode($messagesElement, $validatorConfig);
+                        }
+
+                        $validatorConfigCollection->addValidatorConfig($validatorConfig);
                     }
                     $fieldConfig->setValidatorConfigCollection($validatorConfigCollection);
                 }
@@ -207,6 +221,27 @@ class ThemeConfig
         }
 
         return $this->formConfigCollection = $formConfigCollection;
+    }
+
+    private static function processMessagesDomNode(DOMElement $messagesNode,
+                                                   ValidatorConfig $validatorConfig)
+    {
+        foreach ($messagesNode->childNodes as $node) {
+            if (XML_ELEMENT_NODE === $node->nodeType) {
+                if ('message' === $node->nodeName) {
+                    self::processMessageDomNode($node, $validatorConfig);
+                }
+            }
+        }
+    }
+
+    private static function processMessageDomNode(DOMElement $messageNode,
+                                                  ValidatorConfig $validatorConfig)
+    {
+        $id = $messageNode->getAttribute('id');
+        $lang = $messageNode->getAttribute('lang');
+        $value = $messageNode->nodeValue;
+        $validatorConfig->setMessageTemplate($lang, $id, $value);
     }
 
 

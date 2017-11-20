@@ -15,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 class EmailAddressTest extends TestCase
 {
+    const LANG = 'th';
+
     /**
      * @var EmailAddress
      */
@@ -23,6 +25,7 @@ class EmailAddressTest extends TestCase
     protected function setUp()
     {
         $this->emailAddress = new EmailAddress();
+        $this->emailAddress->setLanguage(self::LANG);
     }
 
     public function testValidInput()
@@ -53,7 +56,7 @@ class EmailAddressTest extends TestCase
 
         $expected = [
             EmailAddress::INVALID_EMAIL
-                => EmailAddress::$messageTemplates[EmailAddress::INVALID_EMAIL]
+                => EmailAddress::$messageTemplates[self::LANG][EmailAddress::INVALID_EMAIL]
         ];
         $this->assertEquals($expected, $messages);
     }

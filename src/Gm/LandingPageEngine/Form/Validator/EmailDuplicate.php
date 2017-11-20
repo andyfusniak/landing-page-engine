@@ -22,7 +22,12 @@ class EmailDuplicate extends AbstractValidator
      * @var array
      */
     public static $messageTemplates = [
-        self::INVALID_EMAIL_DUPLICATE   => 'อีเมล่ซ้ำ กรุณากดอีเมลใหม่'
+        'en' => [
+            self::INVALID_EMAIL_DUPLICATE   => 'This email is aleady in use'
+        ],
+        'th' => [
+            self::INVALID_EMAIL_DUPLICATE   => 'อีเมล่ซ้ำ กรุณากดอีเมลใหม่'
+        ]
     ];
 
     public function __construct(DuplicateCheckerInterface $duplicateChecker)
@@ -42,7 +47,7 @@ class EmailDuplicate extends AbstractValidator
         $this->setValue($value);
 
         if (true === $this->duplicateChecker->isDuplicate($value)) {
-            $this->messages[self::INVALID_EMAIL_DUPLICATE]
+            $this->messages[$this->lang][self::INVALID_EMAIL_DUPLICATE]
                     = self::$messageTemplates[self::INVALID_EMAIL_DUPLICATE];
             return false;
         }

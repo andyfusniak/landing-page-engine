@@ -19,9 +19,16 @@ class ThaiPhone extends AbstractValidator
      * @var array
      */
     public static $messageTemplates = [
-        self::INVALID_THAI_MOBILE   => 'เบอร์มือถิอไม่ถูกต้อง',
-        self::INVALID_THAI_LANDLINE => 'เบอร์โทรศัพท์ไม่ถูกต้อง',
-        self::INVALID_PHONE_NUMBER  => 'กรอกเบอร์มือถิอไทยเเละเบอร์บ้านไทยเท่านั้น'
+        'en' => [
+            self::INVALID_THAI_MOBILE   => 'Invalid mobile number',
+            self::INVALID_THAI_LANDLINE => 'Invalid telephone number',
+            self::INVALID_PHONE_NUMBER  => 'Please use Thai phone numbers only'
+        ],
+        'th' => [
+            self::INVALID_THAI_MOBILE   => 'เบอร์มือถิอไม่ถูกต้อง',
+            self::INVALID_THAI_LANDLINE => 'เบอร์โทรศัพท์ไม่ถูกต้อง',
+            self::INVALID_PHONE_NUMBER  => 'กรอกเบอร์มือถิอไทยเเละเบอร์บ้านไทยเท่านั้น'
+        ]
     ];
 
     public function isValid($value, $context = null)
@@ -45,7 +52,7 @@ class ThaiPhone extends AbstractValidator
                 return true;
             } else {
                 $this->messages[self::INVALID_THAI_MOBILE]
-                    = self::$messageTemplates[self::INVALID_THAI_MOBILE];
+                    = self::$messageTemplates[$this->lang][self::INVALID_THAI_MOBILE];
                 return false;
             }
         } else if (preg_match('/^0[23457](.*)$/', $value)) {
@@ -53,12 +60,12 @@ class ThaiPhone extends AbstractValidator
                 return true;
             } else {
                 $this->messages[self::INVALID_THAI_LANDLINE]
-                    = self::$messageTemplates[self::INVALID_THAI_LANDLINE];
+                    = self::$messageTemplates[$this->lang][self::INVALID_THAI_LANDLINE];
                 return false;
             }
         } else {
             $this->messages[self::INVALID_PHONE_NUMBER]
-                    = self::$messageTemplates[self::INVALID_PHONE_NUMBER];
+                    = self::$messageTemplates[$this->lang][self::INVALID_PHONE_NUMBER];
             return false;
         }
     }

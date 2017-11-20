@@ -15,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 class ThaiPhoneTest extends TestCase
 {
+    const LANG = 'th';
+
     /**
      * @var ThaiPhone
      */
@@ -23,6 +25,7 @@ class ThaiPhoneTest extends TestCase
     protected function setUp()
     {
         $this->validator = new ThaiPhone();
+        $this->validator->setLanguage(self::LANG);
     }
 
     public function testValidThaiMobile()
@@ -52,7 +55,7 @@ class ThaiPhoneTest extends TestCase
 
         $expected = [
             ThaiPhone::INVALID_THAI_MOBILE
-                => ThaiPhone::$messageTemplates[ThaiPhone::INVALID_THAI_MOBILE]
+                => ThaiPhone::$messageTemplates[self::LANG][ThaiPhone::INVALID_THAI_MOBILE]
         ];
         $this->assertEquals($expected, $messages);
     }
@@ -69,7 +72,7 @@ class ThaiPhoneTest extends TestCase
 
         $expected = [
             ThaiPhone::INVALID_PHONE_NUMBER
-                => ThaiPhone::$messageTemplates[ThaiPhone::INVALID_PHONE_NUMBER]
+                => ThaiPhone::$messageTemplates[self::LANG][ThaiPhone::INVALID_PHONE_NUMBER]
         ];
         $this->assertEquals($expected, $messages);
     }
@@ -86,7 +89,7 @@ class ThaiPhoneTest extends TestCase
 
         $expected = [
             ThaiPhone::INVALID_THAI_MOBILE
-                => ThaiPhone::$messageTemplates[ThaiPhone::INVALID_THAI_MOBILE]
+                => ThaiPhone::$messageTemplates[self::LANG][ThaiPhone::INVALID_THAI_MOBILE]
         ];
         $this->assertEquals($expected, $messages);
     }
@@ -103,7 +106,7 @@ class ThaiPhoneTest extends TestCase
 
         $expected = [
             ThaiPhone::INVALID_THAI_MOBILE
-                => ThaiPhone::$messageTemplates[ThaiPhone::INVALID_THAI_MOBILE]
+                => ThaiPhone::$messageTemplates[self::LANG][ThaiPhone::INVALID_THAI_MOBILE]
         ];
         $this->assertEquals($expected, $messages);
     }
@@ -140,7 +143,7 @@ class ThaiPhoneTest extends TestCase
 
         $expected = [
             ThaiPhone::INVALID_THAI_LANDLINE
-                => ThaiPhone::$messageTemplates[ThaiPhone::INVALID_THAI_LANDLINE]
+                => ThaiPhone::$messageTemplates[self::LANG][ThaiPhone::INVALID_THAI_LANDLINE]
         ];
         $this->assertEquals($expected, $messages);
     }
@@ -157,7 +160,7 @@ class ThaiPhoneTest extends TestCase
 
         $expected = [
             ThaiPhone::INVALID_PHONE_NUMBER
-                => ThaiPhone::$messageTemplates[ThaiPhone::INVALID_PHONE_NUMBER]
+                => ThaiPhone::$messageTemplates[self::LANG][ThaiPhone::INVALID_PHONE_NUMBER]
         ];
         $this->assertEquals($expected, $messages);
     }

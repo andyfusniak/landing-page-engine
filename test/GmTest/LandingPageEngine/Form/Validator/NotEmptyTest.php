@@ -15,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 class NotEmptyTest extends TestCase
 {
+    const LANG = 'th';
+
     /**
      * @var NotEmpty
      */
@@ -23,6 +25,7 @@ class NotEmptyTest extends TestCase
     protected function setUp()
     {
         $this->notEmpty = new NotEmpty();
+        $this->notEmpty->setLanguage(self::LANG);
     }
 
     public function testValidInput()
@@ -53,7 +56,7 @@ class NotEmptyTest extends TestCase
 
         $expected = [
             NotEmpty::IS_EMPTY
-                => NotEmpty::$messageTemplates[NotEmpty::IS_EMPTY]
+                => NotEmpty::$messageTemplates[self::LANG][NotEmpty::IS_EMPTY]
         ];
         $this->assertEquals($expected, $messages);
     }

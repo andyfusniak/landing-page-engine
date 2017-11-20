@@ -15,9 +15,4 @@ class ValidatorConfig extends AbstractValidatorFilterConfig
      * @var array
      */
     protected $options = [];
-
-    public function getOptions()
-    {
-        return $this->options;
-    }
 }

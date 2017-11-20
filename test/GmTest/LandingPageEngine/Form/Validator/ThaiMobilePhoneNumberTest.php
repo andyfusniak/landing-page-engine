@@ -15,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 class ThaiMobilePhoneNumberTest extends TestCase
 {
+    const LANG = 'th';
+
     /**
      * @var ThaiMobilePhoneNumber
      */
@@ -23,6 +25,7 @@ class ThaiMobilePhoneNumberTest extends TestCase
     protected function setUp()
     {
         $this->thaiMobilePhoneNumberValidator = new ThaiMobilePhoneNumber();
+        $this->thaiMobilePhoneNumberValidator->setLanguage(self::LANG);
     }
 
     public function testValidThaiMobile()
@@ -53,7 +56,7 @@ class ThaiMobilePhoneNumberTest extends TestCase
 
         $expected = [
             ThaiMobilePhoneNumber::INVALID_THAI_MOBILE
-                => ThaiMobilePhoneNumber::$messageTemplates[ThaiMobilePhoneNumber::INVALID_THAI_MOBILE]
+                => ThaiMobilePhoneNumber::$messageTemplates[self::LANG][ThaiMobilePhoneNumber::INVALID_THAI_MOBILE]
         ];
         $this->assertEquals($expected, $messages);
     }
@@ -70,7 +73,7 @@ class ThaiMobilePhoneNumberTest extends TestCase
 
         $expected = [
             ThaiMobilePhoneNumber::INVALID_THAI_MOBILE
-                => ThaiMobilePhoneNumber::$messageTemplates[ThaiMobilePhoneNumber::INVALID_THAI_MOBILE]
+                => ThaiMobilePhoneNumber::$messageTemplates[self::LANG][ThaiMobilePhoneNumber::INVALID_THAI_MOBILE]
         ];
         $this->assertEquals($expected, $messages);
     }
@@ -87,7 +90,7 @@ class ThaiMobilePhoneNumberTest extends TestCase
 
         $expected = [
             ThaiMobilePhoneNumber::INVALID_THAI_MOBILE
-                => ThaiMobilePhoneNumber::$messageTemplates[ThaiMobilePhoneNumber::INVALID_THAI_MOBILE]
+                => ThaiMobilePhoneNumber::$messageTemplates[self::LANG][ThaiMobilePhoneNumber::INVALID_THAI_MOBILE]
         ];
         $this->assertEquals($expected, $messages);
     }
@@ -104,7 +107,7 @@ class ThaiMobilePhoneNumberTest extends TestCase
 
         $expected = [
             ThaiMobilePhoneNumber::INVALID_THAI_MOBILE
-                => ThaiMobilePhoneNumber::$messageTemplates[ThaiMobilePhoneNumber::INVALID_THAI_MOBILE]
+                => ThaiMobilePhoneNumber::$messageTemplates[self::LANG][ThaiMobilePhoneNumber::INVALID_THAI_MOBILE]
         ];
         $this->assertEquals($expected, $messages);
     }
