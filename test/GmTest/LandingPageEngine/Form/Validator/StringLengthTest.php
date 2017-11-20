@@ -110,4 +110,46 @@ class StringLengthTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->stringLengthTest->isValid((int) 12345);
     }
+
+    public function testConfigurableMessageTemplate()
+    {
+        $stringLengthMin = 'ต้องกรอกข้อความอย่างน้อย %s ตัวอักษร';
+        $stringLengthMax = 'ข้อความต้องน้อยกว่า %s ตัวอักษร';
+
+        $stringLengthValidator = new StringLength();
+        StringLength::setMessageTemplate(
+            StringLength::STRING_LENGTH_MIN,
+            $stringLengthMin
+        );
+
+        StringLength::setMessageTemplate(
+            StringLength::STRING_LENGTH_MAX,
+            $stringLengthMax
+        );
+
+        $this->assertEquals(
+            $stringLengthMin,
+            StringLength::getMessageTemplate(StringLength::STRING_LENGTH_MIN)
+        );
+
+        $this->assertEquals(
+            $stringLengthMax,
+            StringLength::getMessageTemplate(StringLength::STRING_LENGTH_MAX)
+        );
+
+        // too short
+        $stringLengthValidator->setMin(3);
+        $stringLengthValidator->setMax(5);
+
+        $result = $stringLengthValidator->isValid('12');
+        $messages = $stringLengthValidator->getMessages();
+
+        $expected = [
+            StringLength::STRING_LENGTH_MIN => sprintf(
+                $stringLengthMin,
+                $stringLengthValidator->getMin()
+            )
+        ];
+        $this->assertEquals($expected, $messages);
+    }
 }

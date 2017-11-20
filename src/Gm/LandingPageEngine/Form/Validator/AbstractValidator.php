@@ -21,6 +21,48 @@ abstract class AbstractValidator implements ValidatorInterface
      */
     protected $value;
 
+    /**
+     * @var array
+     */
+    public static $messageTemplates = [];
+
+    /**
+     * Get an associative array of message template strings
+     *
+     * @return array
+     */
+    public static function getMessageTemplates()
+    {
+        return static::$messageTemplates;
+    }
+
+    /**
+     * Set the validation failure message for a given key
+     *
+     * @param string $key the message key e.g. 'string-length-min' etc
+     * @param string $message the utf-8 encoded message to use
+     */
+    public static function setMessageTemplate($key, $message)
+    {
+        static::$messageTemplates[$key] = $message;
+    }
+
+    /**
+     * Get the validation failure message for a given key
+     *
+     * @param string $key the message key
+     * @return string
+     */
+    public static function getMessageTemplate($key)
+    {
+        if (!isset(static::$messageTemplates[$key])) {
+            throw new Exception\InvalidArgumentException(
+                "No message template exists for key '$key'"
+            );
+        }
+        return static::$messageTemplates[$key];
+    }
+
     public function setValue($value)
     {
         $this->value = (string) $value;
