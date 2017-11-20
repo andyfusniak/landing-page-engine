@@ -15,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 class DigitsTest extends TestCase
 {
+    const LANG = 'th';
+
     /**
      * @var DigitsOnlyTest
      */
@@ -23,6 +25,7 @@ class DigitsTest extends TestCase
     protected function setUp()
     {
         $this->digitsOnlyTest = new DigitsOnly();
+        $this->digitsOnlyTest->setLanguage(self::LANG);
     }
 
     public function testValidInput()
@@ -53,7 +56,7 @@ class DigitsTest extends TestCase
 
         $expected = [
             DigitsOnly::NOT_DIGITS
-                => DigitsOnly::$messageTemplates[DigitsOnly::NOT_DIGITS]
+                => DigitsOnly::$messageTemplates[self::LANG][DigitsOnly::NOT_DIGITS]
         ];
         $this->assertEquals($expected, $messages);
     }

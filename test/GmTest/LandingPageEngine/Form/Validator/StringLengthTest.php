@@ -15,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 class StringLengthTest extends TestCase
 {
+    const LANG = 'th';
+
     /**
      * @var StringLength
      */
@@ -23,6 +25,7 @@ class StringLengthTest extends TestCase
     protected function setUp()
     {
         $this->stringLengthTest = new StringLength();
+        $this->stringLengthTest->setLanguage(self::LANG);
     }
 
     public function testValidInput()
@@ -55,7 +58,7 @@ class StringLengthTest extends TestCase
 
         $expected = [
             StringLength::STRING_LENGTH_MIN => sprintf(
-                StringLength::$messageTemplates[StringLength::STRING_LENGTH_MIN],
+                StringLength::$messageTemplates[self::LANG][StringLength::STRING_LENGTH_MIN],
                 $this->stringLengthTest->getMin()
             )
         ];
@@ -77,7 +80,7 @@ class StringLengthTest extends TestCase
 
         $expected = [
             StringLength::STRING_LENGTH_MIN => sprintf(
-                StringLength::$messageTemplates[StringLength::STRING_LENGTH_MIN],
+                StringLength::$messageTemplates[self::LANG][StringLength::STRING_LENGTH_MIN],
                 $this->stringLengthTest->getMin()
             )
         ];
@@ -98,7 +101,7 @@ class StringLengthTest extends TestCase
 
         $expected = [
             StringLength::STRING_LENGTH_MAX => sprintf(
-                StringLength::$messageTemplates[StringLength::STRING_LENGTH_MAX],
+                StringLength::$messageTemplates[self::LANG][StringLength::STRING_LENGTH_MAX],
                 $this->stringLengthTest->getMax()
             )
         ];
@@ -117,24 +120,28 @@ class StringLengthTest extends TestCase
         $stringLengthMax = 'ข้อความต้องน้อยกว่า %s ตัวอักษร';
 
         $stringLengthValidator = new StringLength();
+        $stringLengthValidator->setLanguage('th');
+
         StringLength::setMessageTemplate(
+            'th',
             StringLength::STRING_LENGTH_MIN,
             $stringLengthMin
         );
 
         StringLength::setMessageTemplate(
+            'th',
             StringLength::STRING_LENGTH_MAX,
             $stringLengthMax
         );
 
         $this->assertEquals(
             $stringLengthMin,
-            StringLength::getMessageTemplate(StringLength::STRING_LENGTH_MIN)
+            StringLength::getMessageTemplate('th', StringLength::STRING_LENGTH_MIN)
         );
 
         $this->assertEquals(
             $stringLengthMax,
-            StringLength::getMessageTemplate(StringLength::STRING_LENGTH_MAX)
+            StringLength::getMessageTemplate('th', StringLength::STRING_LENGTH_MAX)
         );
 
         // too short

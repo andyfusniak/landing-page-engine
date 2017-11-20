@@ -17,7 +17,12 @@ class ThaiMobilePhoneNumber extends AbstractValidator
      * @var array
      */
     public static $messageTemplates = [
-        self::INVALID_THAI_MOBILE => 'เบอร์มือถือไม่ถูกต้อง'
+        'en' => [
+            self::INVALID_THAI_MOBILE => 'Invalid mobile phone number'
+        ],
+        'th' => [
+            self::INVALID_THAI_MOBILE => 'เบอร์มือถือไม่ถูกต้อง'
+        ]
     ];
 
     public function isValid($value, $context = null)
@@ -37,7 +42,7 @@ class ThaiMobilePhoneNumber extends AbstractValidator
             return true;
         }
 
-        $this->messages[self::INVALID_THAI_MOBILE] = self::$messageTemplates[self::INVALID_THAI_MOBILE];
+        $this->messages[self::INVALID_THAI_MOBILE] = self::$messageTemplates[$this->lang][self::INVALID_THAI_MOBILE];
         return false;
     }
 }

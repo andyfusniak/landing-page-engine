@@ -17,7 +17,12 @@ class EmailAddress extends AbstractValidator
      * @var array
      */
     public static $messageTemplates = [
-        self::INVALID_EMAIL => 'The email address is invalid'
+        'en' => [
+            self::INVALID_EMAIL => 'The email address is invalid'
+        ],
+        'th' => [
+            self::INVALID_EMAIL => 'กรอกอีเมลไม่ถูกต้อง'
+        ]
     ];
 
     public function isValid($value, $context = null)
@@ -32,7 +37,7 @@ class EmailAddress extends AbstractValidator
         $this->setValue($value);
 
         if (false === filter_var($value, FILTER_VALIDATE_EMAIL)) {
-            $this->messages[self::INVALID_EMAIL] = self::$messageTemplates[self::INVALID_EMAIL];
+            $this->messages[self::INVALID_EMAIL] = self::$messageTemplates[$this->lang][self::INVALID_EMAIL];
             return false;
         }
 

@@ -592,35 +592,46 @@ class LpEngine
         $validatorChain = new ValidatorChain();
         foreach ($validatorConfigCollection as $validatorConfig) {
             $name = $validatorConfig->getName();
-            $validatorChain->attach($this->loadValidator($name));
+            $lang = $validatorConfig->getLang();
+            $validatorChain->attach($this->loadValidator($name, $lang, $validatorConfig->getMessageTemplates()));
             $this->logger->debug(sprintf(
-                'Attached validator "%s" to the validator chain',
-                $name
+                'Attached validator "%s" to the validator chain with language "%s"',
+                $name,
+                $lang
             ));
         }
         return $validatorChain;
     }
 
-    private function loadValidator($name)
+    private function loadValidator($name, $lang = 'th', $messageTemplates = [])
     {
         // @todo implement dependecy injection container
         if ('ThaiPhoneDuplicate' === $name) {
-            return new ThaiPhoneDuplicate(
+            $validator = new ThaiPhoneDuplicate(
                 new ThaiPhoneMysqlDuplicateChecker(
                     $this->getCaptureService(),
                     $this->getHost()
                 )
             );
+            $validator->setLanguage($lang);
+            $validator->overrideMessageTemplates($messageTemplates);
+            return $validator;
         } else if ('EmailDuplicate' === $name) {
-            return new EmailDuplicate(
+            $validator =  new EmailDuplicate(
                 new EmailMysqlDuplicateChecker(
                     $this->getCaptureService(),
                     $this->getHost()
                 )
             );
+            $validator->setLanguage($lang);
+            $validator->overrideMessageTemplates($messageTemplates);
+            return $validator;
         }
         $name = 'Gm\\LandingPageEngine\\Form\\Validator\\' . $name;
-        return new $name();
+        $validator = new $name();
+        $validator->setLanguage($lang);
+        $validator->overrideMessageTemplates($messageTemplates);
+        return $validator;
     }
 
     /**

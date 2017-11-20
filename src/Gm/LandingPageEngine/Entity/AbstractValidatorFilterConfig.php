@@ -16,6 +16,16 @@ abstract class AbstractValidatorFilterConfig
      */
     protected $name;
 
+    /**
+     * @var $lang
+     */
+    protected $lang = 'th';
+
+    /**
+     * @var $messageTemplates
+     */
+    protected $messageTemplates = [];
+
     public function __construct($name, $options = [])
     {
         $this->name = $name;
@@ -31,6 +41,27 @@ abstract class AbstractValidatorFilterConfig
     {
         $this->name = $name;
         return $this;
+    }
+
+    public function getLang()
+    {
+        return $this->lang;
+    }
+
+    public function setLang($lang)
+    {
+        $this->lang = $lang;
+        return $this;
+    }
+
+    public function setMessageTemplate($lang, $key, $message)
+    {
+        $this->messageTemplates[$lang][$key] = $message;
+    }
+
+    public function getMessageTemplates()
+    {
+        return $this->messageTemplates;
     }
 
     public function getOptions()

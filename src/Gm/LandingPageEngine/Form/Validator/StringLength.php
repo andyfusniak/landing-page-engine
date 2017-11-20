@@ -28,8 +28,14 @@ class StringLength extends AbstractValidator
      * @var array
      */
     public static $messageTemplates = [
-        self::STRING_LENGTH_MIN  => 'The input must be at least %s characters',
-        self::STRING_LENGTH_MAX  => 'The input must be shorter than %s characters'
+        'en' => [
+            self::STRING_LENGTH_MIN  => 'The input must be at least %s characters',
+            self::STRING_LENGTH_MAX  => 'The input must be shorter than %s characters'
+        ],
+        'th' => [
+            self::STRING_LENGTH_MIN  => 'ต้องกรอกข้อความอย่างน้อย %s ตัวอักษร',
+            self::STRING_LENGTH_MAX  => 'ข้อความต้องน้อยกว่า %s ตัวอักษร'
+        ]
     ];
 
     public function __construct()
@@ -93,7 +99,7 @@ class StringLength extends AbstractValidator
 
         if (mb_strlen($value) < $this->min) {
             $this->messages[self::STRING_LENGTH_MIN] = sprintf(
-                self::$messageTemplates[self::STRING_LENGTH_MIN],
+                self::$messageTemplates[$this->lang][self::STRING_LENGTH_MIN],
                 $this->min
             );
             return false;
@@ -101,7 +107,7 @@ class StringLength extends AbstractValidator
 
         if (mb_strlen($value) > $this->max) {
             $this->messages[self::STRING_LENGTH_MAX] = sprintf(
-                self::$messageTemplates[self::STRING_LENGTH_MAX],
+                self::$messageTemplates[$this->lang][self::STRING_LENGTH_MAX],
                 $this->max
             );
             return false;

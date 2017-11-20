@@ -17,7 +17,12 @@ class NotEmpty extends AbstractValidator
      * @var array
      */
     public static $messageTemplates = [
-        self::IS_EMPTY => 'This field is required'
+        'en' => [
+            self::IS_EMPTY => 'This field is required'
+        ],
+        'th' => [
+            self::IS_EMPTY => 'กรุณากรอกข้อมูล'
+        ]
     ];
 
     public function isValid($value, $context = null)
@@ -32,7 +37,7 @@ class NotEmpty extends AbstractValidator
         $this->setValue($value);
 
         if (strlen($value) < 1) {
-            $this->messages[self::IS_EMPTY] = self::$messageTemplates[self::IS_EMPTY];
+            $this->messages[self::IS_EMPTY] = self::$messageTemplates[$this->lang][self::IS_EMPTY];
             return false;
         }
 

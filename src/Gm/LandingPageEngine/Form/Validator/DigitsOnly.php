@@ -17,7 +17,12 @@ class DigitsOnly extends AbstractValidator
       * @var array
       */
     public static $messageTemplates = [
-        self::NOT_DIGITS => 'Must contain digits only'
+        'en' => [
+            self::NOT_DIGITS => 'Must contain digits only'
+        ],
+        'th' => [
+            self::NOT_DIGITS => 'กรอกเป็นตัวเลขเท่านั้น'
+        ]
     ];
 
     public function isValid($value, $context = null)
@@ -35,7 +40,8 @@ class DigitsOnly extends AbstractValidator
             return true;
         }
 
-        $this->messages[self::NOT_DIGITS] = self::$messageTemplates[self::NOT_DIGITS];
+        $this->messages[self::NOT_DIGITS]
+            = self::$messageTemplates[$this->lang][self::NOT_DIGITS];
         return false;
     }
 }
