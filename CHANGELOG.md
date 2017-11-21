@@ -1,4 +1,7 @@
 # CHANGELOG
+## 2.22.1 (21 Nov 2017)
+- Fix typo in ThaiPhone validator template message
+
 ## 2.22.0 (20 Nov 2017)
 - Configurable template message strings for validators and multi out-the-box en and th validators
 

@@ -25,7 +25,7 @@ class ThaiPhone extends AbstractValidator
             self::INVALID_PHONE_NUMBER  => 'Please use Thai phone numbers only'
         ],
         'th' => [
-            self::INVALID_THAI_MOBILE   => 'เบอร์มือถิอไม่ถูกต้อง',
+            self::INVALID_THAI_MOBILE   => 'เบอร์มือถือไม่ถูกต้อง',
             self::INVALID_THAI_LANDLINE => 'เบอร์โทรศัพท์ไม่ถูกต้อง',
             self::INVALID_PHONE_NUMBER  => 'กรอกเบอร์มือถิอไทยเเละเบอร์บ้านไทยเท่านั้น'
         ]
